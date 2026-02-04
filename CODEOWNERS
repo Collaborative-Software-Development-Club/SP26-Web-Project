@@ -1,23 +1,23 @@
 # Profile feature
-/web-app/app/(profile)/ @
-/web-app/lib/services/profile.ts @
-/web-app/hooks/use-profile.ts @
-/web-app/lib/auth.ts @
+/web-app/app/(profile)/ @EckXon
+/web-app/lib/services/profile.ts @EckXon
+/web-app/hooks/use-profile.ts @EckXon
+/web-app/lib/auth.ts @EckXon
 
 # Chat feature
-/web-app/app/(chat)/ @
-/web-app/lib/services/chat.ts @
-/web-app/hooks/use-chat.ts @
+/web-app/app/(chat)/ @Koodsu
+/web-app/lib/services/chat.ts @Koodsu
+/web-app/hooks/use-chat.ts @Koodsu
 
 # Housing feature
-/web-app/app/(housing)/ @
-/web-app/lib/services/housing.ts @
-/web-app/hooks/use-housing.ts @
+/web-app/app/(housing)/ @Allam235
+/web-app/lib/services/housing.ts @Allam235
+/web-app/hooks/use-housing.ts @Allam235
 
 # Match
-/web-app/app/(match)/ @
-/web-app/lib/services/match.ts @
-/web-app/hooks/use-match.ts @
+/web-app/app/(match)/ @JunhoHwoang
+/web-app/lib/services/match.ts @JunhoHwoang
+/web-app/hooks/use-match.ts @JunhoHwoang
 
 # All files
 * @JunhoHwoang
