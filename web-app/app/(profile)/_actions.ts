@@ -42,7 +42,6 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function signupAction(formData: FormData) {
-  "use server";
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -62,7 +61,14 @@ export async function signupAction(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${appUrl}/auth/callback?next=/profile`,
+    },
+  });
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
@@ -73,7 +79,8 @@ export async function signupAction(formData: FormData) {
   }
 
   redirect(
-    "/signup?message=" +
-      encodeURIComponent("Check your email to confirm your account."),
+    `/confirm?message=${encodeURIComponent(
+      "Check your email and click the confirmation link to finish signing up.",
+    )}`,
   );
 }
