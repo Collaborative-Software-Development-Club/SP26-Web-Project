@@ -3,7 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 
 function safeNextPath(next: string | null) {
   if (!next) return "/profile";
-  if (!next.startsWith("/") || next.startsWith("//")) return "/profile";
+  // Disallow backslashes to avoid ambiguous URL parsing across environments.
+  if (next.includes("\\")) return "/profile";
+  // Require an absolute path within this origin and disallow protocol-relative-style prefixes.
+  if (!next.startsWith("/") || /^\/{2,}/.test(next)) return "/profile";
   return next;
 }
 
