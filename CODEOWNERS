@@ -1,0 +1,23 @@
+# Profile feature
+/web-app/app/(profile)/ @
+/web-app/lib/services/profile.ts @
+/web-app/hooks/use-profile.ts @
+/web-app/lib/auth.ts @
+
+# Chat feature
+/web-app/app/(chat)/ @
+/web-app/lib/services/chat.ts @
+/web-app/hooks/use-chat.ts @
+
+# Housing feature
+/web-app/app/(housing)/ @
+/web-app/lib/services/housing.ts @
+/web-app/hooks/use-housing.ts @
+
+# Match
+/web-app/app/(match)/ @
+/web-app/lib/services/match.ts @
+/web-app/hooks/use-match.ts @
+
+# All files
+* @JunhoHwoang
