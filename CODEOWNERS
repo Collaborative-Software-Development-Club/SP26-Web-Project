@@ -1,3 +1,6 @@
+# All files
+* @JunhoHwoang
+
 # Profile feature
 /web-app/app/(profile)/ @EckXon
 /web-app/lib/services/profile.ts @EckXon
@@ -18,6 +21,3 @@
 /web-app/app/(match)/ @JunhoHwoang
 /web-app/lib/services/match.ts @JunhoHwoang
 /web-app/hooks/use-match.ts @JunhoHwoang
-
-# All files
-* @JunhoHwoang
