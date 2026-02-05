@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
+// hi
 type PageProps = {
   searchParams: Promise<{ message?: string }>;
 };
