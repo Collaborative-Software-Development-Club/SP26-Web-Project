@@ -3,18 +3,21 @@
         "user_id": "3",
         "target_user_id": "1",
         "action": "like",
+        "message": "I like you!",
         "created_at": "2025-01-12"
     },
     {
         "user_id": "6",
         "target_user_id": "1",
         "action": "like",
+        "message": "Hey wanna room with me?",
         "created_at": "2025-01-12"
     },
     {
         "user_id": "8",
         "target_user_id": "1",
         "action": "like",
+        "message": "I want to hear more about you!",
         "created_at": "2025-01-12"
     }
 ]
