@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -17,8 +20,21 @@ interface Props {
 }
 
 const MessageButton = ({ handleLikeAndSend }: Props) => {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key == "m" || e.key == "M") {
+        setOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
           <div className="text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors cursor-pointer">
