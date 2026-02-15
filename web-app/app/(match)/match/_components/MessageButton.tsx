@@ -37,7 +37,7 @@ const MessageButton = ({ handleLikeAndSend }: Props) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
-          <div className="text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors cursor-pointer">
+          <div className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors cursor-pointer">
             <MessageSquareText />
           </div>
         </DialogTrigger>
