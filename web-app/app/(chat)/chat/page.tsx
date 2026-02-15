@@ -1,11 +1,8 @@
 import { requireAuth } from "@/lib/auth";
+import { ChatClient } from "./chat-client";
 
 export default async function Chat() {
-  const user = await requireAuth();
+  await requireAuth();
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      Chat Page
-    </div>
-  );
+  return <ChatClient />;
 }
