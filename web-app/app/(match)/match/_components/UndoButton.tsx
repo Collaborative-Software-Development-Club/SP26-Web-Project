@@ -1,10 +1,25 @@
+"use client";
+
 import { Undo2 } from "lucide-react";
+import { useEffect } from "react";
 
 interface Props {
   handleUndo: () => void;
 }
 
 const UndoButton = ({ handleUndo }: Props) => {
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleUndo]);
+
   return (
     <button
       onClick={handleUndo}

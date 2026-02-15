@@ -1,10 +1,24 @@
+"use client";
+
 import { ThumbsDown } from "lucide-react";
+import { useEffect } from "react";
 
 interface Props {
   handleDislike: () => void;
 }
 
 const DislikeButton = ({ handleDislike }: Props) => {
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        handleDislike();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleDislike]);
+
   return (
     <button
       onClick={handleDislike}
