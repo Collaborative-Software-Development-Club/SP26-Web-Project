@@ -24,7 +24,7 @@ const MessageButton = ({ handleLikeAndSend }: Props) => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key == "m" || e.key == "M") {
+      if (e.key === "m" || e.key === "M") {
         setOpen(true);
       }
     };
