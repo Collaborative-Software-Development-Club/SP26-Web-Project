@@ -5,7 +5,7 @@ import { createClient } from "../supabase/server";
 // General feed swipe action
 export async function saveSwipe(
   targetUserId: string,
-  action: "left" | "right",
+  action: "dislike" | "like",
 ) {
   const supabase = await createClient();
   const {
@@ -55,7 +55,7 @@ export async function undoSwipe(targetUserId: string) {
 // 'Liked' feed swipe action
 export async function saveMatchSwipe(
   targetUserId: string,
-  action: "left" | "right",
+  action: "dislike" | "like",
 ): Promise<{ matched: boolean }> {
   const supabase = await createClient();
   const {
@@ -78,7 +78,7 @@ export async function saveMatchSwipe(
     throw new Error(`Failed to record match swipe: ${swipeError.message}`);
   }
 
-  if (action === "right") {
+  if (action === "like") {
     const { data: correspondingSwipe, error: correspondingSwipeError } =
       await supabase
         .from("discovery_swipes")
@@ -94,10 +94,10 @@ export async function saveMatchSwipe(
 
     if (
       correspondingSwipe.length === 0 ||
-      correspondingSwipe[0].action === "left"
+      correspondingSwipe[0].action === "dislike"
     ) {
       console.log(
-        `No corresponding right swipe sent by target user: ${targetUserId}`,
+        `No corresponding 'like' swipe sent by target user: ${targetUserId}`,
       );
       return { matched: false };
     }
