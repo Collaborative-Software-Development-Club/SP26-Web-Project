@@ -1,16 +1,18 @@
 "use client";
 
 import { ThumbsUp } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
-interface Props {
-  handleLike: () => void;
-}
+export function LikeButton({ handleNext }: { handleNext: () => void }) {
+  const handleLike = useCallback(() => {
+    console.log("Like");
+    handleNext();
+  }, [handleNext]);
 
-const LikeButton = ({ handleLike }: Props) => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") {
+        e.preventDefault();
         handleLike();
       }
     };
@@ -22,11 +24,9 @@ const LikeButton = ({ handleLike }: Props) => {
   return (
     <button
       onClick={handleLike}
-      className="text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors cursor-pointer"
+      className="text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
     >
       <ThumbsUp />
     </button>
   );
-};
-
-export default LikeButton;
+}

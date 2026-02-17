@@ -1,13 +1,14 @@
 "use client";
 
 import { Undo2 } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
-interface Props {
-  handleUndo: () => void;
-}
+export function UndoButton({ handleBefore }: { handleBefore: () => void }) {
+  const handleUndo = useCallback(() => {
+    console.log("Undo");
+    handleBefore();
+  }, [handleBefore]);
 
-const UndoButton = ({ handleUndo }: Props) => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
@@ -23,11 +24,9 @@ const UndoButton = ({ handleUndo }: Props) => {
   return (
     <button
       onClick={handleUndo}
-      className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors cursor-pointer"
+      className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
     >
       <Undo2 />
     </button>
   );
-};
-
-export default UndoButton;
+}
