@@ -6,6 +6,7 @@ import { createClient } from "../supabase/server";
 export async function saveSwipe(
   targetUserId: string,
   action: "dislike" | "like",
+  message: string | null = null,
 ) {
   const supabase = await createClient();
   const {
@@ -17,12 +18,15 @@ export async function saveSwipe(
     throw new Error(`Error fetching current user: ${userError?.message}`);
   }
 
-  const { error: swipeError } = await supabase
-    .from("discovery_swipes")
-    .upsert(
-      { user_id: user.id, target_user_id: targetUserId, action: action },
-      { onConflict: "user_id,target_user_id" },
-    );
+  const { error: swipeError } = await supabase.from("discovery_swipes").upsert(
+    {
+      user_id: user.id,
+      target_user_id: targetUserId,
+      action: action,
+      message: message,
+    },
+    { onConflict: "user_id,target_user_id" },
+  );
 
   if (swipeError) {
     throw new Error(`Failed to record swipe: ${swipeError.message}`);
@@ -56,6 +60,7 @@ export async function undoSwipe(targetUserId: string) {
 export async function saveMatchSwipe(
   targetUserId: string,
   action: "dislike" | "like",
+  message: string | null = null,
 ): Promise<{ matched: boolean }> {
   const supabase = await createClient();
   const {
@@ -70,7 +75,12 @@ export async function saveMatchSwipe(
   const { error: swipeError } = await supabase
     .from("discovery_swipes")
     .upsert(
-      { user_id: user.id, target_user_id: targetUserId, action: action },
+      {
+        user_id: user.id,
+        target_user_id: targetUserId,
+        action: action,
+        message: message,
+      },
       { onConflict: "user_id,target_user_id" },
     );
 
