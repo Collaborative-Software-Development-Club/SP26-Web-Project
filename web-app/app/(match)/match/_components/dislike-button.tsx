@@ -24,7 +24,7 @@ export function DislikeButton({ handleNext }: { handleNext: () => void }) {
   return (
     <button
       onClick={handleDislike}
-      className="text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
+      className="text-red-500 hover:bg-red-100 dark:hover:bg-red-800 rounded-full p-3 transition-colors cursor-pointer"
     >
       <ThumbsDown />
     </button>

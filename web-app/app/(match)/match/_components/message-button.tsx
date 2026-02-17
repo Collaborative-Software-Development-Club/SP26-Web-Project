@@ -40,7 +40,7 @@ export function MessageButton({ handleNext }: { handleNext: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="flex items-center justify-center h-10 w-10 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer ">
+        <div className="flex items-center justify-center h-13 w-13 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer ">
           <MessageSquareText />
         </div>
       </DialogTrigger>
