@@ -17,12 +17,13 @@ export function Navbar({ user }: { user: User | null }) {
       ]
     : [
         { href: "/housing", label: "Housing" },
+        { href: "/chat", label: "Chat" },
         { href: "/login", label: "Login" },
         { href: "/signup", label: "Sign Up" },
       ];
 
   return (
-    <header className="sticky top-0 z-50 p-2">
+    <header className="sticky top-0 z-50 p-2 shadow-md bg-background">
       <div className="w-full px-8 py-4 items-center justify-between flex flex-row">
         <Link href="/" className="flex items-center gap-5">
           <h1 className="text-2xl font-bold text-primary">
