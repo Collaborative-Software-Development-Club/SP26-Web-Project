@@ -1,6 +1,6 @@
 import { requireAuth } from "@/lib/auth";
 
-export default async function Profile() {
+export default async function ProfilePage() {
   const user = await requireAuth();
 
   return (

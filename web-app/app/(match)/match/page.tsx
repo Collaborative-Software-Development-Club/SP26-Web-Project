@@ -1,15 +1,17 @@
 import { requireAuth } from "@/lib/auth";
+import { MatchClient } from "./match-client";
 import profiles from "@/mock/profiles.json";
-import { DiscoveryPage } from "./_components/discovery-page";
+import { UserProfile } from "./discovery-page";
 
-export default async function Match() {
+export default async function MatchPage() {
   const user = await requireAuth();
-  console.log(profiles);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      Match Page
-      <DiscoveryPage />
+      <MatchClient
+        initialDiscoveryProfiles={profiles as UserProfile[]}
+        initialLikedProfiles={profiles as UserProfile[]}
+      />
     </div>
   );
 }

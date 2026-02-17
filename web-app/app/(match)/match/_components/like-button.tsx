@@ -24,7 +24,7 @@ export function LikeButton({ handleNext }: { handleNext: () => void }) {
   return (
     <button
       onClick={handleLike}
-      className="text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
+      className="text-green-400 hover:bg-green-100 dark:hover:bg-green-100 rounded-full p-3 transition-colors cursor-pointer"
     >
       <ThumbsUp />
     </button>
