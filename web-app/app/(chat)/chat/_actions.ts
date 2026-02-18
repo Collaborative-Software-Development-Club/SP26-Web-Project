@@ -104,5 +104,21 @@ export async function saveMatchSwipe(
 
   return { matched: false };
 }
-
 */
+
+export async function sendChatMessage(
+  conversationId: string,
+  messagerUserId: string,
+  message: string,
+) {
+  //Make sure message isnt null, create a messageId and a timestamp to send as well
+}
+
+export async function getConversationMessages(conversationId: string) {}
+
+export async function getConversations(userId: string) {}
+
+export async function createConversation(
+  creatingUserId: string,
+  otherMemberUserIds: string[],
+) {}
