@@ -62,6 +62,14 @@ export default async function ProfilePage() {
               How often do you need quiet (like studying or meetings)?
             </QuestionScale>
           </li>
+          <li>
+            <QuestionScale
+              questionDataName="wake"
+              scaleOptions={["Earlier", "6AM", "7AM", "8AM", "9AM", "10AM", "Later"]}
+            >
+              When do you wake up?
+            </QuestionScale>
+          </li>
         </ol>
       </section>
 

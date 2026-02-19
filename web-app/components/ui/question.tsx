@@ -14,9 +14,9 @@ function QuestionRequiredStar({ required }: { required: boolean }) {
 function QuestionOptionItem({ textLabel, dataName, type }: { textLabel: string, dataName: string, type: string }) {
   const id = `${dataName}-radio-${textLabel}`;
   return (
-    <div id={`${id}-container`} className="flex flex-col items-center basis-0 flex-1">
+    <div id={`${id}-container`} className="relative flex flex-col items-center basis-1 w-sm">
       <input type={type} name={dataName} id={id}></input>
-      <label className="text-neutral-500 text-sm" htmlFor={id}>{textLabel}</label>
+      <label className="absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm" htmlFor={id}>{textLabel}</label>
     </div>
   )
 }
@@ -41,12 +41,12 @@ function QuestionScale({ className, children, questionDataName, scaleOptions, re
     );
   }
 
-  return (<div className={cn("ml-2 mb-2")}>
-    <h3 className={cn("mb-2")}>
+  return (<div className="ml-2 mb-6">
+    <h3 className="mb-1">
       {children}
       <QuestionRequiredStar required={required} />
     </h3>
-    <div className={cn("flex w-3xs")}>
+    <div className="flex gap-10">
       {items}
     </div>
   </div>);
@@ -66,17 +66,15 @@ function QuestionScaleMultiple({ className, children, questionDataName, scaleOpt
     );
   }
 
-  return (
-    <div className={cn("ml-2 mb-2")}>
-      <h3 className={cn("mb-2")}>
-        {children}
-        <QuestionRequiredStar required={required} />
-      </h3>
-      <div className={cn("flex w-3xs")}>
-        {items}
-      </div>
+  return (<div className="ml-2 mb-6">
+    <h3 className="mb-1">
+      {children}
+      <QuestionRequiredStar required={required} />
+    </h3>
+    <div className="flex gap-10">
+      {items}
     </div>
-  )
+  </div>);
 }
 
 export { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar };
