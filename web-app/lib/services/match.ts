@@ -20,8 +20,13 @@ async function createRoommatePreference({
     const supabase = await createClient();
   
     const {
-      data: { user }
+      data: { user },
+      error: userError
     } = await supabase.auth.getUser();
+  
+    if (userError) {
+      return { success: false, error: userError.message };
+    }
   
     if (!user) {
       return { success: false, error: "Unauthorized" };
