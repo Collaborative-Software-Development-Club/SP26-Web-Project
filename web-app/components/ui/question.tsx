@@ -27,6 +27,18 @@ type QuestionPropsStandard = {
   required?: boolean,
 }
 
+function Question({ children, items, required }: React.ComponentProps<"div"> & { items: any[], required: boolean }) {
+  return (<div className="ml-2 mb-9">
+    <h3 className="mb-1">
+      {children}
+      <QuestionRequiredStar required={required} />
+    </h3>
+    <div className="flex gap-10">
+      {items}
+    </div>
+  </div>);
+}
+
 function QuestionScale({ className, children, questionDataName, scaleOptions, required=true, ...props }: React.ComponentProps<"div"> & QuestionPropsStandard) {
   const items = [];
 
@@ -41,15 +53,7 @@ function QuestionScale({ className, children, questionDataName, scaleOptions, re
     );
   }
 
-  return (<div className="ml-2 mb-6">
-    <h3 className="mb-1">
-      {children}
-      <QuestionRequiredStar required={required} />
-    </h3>
-    <div className="flex gap-10">
-      {items}
-    </div>
-  </div>);
+  return (<Question items={items} required>{children}</Question>);
 }
 
 function QuestionScaleMultiple({ className, children, questionDataName, scaleOptions, required=true, ...props }: React.ComponentProps<"div"> & QuestionPropsStandard) {
@@ -66,15 +70,7 @@ function QuestionScaleMultiple({ className, children, questionDataName, scaleOpt
     );
   }
 
-  return (<div className="ml-2 mb-6">
-    <h3 className="mb-1">
-      {children}
-      <QuestionRequiredStar required={required} />
-    </h3>
-    <div className="flex gap-10">
-      {items}
-    </div>
-  </div>);
+  return (<Question items={items} required>{children}</Question>);
 }
 
 export { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar };
