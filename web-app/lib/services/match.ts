@@ -5,46 +5,43 @@ export type RoommatePreference = {
     importance: number;
 };
 
-export const DiscoveryService = {
-    createRoommatePreference: async ({ roommate_preference }: { roommate_preference: RoommatePreference[] }) => {
-        return await createRoommatePreference({ roommate_preference });
-    },
-};
-
 // Service for user profile team to create roommate preference
-async function createRoommatePreference({
-    roommate_preference
+export async function createRoommatePreference({
+    roommate_preferences
   }: {
-    roommate_preference: RoommatePreference[]
+    roommate_preferences: RoommatePreference[]
   }) {
     const supabase = await createClient();
-  
+
+    if (roommate_preferences.length === 0) {
+      throw new Error("No roommate preferences provided");
+    }
+
+    if (roommate_preferences.some((preference) => preference.importance < 0 || preference.importance > 5)) {
+      throw new Error("Importance must be between 0 and 5");
+    }
+
     const {
       data: { user },
       error: userError
     } = await supabase.auth.getUser();
   
-    if (userError) {
-      return { success: false, error: userError.message };
-    }
-  
-    if (!user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    if (userError || user === null) {
+        throw new Error(`Error fetching current user: ${userError?.message}`);
+      }
   
     const { data, error } = await supabase
       .from("discovery_roommate_preferences")
-      .insert(
-        roommate_preference.map((preference) => ({
+      .upsert(
+        roommate_preferences.map((preference) => ({
           user_id: user.id,
           preference_id: preference.preference_id,
           importance: preference.importance
-        }))
+        })),
+        { onConflict: "user_id,preference_id" }
       );
-  
+
     if (error) {
-      return { success: false, error: error.message };
+      throw new Error(`Error creating roommate preference: ${error.message}`);
     }
-  
-    return { success: true, data };
-};
+}
