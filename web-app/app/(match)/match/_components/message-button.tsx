@@ -14,8 +14,18 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquareText } from "lucide-react";
+import { saveSwipe } from "../_actions";
+import { saveMatchSwipe } from "../_actions";
 
-export function MessageButton({ handleNext }: { handleNext: () => void }) {
+export function MessageButton({
+  handleNext,
+  targetUserId,
+  discovery, // true on Discovery page, false on Liked You page
+}: {
+  handleNext: () => void;
+  targetUserId: string;
+  discovery: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -34,6 +44,11 @@ export function MessageButton({ handleNext }: { handleNext: () => void }) {
   const handleLikeAndSend = () => {
     console.log(message);
     handleNext();
+    if (discovery) {
+      saveSwipe(targetUserId, "like", message);
+    } else {
+      saveMatchSwipe(targetUserId, "like", message);
+    }
     setMessage("");
     setOpen(false);
   };
