@@ -29,19 +29,6 @@ export function MessageButton({
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.key === "m" || e.key === "M") && !open) {
-        e.preventDefault();
-        setMessage("");
-        setOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [open]);
-
   const handleLikeAndSend = () => {
     console.log(message);
     handleNext();
@@ -53,6 +40,22 @@ export function MessageButton({
     setMessage("");
     setOpen(false);
   };
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.key === "m" || e.key === "M") && !open) {
+        e.preventDefault();
+        setMessage("");
+        setOpen(true);
+      }
+      if (e.key === "Enter" && !e.shiftKey && open) {
+        handleLikeAndSend();
+      }
+    };
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [open, handleLikeAndSend]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
