@@ -31,15 +31,16 @@ export function MessageButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "m" || e.key === "M") {
-        setOpen(true);
+      if ((e.key === "m" || e.key === "M") && !open) {
+        e.preventDefault();
         setMessage("");
+        setOpen(true);
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
+  }, [open]);
 
   const handleLikeAndSend = () => {
     console.log(message);
