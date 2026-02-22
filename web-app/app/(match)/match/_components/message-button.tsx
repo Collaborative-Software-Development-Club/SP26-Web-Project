@@ -42,6 +42,7 @@ export function MessageButton({
         saveMatchSwipe(targetUserId, "like", message);
       }
       setMessage("");
+      setError("");
       setOpen(false);
     }
   };
@@ -51,6 +52,7 @@ export function MessageButton({
       if ((e.key === "m" || e.key === "M") && !open) {
         e.preventDefault();
         setMessage("");
+        setError("");
         setOpen(true);
       }
       if (e.key === "Enter" && !e.shiftKey && open) {
@@ -62,8 +64,18 @@ export function MessageButton({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [open, handleLikeAndSend]);
 
+  const handleOpenChange = () => {
+    if (open) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
+    setError("");
+    setMessage("");
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <div className="flex items-center justify-center h-13 w-13 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer ">
           <MessageSquareText />
