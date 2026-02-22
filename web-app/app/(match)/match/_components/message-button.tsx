@@ -28,17 +28,22 @@ export function MessageButton({
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleLikeAndSend = () => {
-    console.log(message);
-    handleNext();
-    if (discovery) {
-      saveSwipe(targetUserId, "like", message);
+    if (message === "") {
+      setError("You cannot send an empty message");
     } else {
-      saveMatchSwipe(targetUserId, "like", message);
+      console.log(message);
+      handleNext();
+      if (discovery) {
+        saveSwipe(targetUserId, "like", message);
+      } else {
+        saveMatchSwipe(targetUserId, "like", message);
+      }
+      setMessage("");
+      setOpen(false);
     }
-    setMessage("");
-    setOpen(false);
   };
 
   useEffect(() => {
@@ -49,6 +54,7 @@ export function MessageButton({
         setOpen(true);
       }
       if (e.key === "Enter" && !e.shiftKey && open) {
+        e.preventDefault();
         handleLikeAndSend();
       }
     };
@@ -78,6 +84,7 @@ export function MessageButton({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
+        {error !== "" && <p className="text-red-500 text-sm">{error}</p>}
         <DialogFooter>
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
