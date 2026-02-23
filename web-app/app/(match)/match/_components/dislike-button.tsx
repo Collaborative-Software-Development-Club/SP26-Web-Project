@@ -2,12 +2,27 @@
 
 import { ThumbsDown } from "lucide-react";
 import { useCallback, useEffect } from "react";
+import { saveSwipe } from "../_actions";
+import { saveMatchSwipe } from "../_actions";
 
-export function DislikeButton({ handleNext }: { handleNext: () => void }) {
+export function DislikeButton({
+  handleNext,
+  targetUserId,
+  isDiscovery, // true on Discovery page, false on Liked You page
+}: {
+  handleNext: () => void;
+  targetUserId: string;
+  isDiscovery: boolean;
+}) {
   const handleDislike = useCallback(() => {
     console.log("Dislike");
     handleNext();
-  }, [handleNext]);
+    if (isDiscovery) {
+      saveSwipe(targetUserId, "dislike", null);
+    } else {
+      saveMatchSwipe(targetUserId, "dislike", null);
+    }
+  }, [handleNext, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

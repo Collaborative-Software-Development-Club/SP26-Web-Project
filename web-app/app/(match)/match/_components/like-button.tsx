@@ -2,12 +2,27 @@
 
 import { ThumbsUp } from "lucide-react";
 import { useCallback, useEffect } from "react";
+import { saveSwipe } from "../_actions";
+import { saveMatchSwipe } from "../_actions";
 
-export function LikeButton({ handleNext }: { handleNext: () => void }) {
+export function LikeButton({
+  handleNext,
+  targetUserId,
+  isDiscovery, // true on Discovery page, false on Liked You page
+}: {
+  handleNext: () => void;
+  targetUserId: string;
+  isDiscovery: boolean;
+}) {
   const handleLike = useCallback(() => {
     console.log("Like");
     handleNext();
-  }, [handleNext]);
+    if (isDiscovery) {
+      saveSwipe(targetUserId, "like", null);
+    } else {
+      saveMatchSwipe(targetUserId, "like", null);
+    }
+  }, [handleNext, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
