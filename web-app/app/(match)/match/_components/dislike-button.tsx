@@ -8,21 +8,21 @@ import { saveMatchSwipe } from "../_actions";
 export function DislikeButton({
   handleNext,
   targetUserId,
-  discovery, // true on Discovery page, false on Liked You page
+  isDiscovery, // true on Discovery page, false on Liked You page
 }: {
   handleNext: () => void;
   targetUserId: string;
-  discovery: boolean;
+  isDiscovery: boolean;
 }) {
   const handleDislike = useCallback(() => {
     console.log("Dislike");
     handleNext();
-    if (discovery) {
+    if (isDiscovery) {
       saveSwipe(targetUserId, "dislike", null);
     } else {
       saveMatchSwipe(targetUserId, "dislike", null);
     }
-  }, [handleNext]);
+  }, [handleNext, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

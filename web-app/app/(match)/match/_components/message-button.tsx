@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogClose,
@@ -20,23 +20,23 @@ import { saveMatchSwipe } from "../_actions";
 export function MessageButton({
   handleNext,
   targetUserId,
-  discovery, // true on Discovery page, false on Liked You page
+  isDiscovery, // true on Discovery page, false on Liked You page
 }: {
   handleNext: () => void;
   targetUserId: string;
-  discovery: boolean;
+  isDiscovery: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleLikeAndSend = () => {
+  const handleLikeAndSend = useCallback(() => {
     if (message === "") {
       setError("You cannot send an empty message");
     } else {
       console.log(message);
       handleNext();
-      if (discovery) {
+      if (isDiscovery) {
         saveSwipe(targetUserId, "like", message);
       } else {
         saveMatchSwipe(targetUserId, "like", message);
@@ -45,7 +45,7 @@ export function MessageButton({
       setError("");
       setOpen(false);
     }
-  };
+  }, [message, handleNext, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

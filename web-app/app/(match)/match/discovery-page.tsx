@@ -99,7 +99,7 @@ export function DiscoveryPage({
       <ProfileCard profile={selectedProfile} handleNext={handleNext} />
       <UndoButton
         handleBefore={handleBefore}
-        discovery={true}
+        isDiscovery={true}
         targetUserId={selectedProfile.user_id}
       />
     </div>

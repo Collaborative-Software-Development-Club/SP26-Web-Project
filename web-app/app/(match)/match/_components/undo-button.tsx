@@ -8,21 +8,21 @@ import { undoMatchSwipe } from "../_actions";
 export function UndoButton({
   handleBefore,
   targetUserId,
-  discovery, // true on Discovery page, false on Liked You page
+  isDiscovery, // true on Discovery page, false on Liked You page
 }: {
   handleBefore: () => void;
   targetUserId: string;
-  discovery: boolean;
+  isDiscovery: boolean;
 }) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
     handleBefore();
-    if (discovery) {
+    if (isDiscovery) {
       undoSwipe(targetUserId);
     } else {
       undoMatchSwipe(targetUserId);
     }
-  }, [handleBefore, discovery]);
+  }, [handleBefore, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

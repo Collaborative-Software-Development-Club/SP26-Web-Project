@@ -8,21 +8,21 @@ import { saveMatchSwipe } from "../_actions";
 export function LikeButton({
   handleNext,
   targetUserId,
-  discovery, // true on Discovery page, false on Liked You page
+  isDiscovery, // true on Discovery page, false on Liked You page
 }: {
   handleNext: () => void;
   targetUserId: string;
-  discovery: boolean;
+  isDiscovery: boolean;
 }) {
   const handleLike = useCallback(() => {
     console.log("Like");
     handleNext();
-    if (discovery) {
+    if (isDiscovery) {
       saveSwipe(targetUserId, "like", null);
     } else {
       saveMatchSwipe(targetUserId, "like", null);
     }
-  }, [handleNext]);
+  }, [handleNext, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

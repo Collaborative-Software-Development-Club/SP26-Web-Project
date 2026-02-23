@@ -189,17 +189,17 @@ export function ProfileCard({
               </button> */}
               <DislikeButton
                 handleNext={handleNext}
-                discovery={true}
+                isDiscovery={true}
                 targetUserId={profile.user_id}
               />
               <MessageButton
                 handleNext={handleNext}
-                discovery={true}
+                isDiscovery={true}
                 targetUserId={profile.user_id}
               />
               <LikeButton
                 handleNext={handleNext}
-                discovery={true}
+                isDiscovery={true}
                 targetUserId={profile.user_id}
               />
             </div>
