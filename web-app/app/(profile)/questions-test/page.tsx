@@ -1,7 +1,10 @@
-import { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar } from "@/components/ui/question";
+import { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar, QuestionFreeform, QuestionBoolean } from "@/components/ui/question";
 import { requireAuth } from "@/lib/auth";
 
-export default async function ProfilePage() {
+/**
+ * A testing page for the form components.
+ */
+export default async function FormTestPage() {
   const user = await requireAuth();
 
   return (
@@ -84,8 +87,26 @@ export default async function ProfilePage() {
               What year(s) are you okay to room with?
             </QuestionScaleMultiple>
           </li>
+          <li>
+            <QuestionFreeform
+              questionDataName="language"
+            >
+              What languages other than English do you speak?
+            </QuestionFreeform>
+          </li>
+          <li>
+            <QuestionBoolean
+              questionDataName="smoker"
+            >
+              Are you okay with a smoker?
+            </QuestionBoolean>
+          </li>
         </ol>
       </section>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
     </div>
   );
 }
