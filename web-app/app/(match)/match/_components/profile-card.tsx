@@ -17,6 +17,18 @@ export function ProfileCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const INITIAL_VISIBLE_PREFS = 2;
 
+  // [dev-only] Dummy preferences to demonstrate expand/collapse
+  const dummyPreferences: [string, string][] = [
+    ["cleanliness", "Very Clean"],
+    ["cooking", "Often"],
+    ["noise_level", "Quiet"],
+    ["study_habits", "Night Owl"],
+    ["alcohol", "Socially"],
+  ];
+
+  // [dev-only] Combine real and dummy preferences for demonstration
+  const allPreferences = [...profile.preferences, ...dummyPreferences];
+
   // [ready] Reset expand state when profile changes
   useEffect(() => {
     setIsExpanded(false);
@@ -164,16 +176,16 @@ export function ProfileCard({
                   Living Habits
                 </h3>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {profile.preferences
+                  {allPreferences
                     .slice(
                       0,
                       isExpanded
-                        ? profile.preferences.length
+                        ? allPreferences.length
                         : INITIAL_VISIBLE_PREFS
                     )
-                    .map(([key, value]) => (
+                    .map(([key, value], index) => (
                       <div
-                        key={key}
+                        key={`${key}-${index}`}
                         className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800"
                       >
                         <div className="p-2 rounded-full bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 shadow-sm">
@@ -191,7 +203,7 @@ export function ProfileCard({
                     ))}
                 </div>
                 {/* [ready] Expand/Collapse Button */}
-                {profile.preferences.length > INITIAL_VISIBLE_PREFS && (
+                {allPreferences.length > INITIAL_VISIBLE_PREFS && (
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="mt-3 text-sm font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
