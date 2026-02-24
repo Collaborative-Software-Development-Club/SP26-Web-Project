@@ -36,7 +36,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar user={user} />
-        {children}
+        <main className="pt-20">{children}</main>
       </body>
     </html>
   );
