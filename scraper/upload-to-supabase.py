@@ -10,7 +10,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 TABLE_NAME = "housing_property_records"
-CSV_PATH = "scraped_properties.csv"
+CSV_PATH = "sample_scraped_properties.csv"
 
 BOOLEAN_COLUMNS = {
     "short_lease_term", "sublease_permitted", "wheelchair_access", "basement",
