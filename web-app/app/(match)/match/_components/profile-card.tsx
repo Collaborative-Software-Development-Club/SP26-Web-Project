@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfile } from "../discovery-page";
 import { BookOpen, Cigarette, Cat, Moon, Users, Heart, X } from "lucide-react";
 import { LikeButton } from "./like-button";
@@ -13,6 +13,15 @@ export function ProfileCard({
   profile: UserProfile;
   handleNext: () => void;
 }) {
+  // [ready] Expand state for living habits
+  const [isExpanded, setIsExpanded] = useState(false);
+  const INITIAL_VISIBLE_PREFS = 2;
+
+  // [ready] Reset expand state when profile changes
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [profile?.user_id]);
+
   // [ready] Icon helper
   const getPreferenceIcon = (key: string) => {
     switch (key) {
@@ -155,25 +164,41 @@ export function ProfileCard({
                   Living Habits
                 </h3>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {profile.preferences.map(([key, value]) => (
-                    <div
-                      key={key}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800"
-                    >
-                      <div className="p-2 rounded-full bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 shadow-sm">
-                        {getPreferenceIcon(key)}
+                  {profile.preferences
+                    .slice(
+                      0,
+                      isExpanded
+                        ? profile.preferences.length
+                        : INITIAL_VISIBLE_PREFS
+                    )
+                    .map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800"
+                      >
+                        <div className="p-2 rounded-full bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 shadow-sm">
+                          {getPreferenceIcon(key)}
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-zinc-400 uppercase font-semibold">
+                            {key.replace("_", " ")}
+                          </p>
+                          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 capitalize">
+                            {value}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-zinc-400 uppercase font-semibold">
-                          {key.replace("_", " ")}
-                        </p>
-                        <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 capitalize">
-                          {value}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
+                {/* [ready] Expand/Collapse Button */}
+                {profile.preferences.length > INITIAL_VISIBLE_PREFS && (
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="mt-3 text-sm font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  >
+                    {isExpanded ? "Collapse" : "Expand"}
+                  </button>
+                )}
               </div>
             </div>
 
