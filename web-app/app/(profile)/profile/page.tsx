@@ -1,4 +1,5 @@
 import { requireAuth } from "@/lib/auth";
+import ProfileImageScroll from "./_components/image-scroll";
 
 export default async function ProfilePage() {
   const user = await requireAuth();
