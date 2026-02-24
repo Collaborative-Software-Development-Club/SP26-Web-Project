@@ -1,3 +1,5 @@
+"use client";
+
 export interface House {
   id: number;
   address: string;
