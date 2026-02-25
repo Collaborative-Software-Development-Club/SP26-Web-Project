@@ -2,9 +2,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { sendMessageAction } from "./actions";
-import { createClient } from "@/lib/supabase/client";
+import { useChatRealtime } from "../_components/realtime-provider";
 
 export function ChatClient({
   serverMessages,
@@ -16,7 +16,14 @@ export function ChatClient({
   conversationId: string;
 }) {
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState<Message[]>(serverMessages);
+  const { realtimeMessages } = useChatRealtime();
+
+  const serverIds = new Set(serverMessages.map((m) => m.message_id));
+  const liveMessages = realtimeMessages.filter(
+    (m) =>
+      m.conversation_id === conversationId && !serverIds.has(m.message_id),
+  );
+  const allMessages = [...serverMessages, ...liveMessages];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,43 +33,10 @@ export function ChatClient({
     }
   };
 
-  useEffect(() => {
-    const supabase = createClient();
-    let channel: ReturnType<typeof supabase.channel>;
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        supabase.realtime.setAuth(session.access_token);
-      }
-
-      channel = supabase
-        .channel("schema-db-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "chat_messages",
-            filter: "conversation_id=eq." + conversationId,
-          },
-          (payload) => {
-            if (payload.eventType === "INSERT") {
-              setMessages((prev) => [...prev, payload.new as Message]);
-            }
-          },
-        )
-        .subscribe((status) => console.log("Subscription status: " + status));
-    });
-
-    return () => {
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, [conversationId]);
-
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 flex-col min-h-0">
       <div className="flex-1 overflow-y-auto p-6">
-        {messages.map((msg) => (
+        {allMessages.map((msg) => (
           <div
             key={msg.message_id}
             className={`flex mb-3 ${msg.sender_id === userId ? "justify-end" : "justify-start"}`}
@@ -75,10 +49,7 @@ export function ChatClient({
           </div>
         ))}
       </div>
-      <form
-        onSubmit={handleSubmit}
-        className="border-t p-3 flex gap-2"
-      >
+      <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
         <Input
           type="text"
           placeholder="Type a message..."
