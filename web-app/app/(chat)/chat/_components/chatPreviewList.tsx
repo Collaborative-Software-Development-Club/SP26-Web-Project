@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { CreateConversationDialog } from "./create-conversation-dialog"
 
 const AVATAR_COLORS = [
   "bg-red-500",
@@ -9,51 +10,13 @@ const AVATAR_COLORS = [
   "bg-amber-500",
 ]
 
-interface Conversation {
+export interface Conversation {
   id: string
   name: string
   lastMessage: string
   timestamp: string
   unread: boolean
 }
-
-const mockConversations: Conversation[] = [
-  {
-    id: "1",
-    name: "Jane Doe",
-    lastMessage: "Hey! Are you still looking for a roommate?",
-    timestamp: "2m",
-    unread: true,
-  },
-  {
-    id: "2",
-    name: "John Smith",
-    lastMessage: "Yes! I am looking for two roommates.",
-    timestamp: "1h",
-    unread: false,
-  },
-  {
-    id: "3",
-    name: "Alex Chen",
-    lastMessage: "Sounds good! Let me know when you want to meet up.",
-    timestamp: "3d",
-    unread: false,
-  },
-  {
-    id: "4",
-    name: "Sam Rivera",
-    lastMessage: "I'm moving in August, does that work?",
-    timestamp: "5d",
-    unread: true,
-  },
-  {
-    id: "5",
-    name: "Morgan Lee",
-    lastMessage: "Thanks for the info!",
-    timestamp: "1w",
-    unread: false,
-  },
-]
 
 function getInitials(name: string) {
   return name
@@ -116,16 +79,21 @@ export function ChatPreviewItem({
 }
 
 export function ChatPreviewList({
+  conversations,
   selectedId,
   onSelect,
 }: {
+  conversations: Conversation[]
   selectedId: string
   onSelect: (id: string) => void
 }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-2 border-b px-4 py-4">
-        <h2 className="text-lg font-semibold">Messages</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Messages</h2>
+          <CreateConversationDialog />
+        </div>
         <Input
           type="text"
           placeholder="Search conversations..."
@@ -134,15 +102,22 @@ export function ChatPreviewList({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {mockConversations.map((conversation, index) => (
-          <ChatPreviewItem
-            key={conversation.id}
-            conversation={conversation}
-            isSelected={selectedId === conversation.id}
-            onSelect={onSelect}
-            colorIndex={index}
-          />
-        ))}
+        {conversations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center text-sm text-muted-foreground">
+            <p>No conversations yet.</p>
+            <p>Create one to get started.</p>
+          </div>
+        ) : (
+          conversations.map((conversation, index) => (
+            <ChatPreviewItem
+              key={conversation.id}
+              conversation={conversation}
+              isSelected={selectedId === conversation.id}
+              onSelect={onSelect}
+              colorIndex={index}
+            />
+          ))
+        )}
       </div>
     </div>
   )
