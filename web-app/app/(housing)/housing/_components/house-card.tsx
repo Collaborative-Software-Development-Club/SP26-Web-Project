@@ -32,18 +32,18 @@ export function HouseCard({ house }: { house: House }) {
   }
 
   return (
-    <article className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm overflow-hidden">
-      <div className="h-44 bg-gray-200 overflow-hidden">
+    <article className="bg-card rounded-lg shadow-sm overflow-hidden">
+      <div className="h-44 bg-muted overflow-hidden">
         <img src={house.img} alt={house.address} className="w-full h-full object-cover" />
       </div>
       <div className="p-4">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">{house.address}</h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        <h2 className="text-lg font-medium text-card-foreground">{house.address}</h2>
+        <p className="text-sm text-muted-foreground">
           {house.price}{' '}
-          {perPerson && <span className="text-sm text-zinc-500">({perPerson})</span>}
+          {perPerson && <span className="text-sm text-muted-foreground">({perPerson})</span>}
         </p>
 
-        <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 flex items-center gap-4">
+        <div className="mt-3 text-sm text-muted-foreground flex items-center gap-4">
           <span className="whitespace-nowrap">{house.bedrooms} Bedrooms</span>
           <span className="whitespace-nowrap">{house.bathrooms} Bath</span>
           <span className="whitespace-nowrap capitalize">{house.sector} Campus</span>

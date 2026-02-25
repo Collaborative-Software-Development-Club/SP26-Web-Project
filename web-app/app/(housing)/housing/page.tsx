@@ -16,9 +16,9 @@ const mockHouses: House[] = [
 
 export default function Housing() {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-6">Housing Listings</h1>
+        <h1 className="text-2xl font-semibold text-foreground mb-6">Housing Listings</h1>
 
         <HousingList houses={mockHouses} pageSize={9} />
       </div>
