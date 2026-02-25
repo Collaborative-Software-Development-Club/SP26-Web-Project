@@ -2,8 +2,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { sendMessageAction } from "./actions";
+import { createClient } from "@/lib/supabase/client";
 
 export function ChatClient({
   serverMessages,
@@ -15,7 +16,7 @@ export function ChatClient({
   conversationId: string;
 }) {
   const [inputValue, setInputValue] = useState("");
-  const messages = serverMessages;
+  const [messages, setMessages] = useState<Message[]>(serverMessages);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,6 +25,39 @@ export function ChatClient({
       setInputValue("");
     }
   };
+
+  useEffect(() => {
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel>;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+
+      channel = supabase
+        .channel("schema-db-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "chat_messages",
+            filter: "conversation_id=eq." + conversationId,
+          },
+          (payload) => {
+            if (payload.eventType === "INSERT") {
+              setMessages((prev) => [...prev, payload.new as Message]);
+            }
+          },
+        )
+        .subscribe((status) => console.log("Subscription status: " + status));
+    });
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
 
   return (
     <div className="p-4 w-3/5 min-h-screen ml-[35%]">

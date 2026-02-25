@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
 
 export async function sendMessageAction(
   conversationId: string,
@@ -24,6 +23,4 @@ export async function sendMessageAction(
   } catch (error) {
     console.error(error);
   }
-
-  revalidatePath(`/conversation/${conversationId}`);
 }
