@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { House, HouseCard } from "./house-card";
 
 export function HousingList({ houses, pageSize = 9 }: { houses: House[]; pageSize?: number }) {
@@ -24,33 +25,36 @@ export function HousingList({ houses, pageSize = 9 }: { houses: House[]; pageSiz
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-3">
-        <button
+        <Button
           onClick={() => go(page - 1)}
           disabled={page === 1}
-          className="px-3 py-1 rounded border disabled:opacity-50"
+          variant="outline"
+          size="sm"
         >
           Prev
-        </button>
+        </Button>
 
         <div className="flex items-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-            <button
+            <Button
               key={n}
               onClick={() => go(n)}
-              className={`px-3 py-1 rounded ${n === page ? 'bg-blue-600 text-white' : 'border'}`}
+              variant={n === page ? "default" : "outline"}
+              size="sm"
             >
               {n}
-            </button>
+            </Button>
           ))}
         </div>
 
-        <button
+        <Button
           onClick={() => go(page + 1)}
           disabled={page === totalPages}
-          className="px-3 py-1 rounded border disabled:opacity-50"
+          variant="outline"
+          size="sm"
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 export interface House {
   id: number;
   address: string;
@@ -49,13 +51,10 @@ export function HouseCard({ house }: { house: House }) {
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">
-            <a
-              href="#"
-              className="inline-block px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              View
-            </a>
-            <button className="px-3 py-1 text-sm border rounded">Save</button>
+            <Button asChild variant="default" size="sm">
+              <a href="#">View</a>
+            </Button>
+            <Button variant="outline" size="sm">Save</Button>
           </div>
         </div>
       </div>
