@@ -6,7 +6,6 @@ Include ways to be able to edit these fields.
 import SideBar from './side-bar'
 import ProfilePage from './profile-page'
 import SettingsPage from './settings-page';
-import BioPage from './bio-page';
 import { useState } from 'react';
 //type Page = "profile" | "bio" | "settings";
 export default function ProfileHeader() {
@@ -16,7 +15,6 @@ export default function ProfileHeader() {
     <div className="flex flex-row h-175">
         <SideBar setPage={setPage}/>
         {page === "profile" && <ProfilePage/>}
-        {page === "bio" && <BioPage/>}
         {page === "settings" && <SettingsPage/>}
     </div>
   )
