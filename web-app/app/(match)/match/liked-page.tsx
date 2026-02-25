@@ -73,9 +73,13 @@ export function VibesWithYouPage({
 
     // Remove from whichever bucket it landed in
     if (lastEntry.action === "accepted") {
-      setAccepted((a) => a.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id));
+      setAccepted((a) =>
+        a.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id),
+      );
     } else {
-      setPassed((p) => p.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id));
+      setPassed((p) =>
+        p.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id),
+      );
     }
 
     // Push it back to the front of the queue
@@ -86,14 +90,15 @@ export function VibesWithYouPage({
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col items-center min-h-screen py-10 px-4">
+    <div className="flex flex-col items-center h-full w-full px-4">
       {/* Header */}
       <div className="w-full max-w-lg mb-8 text-center space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
           Vibe Check
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-          {queue.length} {queue.length === 1 ? "person" : "people"} waiting · {accepted.length} matched
+          {queue.length} {queue.length === 1 ? "person" : "people"} waiting ·{" "}
+          {accepted.length} matched
         </p>
       </div>
 
@@ -146,11 +151,12 @@ export function VibesWithYouPage({
                 key={v.profile.user_id}
                 className={`
                   block rounded-full transition-all duration-300
-                  ${isCurrent
-                    ? "w-4 h-2 bg-black dark:bg-white"
-                    : isReviewed
-                    ? "w-2 h-2 bg-zinc-300 dark:bg-zinc-600"
-                    : "w-2 h-2 bg-zinc-200 dark:bg-zinc-700"
+                  ${
+                    isCurrent
+                      ? "w-4 h-2 bg-black dark:bg-white"
+                      : isReviewed
+                        ? "w-2 h-2 bg-zinc-300 dark:bg-zinc-600"
+                        : "w-2 h-2 bg-zinc-200 dark:bg-zinc-700"
                   }
                 `}
               />
