@@ -59,9 +59,9 @@ export function ProfileCard({
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full h-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
       {/* [ready] Main Card Container - Strict concise height to prevent resizing */}
-      <div className="w-3/4 max-w-3xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]">
+      <div className="w-3/4 max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]">
         {/* [ready] Background decoration */}
         <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-linear-to-br from-indigo-200/30 to-purple-200/30 dark:from-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full pointer-events-none" />
 
