@@ -10,6 +10,7 @@ const AVATAR_COLORS = [
   "bg-amber-500",
 ]
 
+
 export interface Conversation {
   id: string
   name: string
