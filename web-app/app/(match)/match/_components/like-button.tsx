@@ -17,10 +17,12 @@ export function LikeButton({
   const handleLike = useCallback(() => {
     console.log("Like");
     handleNext();
+
+    //Commented out to prevent swipe actions until its ready
     if (isDiscovery) {
-      saveSwipe(targetUserId, "like", null);
+      //saveSwipe(targetUserId, "like", null);
     } else {
-      saveMatchSwipe(targetUserId, "like", null);
+      //saveMatchSwipe(targetUserId, "like", null);
     }
   }, [handleNext, isDiscovery, targetUserId]);
 
