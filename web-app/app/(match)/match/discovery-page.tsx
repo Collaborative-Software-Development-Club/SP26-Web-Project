@@ -76,7 +76,7 @@ export function DiscoveryPage({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mb-10">
+    <div className="h-full w-full flex flex-col items-center justify-center mb-10">
       {/* [dev-only] Developer Debug Bar */}
       {process.env.NODE_ENV !== "production" && (
         <div className="w-full max-w-4xl mb-6 p-4 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
