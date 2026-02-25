@@ -3,10 +3,10 @@
 Include ways to be able to edit these fields.
 */
 //
-import SideBar from './profile-components/side-bar'
-import ProfilePage from './profile-components/profile-page'
-import SettingsPage from './profile-components/settings-page';
-import BioPage from './profile-components/bio-page';
+import SideBar from './side-bar'
+import ProfilePage from './profile-page'
+import SettingsPage from './settings-page';
+import BioPage from './bio-page';
 import { useState } from 'react';
 //type Page = "profile" | "bio" | "settings";
 export default function ProfileHeader() {
