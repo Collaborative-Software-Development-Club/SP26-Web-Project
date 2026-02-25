@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { VibeCheckProfile } from "./_components/vibecheck-profile";
+import { UndoButton } from "./_components/undo-button";
 import type { UserProfile } from "./discovery-page"; // adjust path as needed
 
 // Extend the base profile with the message they sent when vibing with you
@@ -119,23 +120,12 @@ export function VibesWithYouPage({
 
       {/* Undo button */}
       {history.length > 0 && (
-        <button
-          onClick={handleUndo}
-          className="
-            mt-6 flex items-center gap-2
-            text-sm text-zinc-500 dark:text-zinc-400
-            hover:text-zinc-800 dark:hover:text-white
-            transition-colors duration-150
-          "
-        >
-          <span>↩</span>
-          <span>
-            Undo — bring back{" "}
-            <span className="font-semibold">
-              {history[history.length - 1]?.vibe.profile.fname}
-            </span>
-          </span>
-        </button>
+        <UndoButton
+          handleBefore={handleUndo}
+          targetUserId={history[history.length - 1]?.vibe.profile.user_id}
+          isDiscovery={false}
+          lastEntry={history[history.length - 1]?.vibe.profile.fname}
+        />
       )}
 
       {/* Progress dots */}
