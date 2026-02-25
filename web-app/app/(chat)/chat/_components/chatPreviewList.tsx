@@ -1,6 +1,10 @@
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { CreateConversationDialog } from "./create-conversation-dialog"
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { CreateConversationDialog } from "./create-conversation-dialog";
 
 const AVATAR_COLORS = [
   "bg-red-500",
@@ -8,14 +12,14 @@ const AVATAR_COLORS = [
   "bg-green-500",
   "bg-purple-500",
   "bg-amber-500",
-]
+];
 
 export interface Conversation {
-  id: string
-  name: string
-  lastMessage: string
-  timestamp: string
-  unread: boolean
+  id: string;
+  name: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: boolean;
 }
 
 function getInitials(name: string) {
@@ -23,25 +27,23 @@ function getInitials(name: string) {
     .split(" ")
     .map((part) => part[0])
     .join("")
-    .toUpperCase()
+    .toUpperCase();
 }
 
-export function ChatPreviewItem({
+function ChatPreviewItem({
   conversation,
   isSelected,
-  onSelect,
   colorIndex,
 }: {
-  conversation: Conversation
-  isSelected: boolean
-  onSelect: (id: string) => void
-  colorIndex: number
+  conversation: Conversation;
+  isSelected: boolean;
+  colorIndex: number;
 }) {
   return (
-    <button
-      onClick={() => onSelect(conversation.id)}
+    <Link
+      href={`/chat/${conversation.id}`}
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50",
+        "flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
         isSelected && "bg-muted",
       )}
     >
@@ -56,17 +58,24 @@ export function ChatPreviewItem({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
-          <span className={cn("truncate text-sm", conversation.unread ? "font-semibold" : "font-medium")}>
+          <span
+            className={cn(
+              "truncate text-sm",
+              conversation.unread ? "font-semibold" : "font-medium",
+            )}
+          >
             {conversation.name}
           </span>
           <span className="ml-2 shrink-0 text-xs text-muted-foreground">
             {conversation.timestamp}
           </span>
         </div>
-        <p className={cn(
-          "truncate text-sm",
-          conversation.unread ? "text-foreground" : "text-muted-foreground",
-        )}>
+        <p
+          className={cn(
+            "truncate text-sm",
+            conversation.unread ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
           {conversation.lastMessage}
         </p>
       </div>
@@ -74,19 +83,17 @@ export function ChatPreviewItem({
       {conversation.unread && (
         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
       )}
-    </button>
-  )
+    </Link>
+  );
 }
 
-export function ChatPreviewList({
+export function ChatSidebar({
   conversations,
-  selectedId,
-  onSelect,
 }: {
-  conversations: Conversation[]
-  selectedId: string
-  onSelect: (id: string) => void
+  conversations: Conversation[];
 }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-2 border-b px-4 py-4">
@@ -94,11 +101,7 @@ export function ChatPreviewList({
           <h2 className="text-lg font-semibold">Messages</h2>
           <CreateConversationDialog />
         </div>
-        <Input
-          type="text"
-          placeholder="Search conversations..."
-          readOnly
-        />
+        <Input type="text" placeholder="Search conversations..." readOnly />
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -112,13 +115,12 @@ export function ChatPreviewList({
             <ChatPreviewItem
               key={conversation.id}
               conversation={conversation}
-              isSelected={selectedId === conversation.id}
-              onSelect={onSelect}
+              isSelected={pathname === `/chat/${conversation.id}`}
               colorIndex={index}
             />
           ))
         )}
       </div>
     </div>
-  )
+  );
 }

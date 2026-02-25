@@ -60,9 +60,8 @@ export function ChatClient({
   }, [conversationId]);
 
   return (
-    <div className="p-4 w-3/5 min-h-screen ml-[35%]">
-      <h1 className="text-2xl font-semibold mb-6">Chat</h1>
-      <div className="bg-background rounded-lg p-6 mb-4 min-h-96 border">
+    <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-y-auto p-6">
         {messages.map((msg) => (
           <div
             key={msg.message_id}
@@ -78,7 +77,7 @@ export function ChatClient({
       </div>
       <form
         onSubmit={handleSubmit}
-        className="bg-background rounded-lg border p-3 flex gap-2"
+        className="border-t p-3 flex gap-2"
       >
         <Input
           type="text"
