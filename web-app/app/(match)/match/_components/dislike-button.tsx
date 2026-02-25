@@ -17,10 +17,12 @@ export function DislikeButton({
   const handleDislike = useCallback(() => {
     console.log("Dislike");
     handleNext();
+
+    //Commented out to prevent dislike actions until its ready
     if (isDiscovery) {
-      saveSwipe(targetUserId, "dislike", null);
+      //saveSwipe(targetUserId, "dislike", null);
     } else {
-      saveMatchSwipe(targetUserId, "dislike", null);
+      //saveMatchSwipe(targetUserId, "dislike", null);
     }
   }, [handleNext, isDiscovery, targetUserId]);
 

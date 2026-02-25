@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { UserProfile } from "../discovery-page";
 import { BookOpen, Cigarette, Cat, Moon, Users, Heart, X } from "lucide-react";
 import { LikeButton } from "./like-button";
@@ -43,19 +45,23 @@ export function ProfileCard({
   const INITIAL_VISIBLE_PREFS = 2;
 
   // [dev-only] Combine real and dummy preferences for demonstration
-  const allPreferences = profile ? [...profile.preferences, ...DUMMY_PREFERENCES] : [];
+  const allPreferences = profile
+    ? [...profile.preferences, ...DUMMY_PREFERENCES]
+    : [];
 
   // [ready] Reset expand state when profile changes
   useEffect(() => {
-    setIsExpanded(false);
+    setTimeout(() => {
+      setIsExpanded(false);
+    }, 0);
   }, [profile?.user_id]);
 
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full h-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
       {/* [ready] Main Card Container - Strict concise height to prevent resizing */}
-      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]">
+      <div className="w-3/4 max-w-3xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]">
         {/* [ready] Background decoration */}
         <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-linear-to-br from-indigo-200/30 to-purple-200/30 dark:from-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full pointer-events-none" />
 
@@ -100,7 +106,6 @@ export function ProfileCard({
 
           {/* [ready] Right Column: Details - Strictly contained to prevent card expansion */}
           <div className="w-full md:col-span-7 flex flex-col h-full overflow-hidden">
-            
             {/* [ready] Scrollable Content Area - Expanding habits only scrolls this section */}
             <div className="p-6 flex-1 overflow-y-auto">
               {/* [ready] Header */}
@@ -152,7 +157,7 @@ export function ProfileCard({
                         0,
                         isExpanded
                           ? allPreferences.length
-                          : INITIAL_VISIBLE_PREFS
+                          : INITIAL_VISIBLE_PREFS,
                       )
                       .map(([key, value]) => (
                         <div
@@ -179,7 +184,9 @@ export function ProfileCard({
                       onClick={() => setIsExpanded(!isExpanded)}
                       className="mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors flex items-center gap-1"
                     >
-                      {isExpanded ? "Show Less" : `+${allPreferences.length - INITIAL_VISIBLE_PREFS} More`}
+                      {isExpanded
+                        ? "Show Less"
+                        : `+${allPreferences.length - INITIAL_VISIBLE_PREFS} More`}
                     </button>
                   )}
                 </div>

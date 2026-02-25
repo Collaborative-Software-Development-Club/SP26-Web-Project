@@ -17,10 +17,12 @@ export function UndoButton({
   const handleUndo = useCallback(() => {
     console.log("Undo");
     handleBefore();
+
+    //Commented out to prevent undo actions until its ready
     if (isDiscovery) {
-      undoSwipe(targetUserId);
+      //undoSwipe(targetUserId);
     } else {
-      undoMatchSwipe(targetUserId);
+      //undoMatchSwipe(targetUserId);
     }
   }, [handleBefore, isDiscovery, targetUserId]);
 
