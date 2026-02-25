@@ -1,4 +1,4 @@
-import { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar, QuestionFreeform, QuestionBoolean } from "@/components/ui/question";
+import { QuestionScale, QuestionScaleMultiple, QuestionRequiredStar, QuestionFreeform, QuestionBoolean } from "@/app/(profile)/question";
 import { requireAuth } from "@/lib/auth";
 
 /**

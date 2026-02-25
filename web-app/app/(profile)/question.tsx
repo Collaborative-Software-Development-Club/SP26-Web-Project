@@ -1,9 +1,9 @@
 import * as React from "react"
-import { Input } from "./input";
-import { Label } from "./label";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 
 import { cn } from "@/lib/utils"
-import { Textarea } from "./textarea";
+import { Textarea } from "../../components/ui/textarea";
 
 /**
  * The red star next to a required question.
@@ -29,7 +29,7 @@ function QuestionOptionItem({ textLabel, dataName, type }: { textLabel: string, 
   const id = `${dataName}-radio-${textLabel}`;
   return (
     <div id={`${id}-container`} className={cn("relative flex flex-col items-center basis-4 w-sm")}>
-      <Input type={type} name={dataName} id={id} className={cn("h-fit")} />
+      <Input type={type} name={dataName} id={id} className={cn("h-fit")}/>
       <Label className={cn("absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm")} htmlFor={id}>{textLabel}</Label>
     </div>
   )
