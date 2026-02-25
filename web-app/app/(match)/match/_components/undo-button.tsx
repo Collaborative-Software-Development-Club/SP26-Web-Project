@@ -2,12 +2,31 @@
 
 import { Undo2 } from "lucide-react";
 import { useCallback, useEffect } from "react";
+import { undoSwipe } from "../_actions";
+import { undoMatchSwipe } from "../_actions";
 
-export function UndoButton({ handleBefore }: { handleBefore: () => void }) {
+export function UndoButton({
+  handleBefore,
+  targetUserId,
+  isDiscovery, // true on Discovery page, false on Liked You page
+  lastEntry,
+}: {
+  handleBefore: () => void;
+  targetUserId: string;
+  isDiscovery: boolean;
+  lastEntry?: string;
+}) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
     handleBefore();
-  }, [handleBefore]);
+
+    //Commented out to prevent undo actions until its ready
+    if (isDiscovery) {
+      //undoSwipe(targetUserId);
+    } else {
+      //undoMatchSwipe(targetUserId);
+    }
+  }, [handleBefore, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -20,13 +39,35 @@ export function UndoButton({ handleBefore }: { handleBefore: () => void }) {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleUndo]);
+  const DiscoveryButton = () => {
+    return (
+      <button
+        onClick={handleUndo}
+        className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
+      >
+        <Undo2 className="w-10 h-10" />
+      </button>
+    );
+  };
 
-  return (
-    <button
-      onClick={handleUndo}
-      className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
-    >
-      <Undo2 className="w-10 h-10" />
-    </button>
-  );
+  const LikedYouButton = () => {
+    return (
+      <button
+        onClick={handleUndo}
+        className="
+            mt-6 flex items-center gap-2
+            text-sm text-zinc-500 dark:text-zinc-400
+            hover:text-zinc-800 dark:hover:text-white
+            transition-colors duration-150
+          "
+      >
+        <span>↩</span>
+        <span>
+          Undo — bring back <span className="font-semibold">{lastEntry}</span>
+        </span>
+      </button>
+    );
+  };
+
+  return <>{isDiscovery ? DiscoveryButton() : LikedYouButton()}</>;
 }

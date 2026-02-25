@@ -1,6 +1,49 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { UserProfile } from "./discovery-page";
+
+export type LikedYouProfile = UserProfile & {
+  message: string;
+};
+
+export async function getLikedYouProfiles() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+    const { data: likedSwipes, error: likedSwipesError } = await supabase
+    .from("discovery_swipes")
+    .select("user_id, created_at, message")
+    .eq("target_user_id", user.id)
+    .eq("action", "like")
+    .order("created_at", { ascending: false });
+
+  // Create a custom error page (error.tsx) under /match if this fails
+  if (likedSwipesError) {
+    throw new Error(
+      `Failed to fetch liked profiles: ${likedSwipesError.message}`,
+    );
+  }
+
+  const userIdToMessageMap: Map<string, string> = new Map(
+    likedSwipes.map((swipe) => [swipe.user_id, swipe.message]),
+  );
+
+  // const likedProfiles = await profileService.getProfiles(likedSwipes.map((swipe) => swipe.user_id);
+
+//   const likedYouProfiles: LikedYouProfile[] = likedProfiles.map((profile) => ({
+//     ...profile,
+//     message: userIdToMessageMap.get(profile.user_id) ?? "",
+//   }));
+
+  return userIdToMessageMap;
+  //return likedYouProfiles;
+}
 
 // General feed swipe action
 export async function saveSwipe(
