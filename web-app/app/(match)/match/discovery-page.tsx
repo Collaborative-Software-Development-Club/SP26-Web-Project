@@ -97,7 +97,11 @@ export function DiscoveryPage({
         </div>
       )}
       <ProfileCard profile={selectedProfile} handleNext={handleNext} />
-      <UndoButton handleBefore={handleBefore} />
+      <UndoButton
+        handleBefore={handleBefore}
+        isDiscovery={true}
+        targetUserId={selectedProfile.user_id}
+      />
     </div>
   );
 }

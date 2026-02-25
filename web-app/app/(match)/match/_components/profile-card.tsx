@@ -187,9 +187,21 @@ export function ProfileCard({
                 <Heart className="w-5 h-5 fill-current" />
                 <span>Match</span>
               </button> */}
-              <DislikeButton handleNext={handleNext} />
-              <MessageButton handleNext={handleNext} />
-              <LikeButton handleNext={handleNext} />
+              <DislikeButton
+                handleNext={handleNext}
+                isDiscovery={true}
+                targetUserId={profile.user_id}
+              />
+              <MessageButton
+                handleNext={handleNext}
+                isDiscovery={true}
+                targetUserId={profile.user_id}
+              />
+              <LikeButton
+                handleNext={handleNext}
+                isDiscovery={true}
+                targetUserId={profile.user_id}
+              />
             </div>
           </div>
         </div>

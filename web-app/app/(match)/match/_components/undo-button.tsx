@@ -2,12 +2,27 @@
 
 import { Undo2 } from "lucide-react";
 import { useCallback, useEffect } from "react";
+import { undoSwipe } from "../_actions";
+import { undoMatchSwipe } from "../_actions";
 
-export function UndoButton({ handleBefore }: { handleBefore: () => void }) {
+export function UndoButton({
+  handleBefore,
+  targetUserId,
+  isDiscovery, // true on Discovery page, false on Liked You page
+}: {
+  handleBefore: () => void;
+  targetUserId: string;
+  isDiscovery: boolean;
+}) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
     handleBefore();
-  }, [handleBefore]);
+    if (isDiscovery) {
+      undoSwipe(targetUserId);
+    } else {
+      undoMatchSwipe(targetUserId);
+    }
+  }, [handleBefore, isDiscovery, targetUserId]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
