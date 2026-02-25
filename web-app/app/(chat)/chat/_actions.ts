@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import * as chatService from "@/lib/services/chat";
+import { requireAuth } from "@/lib/auth";
 
 /* Example from match team
 // General feed swipe action
@@ -218,16 +219,22 @@ export async function getConversationsForDisplay(
         if (profiles && profiles.length > 0) {
           name =
             profiles
-              .map((p) => `${p.fname ?? ""} ${p.lname ?? ""}`.trim() || "Unknown")
+              .map(
+                (p) => `${p.fname ?? ""} ${p.lname ?? ""}`.trim() || "Unknown",
+              )
               .filter(Boolean)
               .join(", ") || "Unknown";
         } else {
           name =
-            conv.other_member_ids.length === 1 ? "User" : `${conv.other_member_ids.length} users`;
+            conv.other_member_ids.length === 1
+              ? "User"
+              : `${conv.other_member_ids.length} users`;
         }
       } catch {
         name =
-          conv.other_member_ids.length === 1 ? "User" : `${conv.other_member_ids.length} users`;
+          conv.other_member_ids.length === 1
+            ? "User"
+            : `${conv.other_member_ids.length} users`;
       }
     }
 
@@ -235,7 +242,9 @@ export async function getConversationsForDisplay(
       id: conv.id,
       name,
       lastMessage: conv.last_message ?? "No messages yet",
-      timestamp: conv.last_message_at ? formatTimestamp(conv.last_message_at) : "now",
+      timestamp: conv.last_message_at
+        ? formatTimestamp(conv.last_message_at)
+        : "now",
       unread: false,
     });
   }
@@ -276,7 +285,9 @@ export async function createConversation(
     );
 
   if (membersError) {
-    throw new Error(`Failed to add conversation members: ${membersError.message}`);
+    throw new Error(
+      `Failed to add conversation members: ${membersError.message}`,
+    );
   }
 
   return { conversation_id: conversation.conversation_id };
@@ -298,7 +309,9 @@ export async function createConversationWithCurrentUser(
   return createConversation(user.id, memberUserIds);
 }
 
-export async function getMatchedUserIds(): Promise<{ user_id: string; display_name?: string }[]> {
+export async function getMatchedUserIds(): Promise<
+  { user_id: string; display_name?: string }[]
+> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -340,4 +353,26 @@ export async function getMatchedUserIds(): Promise<{ user_id: string; display_na
   }
 
   return result;
+}
+
+export async function sendMessageAction(
+  conversationId: string,
+  message: string,
+) {
+  if (message.length === 0) return;
+
+  const user = await requireAuth();
+  const supabase = await createClient();
+
+  try {
+    const result = await supabase.from("chat_messages").insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: message,
+    });
+    console.log("sent message");
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
 }

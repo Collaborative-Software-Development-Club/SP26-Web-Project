@@ -3,8 +3,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { sendMessageAction } from "./actions";
-import { useChatRealtime } from "../_components/realtime-provider";
+import { useChatRealtime } from "./realtime-provider";
+import { sendMessageAction } from "../_actions";
 
 export function ChatClient({
   serverMessages,
@@ -20,8 +20,7 @@ export function ChatClient({
 
   const serverIds = new Set(serverMessages.map((m) => m.message_id));
   const liveMessages = realtimeMessages.filter(
-    (m) =>
-      m.conversation_id === conversationId && !serverIds.has(m.message_id),
+    (m) => m.conversation_id === conversationId && !serverIds.has(m.message_id),
   );
   const allMessages = [...serverMessages, ...liveMessages];
 
