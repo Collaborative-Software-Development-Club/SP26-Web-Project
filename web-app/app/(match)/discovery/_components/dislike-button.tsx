@@ -68,7 +68,7 @@ export function DislikeButton({
       disabled:opacity-50 disabled:cursor-not-allowed
     "
       >
-        <span>Not Vibing</span>
+        <span>Pass On Vibe</span>
         <ThumbsDown />
       </button>
     );

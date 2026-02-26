@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserProfile } from "../discovery-page";
+import { Preference, UserProfile } from "../types";
 import { BookOpen, Cigarette, Cat, Moon, Users, Heart, X } from "lucide-react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
@@ -9,7 +9,7 @@ import { MessageButton } from "./message-button";
 import Image from "next/image";
 
 // [dev-only] Dummy preferences moved outside component to prevent recreation on render
-const DUMMY_PREFERENCES: [string, string][] = [
+const DUMMY_PREFERENCES: Preference[] = [
   ["cleanliness", "Very Clean"],
   ["cooking", "Often"],
   ["noise_level", "Quiet"],

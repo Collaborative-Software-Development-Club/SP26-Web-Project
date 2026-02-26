@@ -1,11 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { UserProfile } from "./discovery-page";
-
-export type LikedYouProfile = UserProfile & {
-  message: string;
-};
+import { UserProfile, LikedYouProfile } from "./types";
 
 export async function getLikedYouProfiles() {
   const supabase = await createClient();
@@ -159,7 +155,7 @@ export async function saveMatchSwipe(
         : [targetUserId, user.id];
     const { error: matchError } = await supabase
       .from("discovery_matches")
-      .upsert({ user1_id, user2_id }, { onConflict: "user_id,target_user_id" });
+      .upsert({ user1_id, user2_id }, { onConflict: "user_id,user2_id" });
 
     if (matchError) {
       throw new Error(`Failed to record match: ${matchError.message}`);
