@@ -10,7 +10,7 @@ export function Navbar({ user }: { user: User | null }) {
   const pathname = usePathname();
   const navLinks = isSignedIn
     ? [
-        { href: "/match", label: "Match" },
+        { href: "/discovery", label: "Match" },
         { href: "/chat", label: "Chat" },
         { href: "/housing", label: "Housing" },
         { href: "/profile", label: "My Profile" },

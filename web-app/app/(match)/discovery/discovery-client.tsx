@@ -3,33 +3,16 @@
 import { UndoButton } from "./_components/undo-button";
 import { ProfileCard } from "./_components/profile-card";
 import { useState } from "react";
+import { UserProfile } from "./types";
 
-type Preference = [string, string];
-
-export interface UserProfile {
-  user_id: string;
-  is_active: boolean;
-  fname: string;
-  lname: string;
-  gender: string;
-  avatar_url: string;
-  bio: string;
-  major: string;
-  year: number;
-  created_at: string;
-  last_edited_at: string;
-  hobbies: string[];
-  preferences: Preference[];
-}
-
-export function DiscoveryPage({
+export function DiscoveryClient({
   initialProfiles,
 }: {
   initialProfiles: UserProfile[];
 }) {
   const [profiles, setProfiles] = useState<UserProfile[]>(initialProfiles);
-  const [selectedProfile, setSelectedProfile] = useState<UserProfile>(
-    initialProfiles[0],
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(
+    initialProfiles[0] ?? null,
   );
 
   // [dev-only] Sort for consistent dropdown experience
