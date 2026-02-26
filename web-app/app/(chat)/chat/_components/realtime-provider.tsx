@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Message } from "../../types";
 
 type ChatRealtimeContextValue = { realtimeMessages: Message[] };
 
