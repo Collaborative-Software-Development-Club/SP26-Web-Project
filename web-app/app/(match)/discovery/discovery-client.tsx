@@ -11,8 +11,8 @@ export function DiscoveryClient({
   initialProfiles: UserProfile[];
 }) {
   const [profiles, setProfiles] = useState<UserProfile[]>(initialProfiles);
-  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(
-    initialProfiles[0] ?? null,
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile>(
+    initialProfiles[0],
   );
 
   // [dev-only] Sort for consistent dropdown experience
