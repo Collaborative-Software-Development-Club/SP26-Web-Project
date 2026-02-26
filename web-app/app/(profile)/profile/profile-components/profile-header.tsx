@@ -12,7 +12,7 @@ export default function ProfileHeader() {
   const [page,setPage] = useState("profile");
 
   return (
-    <div className="flex flex-row h-175">
+    <div className="flex flex-row h-[80vh]">
         <SideBar setPage={setPage}/>
         {page === "profile" && <ProfilePage/>}
         {page === "settings" && <SettingsPage/>}

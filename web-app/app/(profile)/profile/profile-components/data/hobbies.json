@@ -1,16 +1,4 @@
 {
-  "entertainment": [
-    "video games",
-    "board games",
-    "reading",
-    "movies",
-    "anime",
-    "tv",
-    "streaming",
-    "youtube",
-    "podcasts",
-    "stand up comedy"
-  ],
   "fitness_sports": [
     "gym",
     "weightlifting",
@@ -67,6 +55,13 @@
     "wine",
     "beer"
   ],
+    "nightlife_social_energy": [
+    "bars",
+    "clubbing",
+    "house parties",
+    "concerts",
+    "karaoke"
+  ],
   "social_lifestyle": [
     "traveling",
     "road trips",
@@ -77,11 +72,16 @@
     "meditation",
     "content creation"
   ],
-  "nightlife_social_energy": [
-    "bars",
-    "clubbing",
-    "house parties",
-    "concerts",
-    "karaoke"
+  "entertainment": [
+    "video games",
+    "board games",
+    "reading",
+    "movies",
+    "anime",
+    "tv",
+    "streaming",
+    "youtube",
+    "podcasts",
+    "stand up comedy"
   ]
 }
