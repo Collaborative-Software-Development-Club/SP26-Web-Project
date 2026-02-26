@@ -1,9 +1,12 @@
+"use client";
+
 import * as React from "react"
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 
 import { cn } from "@/lib/utils"
 import { Textarea } from "../../components/ui/textarea";
+import { useState } from "react";
 
 type QuestionProps = {
   question: string;
@@ -36,7 +39,7 @@ type QuestionPropsScale = QuestionProps & {
 //  */
 // function QuestionOptionItem({ textLabel, dataName, type }: { textLabel: string, dataName: string, type: string }) {
 //   return (
-    
+
 //   )
 // }
 
@@ -47,11 +50,11 @@ type QuestionPropsScale = QuestionProps & {
  * @param items The `QuestionOptionItem`s to select from.
  */
 function QuestionScaleContainer({ children, items }: React.ComponentProps<"div"> & { items: any[] }) {
-  return (<div className={cn("ml-2 mb-9")}>
-    <h3 className={cn("mb-1")}>
+  return (<div className="ml-2 mb-9">
+    <h3 className="mb-1">
       {children}
     </h3>
-    <div className={cn("flex gap-10")}>
+    <div className="flex gap-10">
       {items}
     </div>
   </div>);
@@ -66,9 +69,9 @@ function QuestionScale({ question, questionDataName, scaleOptions }: QuestionPro
   for (let i = 0; i < scaleOptions.length; i++) {
     const id = `${questionDataName}-radio-${question}`;
     items.push(
-      <div id={`${id}-container`} className={cn("relative flex flex-col items-center basis-4 w-sm")}>
-        <Input type="radio" name={questionDataName} id={id} className={cn("h-fit")}/>
-        <Label className={cn("absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm")} htmlFor={id}>{scaleOptions[i]}</Label>
+      <div id={`${id}-container`} className="relative flex flex-col items-center basis-4 w-sm">
+        <Input type="radio" name={questionDataName} id={id} className="h-fit" />
+        <Label className="absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm" htmlFor={id}>{scaleOptions[i]}</Label>
       </div>
     );
   }
@@ -85,9 +88,9 @@ function QuestionScaleMultiple({ question, questionDataName, scaleOptions }: Que
   for (let i = 0; i < scaleOptions.length; i++) {
     const id = `${questionDataName}-radio-${question}`;
     items.push(
-      <div id={`${id}-container`} className={cn("relative flex flex-col items-center basis-4 w-sm")}>
-        <Input type="checkbox" name={questionDataName} id={id} className={cn("h-fit")}/>
-        <Label className={cn("absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm")} htmlFor={id}>{scaleOptions[i]}</Label>
+      <div id={`${id}-container`} className="relative flex flex-col items-center basis-4 w-sm">
+        <Input type="checkbox" name={questionDataName} id={id} className="h-fit" />
+        <Label className="absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm" htmlFor={id}>{scaleOptions[i]}</Label>
       </div>
     )
   }
@@ -100,9 +103,9 @@ function QuestionScaleMultiple({ question, questionDataName, scaleOptions }: Que
  */
 function QuestionFreeform({ question, questionDataName }: QuestionProps) {
   return (
-    <div className={cn("ml-2 mb-9")}>
-      <h3 className={cn("mb-1")}>{question}</h3>
-      <Textarea name={questionDataName} placeholder=". . ." className={cn("w-xs")} />
+    <div className="ml-2 mb-9">
+      <h3 className="mb-1">{question}</h3>
+      <Textarea name={questionDataName} placeholder=". . ." className="w-xs" />
     </div>
   );
 }
@@ -112,11 +115,17 @@ function QuestionFreeform({ question, questionDataName }: QuestionProps) {
  * TODO make it a proper switch. Right now it looks awful.
  */
 function QuestionBoolean({ question, questionDataName }: QuestionProps) {
+  
+  const [ value, setValue ] = useState(false);
+
   return (
-    <div className={cn("ml-2 mb-9")}>
-      <h3 className={cn("mb-1")}>{question}</h3>
-      <i className={cn("text-xs text-neutral-500")}>placeholder for a proper switch component</i>
-      <Input type="checkbox" className={cn("h-9 w-6")} />
+    <div className="ml-2 mb-9">
+      <h3 className="mb-1">{question}</h3>
+      <i className="text-xs text-neutral-500">placeholder for a proper switch component</i>
+      <Input type="checkbox" className="h-9 w-6" checked={value} onChange={(e) => {
+        setValue(e.target.checked);
+        console.log("hello");
+      }} />
     </div>
   );
 }

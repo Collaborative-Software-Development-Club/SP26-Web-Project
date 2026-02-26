@@ -1,19 +1,13 @@
 import { QuestionScale, QuestionScaleMultiple, QuestionFreeform, QuestionBoolean } from "@/app/(profile)/question";
 import { requireAuth } from "@/lib/auth";
-import { useEffect } from "react";
 
 /**
  * A testing page for the form components.
  */
 export default async function FormTestPage() {
   const user = await requireAuth();
-  
-  useEffect(() => {
-    // This runs only on the client
-    const inputs = document.querySelectorAll("input");
-    console.log(inputs); // NodeList of all input elements
-  }, []);
 
+  
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black p-3">
@@ -101,10 +95,10 @@ export default async function FormTestPage() {
           </li>
         </ol>
       </section>
-      <br/>
-      <br/>
-      <br/>
-      <br/>
+      <br />
+      <br />
+      <br />
+      <br />
     </div>
   );
 }
