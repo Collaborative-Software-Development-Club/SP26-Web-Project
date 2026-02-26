@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useChatRealtime } from "./realtime-provider";
 import { sendMessageAction } from "../_actions";
+import { Message } from "../../types";
 
 export function ChatClient({
   serverMessages,

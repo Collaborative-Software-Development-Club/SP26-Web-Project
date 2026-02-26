@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ChatClient } from "../_components/chat-client";
+import { Message } from "../../types";
 
 export default async function ConversationPage({
   params,

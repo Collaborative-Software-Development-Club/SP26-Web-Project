@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { CreateConversationDialog } from "./create-conversation-dialog";
+import { Conversation } from "../../types";
 
 const AVATAR_COLORS = [
   "bg-red-500",
@@ -13,14 +14,6 @@ const AVATAR_COLORS = [
   "bg-purple-500",
   "bg-amber-500",
 ];
-
-export interface Conversation {
-  id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-}
 
 function getInitials(name: string) {
   return name
