@@ -10,7 +10,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 TABLE_NAME = "housing_property_records"
-CSV_PATH = "sample_scraped_properties.csv"
+FILE_PATH = "osu_offcampus_housing.json"
 
 BOOLEAN_COLUMNS = {
     "short_lease_term", "sublease_permitted", "wheelchair_access", "basement",
@@ -47,8 +47,14 @@ def clean_row(row):
 def main():
     supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-    df = pd.read_csv(CSV_PATH)
-    print(f"Loaded {len(df)} properties from {CSV_PATH}")
+    if FILE_PATH.endswith(".csv"):
+        df = pd.read_csv(FILE_PATH)
+    elif FILE_PATH.endswith(".json"):
+        df = pd.read_json(FILE_PATH)
+    else:
+        raise ValueError(f"Unsupported file type: {FILE_PATH}")
+
+    print(f"Loaded {len(df)} properties from {FILE_PATH}")
 
     records = [clean_row(row) for _, row in df.iterrows()]
 
