@@ -1,6 +1,45 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { UserProfile, LikedYouProfile } from "./types";
+
+export async function getLikedYouProfiles() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+    const { data: likedSwipes, error: likedSwipesError } = await supabase
+    .from("discovery_swipes")
+    .select("user_id, created_at, message")
+    .eq("target_user_id", user.id)
+    .eq("action", "like")
+    .order("created_at", { ascending: false });
+
+  // Create a custom error page (error.tsx) under /match if this fails
+  if (likedSwipesError) {
+    throw new Error(
+      `Failed to fetch liked profiles: ${likedSwipesError.message}`,
+    );
+  }
+
+  const userIdToMessageMap: Map<string, string> = new Map(
+    likedSwipes.map((swipe) => [swipe.user_id, swipe.message]),
+  );
+
+  // const likedProfiles = await profileService.getProfiles(likedSwipes.map((swipe) => swipe.user_id);
+
+//   const likedYouProfiles: LikedYouProfile[] = likedProfiles.map((profile) => ({
+//     ...profile,
+//     message: userIdToMessageMap.get(profile.user_id) ?? "",
+//   }));
+
+  return userIdToMessageMap;
+  //return likedYouProfiles;
+}
 
 // General feed swipe action
 export async function saveSwipe(
@@ -116,7 +155,7 @@ export async function saveMatchSwipe(
         : [targetUserId, user.id];
     const { error: matchError } = await supabase
       .from("discovery_matches")
-      .upsert({ user1_id, user2_id }, { onConflict: "user_id,target_user_id" });
+      .upsert({ user1_id, user2_id }, { onConflict: "user_id,user2_id" });
 
     if (matchError) {
       throw new Error(`Failed to record match: ${matchError.message}`);
@@ -160,5 +199,25 @@ export async function undoMatchSwipe(targetUserId: string) {
 
   if (undoMatchError) {
     throw new Error(`Failed to undo match: ${undoMatchError.message}`);
+  }
+}
+
+// Gets users preference table
+export async function getUserRoommatePreferences(user_id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("discovery_roommate_preferences")
+    .select("preference_id, importance")
+    .eq("user_id", user_id);
+
+  if (error) {
+    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
+  } else {
+    const preferenceIds = data.map((item) => ({
+      preference_id: item.preference_id,
+      importance: item.importance,
+    }));
+    return preferenceIds;
   }
 }

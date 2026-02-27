@@ -21,3 +21,6 @@
 /web-app/app/(match)/ @JunhoHwoang
 /web-app/lib/services/match.ts @JunhoHwoang
 /web-app/hooks/use-match.ts @JunhoHwoang
+
+# Scraper
+/scraper/ @Allam235

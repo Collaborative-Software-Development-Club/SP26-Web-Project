@@ -1,0 +1,47 @@
+import { Card } from "@/components/ui/card"
+import EditName from "./modals/edit-name"
+import profiles from "mock/profiles.json"
+import SelectHobbies from "./modals/hobby-select";
+export default function ProfilePage() {
+  const user = profiles[0];
+  
+  return (
+    <div className="flex-1 mr-20 my-20">
+      <Card className="h-full w-full p-4 rounded-l-none max-h-[80vh] overflow-auto">
+        <h2 className="text-2xl font-bold">Account</h2>
+        <hr className="bg-gray-200 h-0.5"/>
+        <Card className="border-none flex-row max-h-1/2 w-full items-center p-4">
+          <img src={user.avatar_url} className="max-w-20 h-20 rounded-full flex-1 border-2"/>
+          <Card className="border-none flex-1 p-4 shadow-none gap-1">
+            <h3 className="text-lg">Name</h3>
+            <p className="text-sm">{user.fname+" "+user.lname}</p>
+            <EditName fname={user.fname} lname={user.lname} id={user.user_id}/>
+          </Card>
+          
+        </Card>
+
+        <Card className="p-4 gap-1">
+          <h2 className="text-xl font-semibold">Account Details</h2>
+          <hr className="bg-gray-200 h-0.5"/>
+          <h3 className="text-lg ml-4 mt-4">Bio</h3>
+          <p className="ml-4 text-sm">{user.bio}</p>
+          <h3 className="text-lg ml-4 mt-4">Hobbies</h3>
+          <div>
+            <Card className="bg-gray-100 flex flex-row flex-wrap gap-1 p-2 ml-4">
+              {user.hobbies.map(hobby=>
+                <Card key={hobby} className="min-w-20 text-center text-sm h-10 p-2 mx-0.5 rounded-md">
+                  {hobby}
+                </Card>
+              )}
+            </Card>
+            <SelectHobbies/>
+          </div>
+          
+        </Card>
+        
+        
+      </Card>
+      
+    </div>
+  )
+}

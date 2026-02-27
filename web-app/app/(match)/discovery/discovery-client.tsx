@@ -3,26 +3,9 @@
 import { UndoButton } from "./_components/undo-button";
 import { ProfileCard } from "./_components/profile-card";
 import { useState } from "react";
+import { UserProfile } from "./types";
 
-type Preference = [string, string];
-
-export interface UserProfile {
-  user_id: string;
-  is_active: boolean;
-  fname: string;
-  lname: string;
-  gender: string;
-  avatar_url: string;
-  bio: string;
-  major: string;
-  year: number;
-  created_at: string;
-  last_edited_at: string;
-  hobbies: string[];
-  preferences: Preference[];
-}
-
-export function DiscoveryPage({
+export function DiscoveryClient({
   initialProfiles,
 }: {
   initialProfiles: UserProfile[];
@@ -76,7 +59,7 @@ export function DiscoveryPage({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mb-10">
+    <div className="h-full w-full flex flex-col items-center justify-center mb-10">
       {/* [dev-only] Developer Debug Bar */}
       {process.env.NODE_ENV !== "production" && (
         <div className="w-full max-w-4xl mb-6 p-4 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
@@ -97,7 +80,11 @@ export function DiscoveryPage({
         </div>
       )}
       <ProfileCard profile={selectedProfile} handleNext={handleNext} />
-      <UndoButton handleBefore={handleBefore} />
+      <UndoButton
+        handleBefore={handleBefore}
+        isDiscovery={true}
+        targetUserId={selectedProfile.user_id}
+      />
     </div>
   );
 }

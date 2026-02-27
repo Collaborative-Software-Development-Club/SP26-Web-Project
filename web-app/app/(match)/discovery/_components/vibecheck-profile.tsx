@@ -1,27 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { AcceptVibeButton } from "./accept-vibe-button";
-import { VibePassedButton } from "./not-vibing-button";
-import type { UserProfile } from "../discovery-page"; // adjust path as needed
+import { LikeButton } from "./like-button";
+import { DislikeButton } from "./dislike-button";
+import { LikedYouProfile } from "../types";
 import Image from "next/image";
-
-interface VibeCheckProfileProps {
-  profile: UserProfile;
-  /** The message the other user sent when they vibed with you */
-  incomingMessage: string;
-  onAccept: (userId: string) => void;
-  onPass: (userId: string) => void;
-  isLoading?: boolean;
-}
 
 export function VibeCheckProfile({
   profile,
-  incomingMessage,
   onAccept,
   onPass,
   isLoading,
-}: VibeCheckProfileProps) {
+}: {
+  profile: LikedYouProfile;
+  onAccept: (userId: string) => void;
+  onPass: (userId: string) => void;
+  isLoading?: boolean;
+}) {
   const [replyText, setReplyText] = useState("");
 
   const yearLabel: Record<number, string> = {
@@ -37,19 +32,20 @@ export function VibeCheckProfile({
       {/* Avatar & header */}
       <div className="relative h-52 bg-zinc-100 dark:bg-zinc-800">
         <Image
-            src="/demo/selfie.png"
-            alt="User Avatar"
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover"
+          src="/demo/selfie.png"
+          alt="User Avatar"
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-black/30 to-transparent" />
         <div className="absolute bottom-4 left-5 right-5">
           <h2 className="text-white text-2xl font-bold leading-tight">
             {profile.fname} {profile.lname}
           </h2>
           <p className="text-white/75 text-sm">
-            {yearLabel[profile.year] ?? `Year ${profile.year}`} · {profile.major}
+            {yearLabel[profile.year] ?? `Year ${profile.year}`} ·{" "}
+            {profile.major}
           </p>
         </div>
       </div>
@@ -82,7 +78,9 @@ export function VibeCheckProfile({
                 key={key}
                 className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
               >
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">{key}</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
+                  {key}
+                </span>
                 <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
                   {value}
                 </span>
@@ -100,7 +98,7 @@ export function VibeCheckProfile({
             Their message to you
           </p>
           <div className="rounded-2xl rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200 italic">
-            "{incomingMessage}"
+            &quot;{profile.message}&quot;
           </div>
         </div>
 
@@ -127,13 +125,17 @@ export function VibeCheckProfile({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 pt-1">
-          <div className="flex-1">
-            <VibePassedButton onPass={() => onPass(profile.user_id)} isLoading={isLoading} />
-          </div>
-          <div className="flex-1">
-            <AcceptVibeButton onAccept={() => onAccept(profile.user_id)} isLoading={isLoading} />
-          </div>
+        <div className="flex flex-row justify-around gap-3 pt-1">
+          <DislikeButton
+            handleNext={() => onPass(profile.user_id)}
+            targetUserId={profile.user_id}
+            isDiscovery={false}
+          />
+          <LikeButton
+            handleNext={() => onAccept(profile.user_id)}
+            targetUserId={profile.user_id}
+            isDiscovery={false}
+          />
         </div>
       </div>
     </div>

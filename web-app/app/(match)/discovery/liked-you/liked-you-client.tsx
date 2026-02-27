@@ -1,36 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { VibeCheckProfile } from "./_components/vibecheck-profile";
-import type { UserProfile } from "./discovery-page"; // adjust path as needed
-
-// Extend the base profile with the message they sent when vibing with you
-export interface IncomingVibe {
-  profile: UserProfile;
-  message: string;
-}
+import { VibeCheckProfile } from "../_components/vibecheck-profile";
+import { UndoButton } from "../_components/undo-button";
+import { LikedYouProfile } from "../types"; // adjust path as needed
 
 type ActionType = "accepted" | "passed";
 
 interface HistoryEntry {
-  vibe: IncomingVibe;
+  vibe: LikedYouProfile;
   action: ActionType;
 }
 
-export function VibesWithYouPage({
-  initialVibes,
+export function LikedYouClient({
+  initialLikedYouProfiles,
 }: {
-  initialVibes: IncomingVibe[];
+  initialLikedYouProfiles: LikedYouProfile[];
 }) {
   // Queue of vibes yet to be reviewed
-  const [queue, setQueue] = useState<IncomingVibe[]>(initialVibes);
+  const [queue, setQueue] = useState<LikedYouProfile[]>(
+    initialLikedYouProfiles,
+  );
 
   // Action history – lets us undo the last decision
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   // Buckets for resolved vibes
-  const [accepted, setAccepted] = useState<IncomingVibe[]>([]);
-  const [passed, setPassed] = useState<IncomingVibe[]>([]);
+  const [accepted, setAccepted] = useState<LikedYouProfile[]>([]);
+  const [passed, setPassed] = useState<LikedYouProfile[]>([]);
 
   // Optimistic loading guard so buttons can't double-fire
   const [isLoading, setIsLoading] = useState(false);
@@ -73,9 +70,9 @@ export function VibesWithYouPage({
 
     // Remove from whichever bucket it landed in
     if (lastEntry.action === "accepted") {
-      setAccepted((a) => a.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id));
+      setAccepted((a) => a.filter((v) => v.user_id !== lastEntry.vibe.user_id));
     } else {
-      setPassed((p) => p.filter((v) => v.profile.user_id !== lastEntry.vibe.profile.user_id));
+      setPassed((p) => p.filter((v) => v.user_id !== lastEntry.vibe.user_id));
     }
 
     // Push it back to the front of the queue
@@ -86,14 +83,15 @@ export function VibesWithYouPage({
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col items-center min-h-screen py-10 px-4">
+    <div className="flex flex-col items-center h-full w-full px-4">
       {/* Header */}
       <div className="w-full max-w-lg mb-8 text-center space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
           Vibe Check
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-          {queue.length} {queue.length === 1 ? "person" : "people"} waiting · {accepted.length} matched
+          {queue.length} {queue.length === 1 ? "person" : "people"} waiting ·{" "}
+          {accepted.length} matched
         </p>
       </div>
 
@@ -101,8 +99,7 @@ export function VibesWithYouPage({
       {current ? (
         <div className="w-full max-w-lg">
           <VibeCheckProfile
-            profile={current.profile}
-            incomingMessage={current.message}
+            profile={current}
             onAccept={handleAccept}
             onPass={handlePass}
             isLoading={isLoading}
@@ -114,43 +111,31 @@ export function VibesWithYouPage({
 
       {/* Undo button */}
       {history.length > 0 && (
-        <button
-          onClick={handleUndo}
-          className="
-            mt-6 flex items-center gap-2
-            text-sm text-zinc-500 dark:text-zinc-400
-            hover:text-zinc-800 dark:hover:text-white
-            transition-colors duration-150
-          "
-        >
-          <span>↩</span>
-          <span>
-            Undo — bring back{" "}
-            <span className="font-semibold">
-              {history[history.length - 1]?.vibe.profile.fname}
-            </span>
-          </span>
-        </button>
+        <UndoButton
+          handleBefore={handleUndo}
+          targetUserId={history[history.length - 1]?.vibe.user_id}
+          isDiscovery={false}
+          lastEntry={history[history.length - 1]?.vibe.fname}
+        />
       )}
 
       {/* Progress dots */}
-      {initialVibes.length > 1 && (
+      {initialLikedYouProfiles.length > 1 && (
         <div className="mt-6 flex gap-1.5">
-          {initialVibes.map((v, i) => {
-            const isReviewed = !queue.find(
-              (q) => q.profile.user_id === v.profile.user_id,
-            );
-            const isCurrent = current?.profile.user_id === v.profile.user_id;
+          {initialLikedYouProfiles.map((v, i) => {
+            const isReviewed = !queue.find((q) => q.user_id === v.user_id);
+            const isCurrent = current?.user_id === v.user_id;
             return (
               <span
-                key={v.profile.user_id}
+                key={v.user_id}
                 className={`
                   block rounded-full transition-all duration-300
-                  ${isCurrent
-                    ? "w-4 h-2 bg-black dark:bg-white"
-                    : isReviewed
-                    ? "w-2 h-2 bg-zinc-300 dark:bg-zinc-600"
-                    : "w-2 h-2 bg-zinc-200 dark:bg-zinc-700"
+                  ${
+                    isCurrent
+                      ? "w-4 h-2 bg-black dark:bg-white"
+                      : isReviewed
+                        ? "w-2 h-2 bg-zinc-300 dark:bg-zinc-600"
+                        : "w-2 h-2 bg-zinc-200 dark:bg-zinc-700"
                   }
                 `}
               />
