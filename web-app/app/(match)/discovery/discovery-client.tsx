@@ -2,6 +2,7 @@
 
 import { UndoButton } from "./_components/undo-button";
 import { ProfileCard } from "./_components/profile-card";
+import { Filter } from "./_components/filter"
 import { useState } from "react";
 import { UserProfile } from "./types";
 
@@ -79,12 +80,16 @@ export function DiscoveryClient({
           </select>
         </div>
       )}
+      
+      <Filter preferences = {selectedProfile.preferences}></Filter>
       <ProfileCard profile={selectedProfile} handleNext={handleNext} />
       <UndoButton
         handleBefore={handleBefore}
         isDiscovery={true}
         targetUserId={selectedProfile.user_id}
       />
+      
+      
     </div>
   );
 }
