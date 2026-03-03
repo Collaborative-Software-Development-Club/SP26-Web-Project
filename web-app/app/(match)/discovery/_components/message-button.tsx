@@ -64,14 +64,12 @@ export function MessageButton({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [open, handleLikeAndSend]);
 
-  const handleOpenChange = () => {
-    if (open) {
-      setOpen(false);
-    } else {
-      setOpen(true);
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setError("");
+      setMessage("");
     }
-    setError("");
-    setMessage("");
   };
 
   return (

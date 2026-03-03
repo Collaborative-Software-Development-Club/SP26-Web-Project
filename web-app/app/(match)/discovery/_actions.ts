@@ -1,11 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { UserProfile } from "./discovery-page";
-
-export type LikedYouProfile = UserProfile & {
-  message: string;
-};
+import { UserProfile, LikedYouProfile } from "./types";
 
 export async function getLikedYouProfiles() {
   const supabase = await createClient();
@@ -159,7 +155,7 @@ export async function saveMatchSwipe(
         : [targetUserId, user.id];
     const { error: matchError } = await supabase
       .from("discovery_matches")
-      .upsert({ user1_id, user2_id }, { onConflict: "user_id,target_user_id" });
+      .upsert({ user1_id, user2_id }, { onConflict: "user_id,user2_id" });
 
     if (matchError) {
       throw new Error(`Failed to record match: ${matchError.message}`);
@@ -203,5 +199,25 @@ export async function undoMatchSwipe(targetUserId: string) {
 
   if (undoMatchError) {
     throw new Error(`Failed to undo match: ${undoMatchError.message}`);
+  }
+}
+
+// Gets users preference table
+export async function getUserRoommatePreferences(user_id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("discovery_roommate_preferences")
+    .select("preference_id, importance")
+    .eq("user_id", user_id);
+
+  if (error) {
+    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
+  } else {
+    const preferenceIds = data.map((item) => ({
+      preference_id: item.preference_id,
+      importance: item.importance,
+    }));
+    return preferenceIds;
   }
 }
