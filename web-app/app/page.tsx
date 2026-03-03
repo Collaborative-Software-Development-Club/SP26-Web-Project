@@ -64,7 +64,7 @@ export default function HomePage() {
               alt=""
               role="presentation"
               fill
-              priority
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover object-center"
             />
