@@ -1,11 +1,42 @@
 import { requireAuth } from "@/lib/auth";
+import { ChatClient } from "./chat-client";
+import { getConversationsForDisplay, type ConversationPreview } from "./_actions";
+
+const SAMPLE_CONVERSATIONS: ConversationPreview[] = [
+  {
+    id: "sample-1",
+    name: "Jane Doe",
+    lastMessage: "Hey! Are you still looking for a roommate?",
+    timestamp: "2m",
+    unread: true,
+  },
+  {
+    id: "sample-2",
+    name: "John Smith",
+    lastMessage: "Yes! I am looking for two roommates.",
+    timestamp: "1h",
+    unread: false,
+  },
+  {
+    id: "sample-3",
+    name: "Alex Chen",
+    lastMessage: "Sounds good! Let me know when you want to meet up.",
+    timestamp: "3d",
+    unread: false,
+  },
+];
 
 export default async function Chat() {
   const user = await requireAuth();
+  const conversations = await getConversationsForDisplay(user.id);
+
+  const displayConversations =
+    conversations.length > 0 ? conversations : SAMPLE_CONVERSATIONS;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      Chat Page
-    </div>
+    <ChatClient
+      initialConversations={displayConversations}
+      currentUserId={user.id}
+    />
   );
 }

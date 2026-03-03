@@ -10,7 +10,7 @@ export function Navbar({ user }: { user: User | null }) {
   const pathname = usePathname();
   const navLinks = isSignedIn
     ? [
-        { href: "/match", label: "Match" },
+        { href: "/discovery", label: "Match" },
         { href: "/chat", label: "Chat" },
         { href: "/housing", label: "Housing" },
         { href: "/profile", label: "My Profile" },
@@ -22,7 +22,7 @@ export function Navbar({ user }: { user: User | null }) {
       ];
 
   return (
-    <header className="sticky top-0 z-50 p-2">
+    <header className="sticky top-0 z-50 p-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm shadow-sm">
       <div className="w-full px-8 py-4 items-center justify-between flex flex-row">
         <Link href="/" className="flex items-center gap-5">
           <h1 className="text-2xl font-bold text-primary">
