@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useChatRealtime } from "./realtime-provider";
 import { sendChatMessage } from "../_actions";
 import { ChatMessage } from "../../types";
@@ -18,12 +18,20 @@ export function ChatClient({
 }) {
   const [inputValue, setInputValue] = useState("");
   const { realtimeMessages } = useChatRealtime();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const serverIds = new Set(serverMessages.map((m) => m.message_id));
   const liveMessages = realtimeMessages.filter(
     (m) => m.conversation_id === conversationId && !serverIds.has(m.message_id),
   );
-  const allMessages = [...serverMessages, ...liveMessages];
+  const allMessages = useMemo(
+    () => [...serverMessages, ...liveMessages],
+    [serverMessages, liveMessages],
+  );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [allMessages]);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,6 +56,7 @@ export function ChatClient({
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
         <Input

@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Message } from "../../types";
+import { ChatMessage } from "../../types";
 
-type ChatRealtimeContextValue = { realtimeMessages: Message[] };
+type ChatRealtimeContextValue = { realtimeMessages: ChatMessage[] };
 
 const ChatRealtimeContext = createContext<ChatRealtimeContextValue>({
   realtimeMessages: [],
@@ -17,7 +17,7 @@ export function RealtimeChatProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [realtimeMessages, setRealtimeMessages] = useState<Message[]>([]);
+  const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,7 +34,10 @@ export function RealtimeChatProvider({
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "chat_messages" },
           (payload) =>
-            setRealtimeMessages((prev) => [...prev, payload.new as Message]),
+            setRealtimeMessages((prev) => [
+              ...prev,
+              payload.new as ChatMessage,
+            ]),
         )
         .subscribe();
     });
