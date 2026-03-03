@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import * as chatService from "@/lib/services/chat";
-import { requireAuth } from "@/lib/auth";
+import { ChatMessage, ConversationPreview } from "../types";
 
 /* Example from match team
 // General feed swipe action
@@ -108,10 +108,7 @@ export async function saveMatchSwipe(
 }
 */
 
-export async function sendChatMessage(
-  conversationId: string,
-  message: string,
-): Promise<ChatMessage> {
+export async function sendChatMessage(conversationId: string, message: string) {
   const trimmed = message?.trim();
   if (!trimmed) {
     throw new Error("Message cannot be empty");
@@ -127,15 +124,11 @@ export async function sendChatMessage(
     throw new Error("Unauthorized");
   }
 
-  const { data: inserted, error } = await supabase
-    .from("chat_messages")
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: trimmed,
-    })
-    .select("message_id, content, sender_id, created_at")
-    .single();
+  const { error } = await supabase.from("chat_messages").insert({
+    conversation_id: conversationId,
+    sender_id: user.id,
+    content: trimmed,
+  });
 
   if (error) {
     throw new Error(`Failed to send message: ${error.message}`);
@@ -145,16 +138,7 @@ export async function sendChatMessage(
     .from("chat_conversations")
     .update({ last_message_at: new Date().toISOString() })
     .eq("conversation_id", conversationId);
-
-  return inserted;
 }
-
-export type ChatMessage = {
-  message_id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-};
 
 export async function getConversationMessages(
   conversationId: string,
@@ -163,7 +147,7 @@ export async function getConversationMessages(
 
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("message_id, content, sender_id, created_at")
+    .select("message_id, content, sender_id, created_at, conversation_id")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
@@ -177,14 +161,6 @@ export async function getConversationMessages(
 export async function getConversations(userId: string) {
   return chatService.getConversations(userId);
 }
-
-export type ConversationPreview = {
-  id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-};
 
 function formatTimestamp(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -353,26 +329,4 @@ export async function getMatchedUserIds(): Promise<
   }
 
   return result;
-}
-
-export async function sendMessageAction(
-  conversationId: string,
-  message: string,
-) {
-  if (message.length === 0) return;
-
-  const user = await requireAuth();
-  const supabase = await createClient();
-
-  try {
-    const result = await supabase.from("chat_messages").insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: message,
-    });
-    console.log("sent message");
-    console.log(result);
-  } catch (error) {
-    console.error(error);
-  }
 }

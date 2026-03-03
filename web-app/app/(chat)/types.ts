@@ -1,4 +1,4 @@
-export type Message = {
+export type ChatMessage = {
   message_id: string;
   conversation_id: string;
   sender_id: string;
@@ -13,3 +13,11 @@ export interface Conversation {
   timestamp: string;
   unread: boolean;
 }
+
+export type ConversationPreview = {
+  id: string;
+  name: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: boolean;
+};

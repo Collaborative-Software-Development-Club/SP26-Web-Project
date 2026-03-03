@@ -4,15 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useChatRealtime } from "./realtime-provider";
-import { sendMessageAction } from "../_actions";
-import { Message } from "../../types";
+import { sendChatMessage } from "../_actions";
+import { ChatMessage } from "../../types";
 
 export function ChatClient({
   serverMessages,
   userId,
   conversationId,
 }: {
-  serverMessages: Message[];
+  serverMessages: ChatMessage[];
   userId: string;
   conversationId: string;
 }) {
@@ -25,10 +25,10 @@ export function ChatClient({
   );
   const allMessages = [...serverMessages, ...liveMessages];
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      await sendMessageAction(conversationId, inputValue);
+      await sendChatMessage(conversationId, inputValue);
       setInputValue("");
     }
   };

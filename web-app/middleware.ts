@@ -1,11 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse, type NextRequest } from 'next/server'
-
-const protectedPaths = ['/profile', '/discovery', '/chat', '/housing']
-const authPaths = ['/login', '/signup']
+const protectedPaths = ["/profile", "/discovery", "/chat", "/housing"];
+const authPaths = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
