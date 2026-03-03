@@ -180,51 +180,26 @@ export async function getConversationsForDisplay(
 ): Promise<ConversationPreview[]> {
   const supabase = await createClient();
   const conversations = await chatService.getConversations(userId);
-
-  const previews: ConversationPreview[] = [];
-
-  for (const conv of conversations) {
-    let name = "Unknown";
-    if (conv.other_member_ids.length > 0) {
-      try {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, fname, lname")
-          .in("user_id", conv.other_member_ids);
-
-        if (profiles && profiles.length > 0) {
-          name =
-            profiles
-              .map(
-                (p) => `${p.fname ?? ""} ${p.lname ?? ""}`.trim() || "Unknown",
-              )
-              .filter(Boolean)
-              .join(", ") || "Unknown";
-        } else {
-          name =
-            conv.other_member_ids.length === 1
-              ? "User"
-              : `${conv.other_member_ids.length} users`;
-        }
-      } catch {
-        name =
-          conv.other_member_ids.length === 1
-            ? "User"
-            : `${conv.other_member_ids.length} users`;
-      }
-    }
-
-    previews.push({
-      id: conv.id,
-      name,
-      lastMessage: conv.last_message ?? "No messages yet",
-      timestamp: conv.last_message_at
-        ? formatTimestamp(conv.last_message_at)
-        : "now",
-      unread: false,
-    });
-  }
-
+  const previews: ConversationPreview[] = await Promise.all(
+    conversations.map(async (conv) => {
+      const { data: members } = await supabase
+        .from("user_profiles")
+        .select("fname, lname")
+        .eq("user_id", conv.other_member_ids);
+      const name = members
+        ? members.map((m) => `${m.fname} ${m.lname}`).join(", ")
+        : "Unknown";
+      return {
+        id: conv.id,
+        name: name,
+        lastMessage: conv.last_message ?? "No messages yet",
+        timestamp: conv.last_message_at
+          ? formatTimestamp(conv.last_message_at)
+          : "",
+        unread: false,
+      };
+    }),
+  );
   return previews;
 }
 
