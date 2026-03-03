@@ -104,6 +104,9 @@ export function ChatClient({
       .finally(() => setLoading(false))
   }, [selectedId, currentUserId])
 
+  //value for the search bar
+  const [searchEntry, setSearchEntry] = useState("");
+
   return (
     <div className="flex h-[calc(100vh-80px)]">
       <aside className="w-80 shrink-0 border-r">
@@ -111,6 +114,8 @@ export function ChatClient({
           conversations={initialConversations}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          searchEntry = {searchEntry}
+          setSearchEntry = {setSearchEntry}
         />
       </aside>
 

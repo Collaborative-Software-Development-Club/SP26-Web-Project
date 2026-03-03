@@ -27,6 +27,32 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
+function nameMatchesSearch(name: string, searchEntry: string) {
+  const search = searchEntry.toLowerCase().trim()
+  if (!search) return true
+  if(search.length > name.trim().length) return false
+
+  let matches = true;
+
+  let searchArr = search.split(" ")
+  searchArr.forEach(searchTerm => {
+    if(!name.toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .some(part => part.startsWith(searchTerm)) && 
+    !name
+    .toLowerCase()
+    .startsWith(searchEntry.toLowerCase())){
+      matches = false
+      return
+    }
+    
+  })
+
+  return matches
+
+}
+
 export function ChatPreviewItem({
   conversation,
   isSelected,
@@ -83,11 +109,19 @@ export function ChatPreviewList({
   conversations,
   selectedId,
   onSelect,
+  searchEntry,
+  setSearchEntry
 }: {
   conversations: Conversation[]
   selectedId: string
   onSelect: (id: string) => void
+  searchEntry: string
+  setSearchEntry: (id: string) => void
 }) {
+
+  //Filters conversations in the preview list based on search term entered in the search bar
+  let filteredConversations = conversations.filter(conversations => nameMatchesSearch(conversations.name, searchEntry))
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-2 border-b px-4 py-4">
@@ -98,7 +132,8 @@ export function ChatPreviewList({
         <Input
           type="text"
           placeholder="Search conversations..."
-          readOnly
+          value = {searchEntry}
+          onChange = {e => setSearchEntry(e.target.value)}
         />
       </div>
 
@@ -109,7 +144,7 @@ export function ChatPreviewList({
             <p>Create one to get started.</p>
           </div>
         ) : (
-          conversations.map((conversation, index) => (
+          filteredConversations.map((conversation, index) => (
             <ChatPreviewItem
               key={conversation.id}
               conversation={conversation}
