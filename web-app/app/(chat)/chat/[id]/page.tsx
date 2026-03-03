@@ -1,7 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ChatClient } from "../_components/chat-client";
-import { Message } from "../../types";
+import { ChatMessage } from "../../types";
 
 export default async function ConversationPage({
   params,
@@ -17,7 +17,7 @@ export default async function ConversationPage({
     .select("*")
     .eq("conversation_id", id);
 
-  const messages = (result.data as Message[]) ?? [];
+  const messages = (result.data as ChatMessage[]) ?? [];
 
   return (
     <ChatClient
