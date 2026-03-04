@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { UserProfile } from "../types";
-import { BookOpen, Cigarette, Cat, Moon, Users, } from "lucide-react";
+import { BookOpen, Cigarette, Cat, Moon, Users } from "lucide-react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
-
 
 // [ready] Icon helper moved outside component for better performance
 const getPreferenceIcon = (key: string) => {
@@ -34,12 +33,7 @@ export function ProfileCard({
 }) {
   // [ready] Expand state for living habits
   const [isExpanded, setIsExpanded] = useState(false);
-  const INITIAL_VISIBLE_PREFS = 2;
-
-  // [dev-only] Combine real and dummy preferences for demonstration
-  const allPreferences = profile
-    ? [...profile.preferences]
-    : [];
+  const INITIAL_VISIBLE_PREFS = 4;
 
   // [ready] Reset expand state when profile changes
   useEffect(() => {
@@ -144,41 +138,41 @@ export function ProfileCard({
                     Living Habits
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {allPreferences
+                    {profile.preferences
                       .slice(
                         0,
                         isExpanded
-                          ? allPreferences.length
+                          ? profile.preferences.length
                           : INITIAL_VISIBLE_PREFS,
                       )
-                      .map(([key, value]) => (
+                      .map((pref) => (
                         <div
-                          key={key}
+                          key={pref.name}
                           className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800"
                         >
                           <div className="p-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 shadow-sm shrink-0">
-                            {getPreferenceIcon(key)}
+                            {getPreferenceIcon(pref.name)}
                           </div>
                           <div className="min-w-0">
                             <p className="text-[9px] text-zinc-400 uppercase font-semibold truncate">
-                              {key.replace("_", " ")}
+                              {pref.name}
                             </p>
                             <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 capitalize truncate">
-                              {value}
+                              {pref.value}
                             </p>
                           </div>
                         </div>
                       ))}
                   </div>
                   {/* [ready] Expand/Collapse Button */}
-                  {allPreferences.length > INITIAL_VISIBLE_PREFS && (
+                  {profile.preferences.length > INITIAL_VISIBLE_PREFS && (
                     <button
                       onClick={() => setIsExpanded(!isExpanded)}
                       className="mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors flex items-center gap-1"
                     >
                       {isExpanded
                         ? "Show Less"
-                        : `+${allPreferences.length - INITIAL_VISIBLE_PREFS} More`}
+                        : `+${profile.preferences.length - INITIAL_VISIBLE_PREFS} More`}
                     </button>
                   )}
                 </div>
