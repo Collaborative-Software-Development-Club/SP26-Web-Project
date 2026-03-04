@@ -1,9 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-
-export type RoommatePreference = {
-    preference_id: string;
-    importance: number;
-};
+import { RoommatePreference } from "@/app/(match)/discovery/types";
 
 // Service for user profile team to create roommate preference
 export async function createRoommatePreference({
