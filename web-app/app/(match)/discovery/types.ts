@@ -18,15 +18,13 @@ export type LikedYouProfile = UserProfile & {
     message: string;
 };
 
-export type RoommatePreference = {
-    preference_id: string;
-    importance: number;
-}
-
 export type RoommatePreferenceWithName = {
     preference_id: string;
     importance: number;
     name: string;
 }
 
-export type Preference = [string, string];
+export type Preference = {
+    id: string;
+    value: number;
+};

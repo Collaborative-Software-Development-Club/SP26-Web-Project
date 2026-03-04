@@ -2,9 +2,11 @@
 
 import { UndoButton } from "./_components/undo-button";
 import { ProfileCard } from "./_components/profile-card";
-import { Filter } from "./_components/filter"
+import { Filter } from "./_components/filter";
 import { useState } from "react";
 import { UserProfile } from "./types";
+//mock data for now
+import roommatePreference from "@/mock/roommate_preference.json";
 
 export function DiscoveryClient({
   initialProfiles,
@@ -61,35 +63,13 @@ export function DiscoveryClient({
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center mb-10">
-      {/* [dev-only] Developer Debug Bar */}
-      {process.env.NODE_ENV !== "production" && (
-        <div className="w-full max-w-4xl mb-6 p-4 rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
-          <span className="text-sm font-medium text-zinc-500">
-            Developer Preview Mode
-          </span>
-          <select
-            className="bg-transparent border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-            value={selectedUserId}
-            onChange={(e) => handleProfileChange(e.target.value)}
-          >
-            {sortedProfiles.map((p) => (
-              <option key={p.user_id} value={p.user_id}>
-                {p.fname} {p.lname} ({p.major})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      
-      <Filter preferences = {selectedProfile.preferences}></Filter>
+      <Filter preferences={roommatePreference}></Filter>
       <ProfileCard profile={selectedProfile} handleNext={handleNext} />
       <UndoButton
         handleBefore={handleBefore}
         isDiscovery={true}
         targetUserId={selectedProfile.user_id}
       />
-      
-      
     </div>
   );
 }
