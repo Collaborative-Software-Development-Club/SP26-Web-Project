@@ -1,96 +1,88 @@
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 # Getting the URL 
 base_url = "https://offcampus.osu.edu"
 url = base_url + "/search-housing.aspx"
 
-# DEBUG: Declares our page counter for debugging sake
 page_num = 1
 
-# Opens the file that we are putting the scraped data into
-with open("test-docs/addresses.txt", "w", encoding="utf-8") as f:
+# This will store every property as a dictionary
+all_properties = []
 
-    # We keep looping while the url isn't null (untill next button doesnt work)
-    while url != None:
+while url is not None:
 
-        # Then we make a request to get information from this specific page:
-        response = requests.get(url)
+    response = requests.get(url)
 
-        # Then we check to make sure that our requests succeeded
-        if response.status_code == 200 :
+    if response.status_code == 200:
 
-            # Getting the soup variable for the main page
-            soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
 
-            # Selects all of the <a> tags and looks for "HypAddress" which contains the address listings
-            address_tags = soup.select('a[id*="HypAddress"]')
+        address_tags = soup.select('a[id*="HypAddress"]')
 
-            # Now we loop through all of these tags
-            for tag in address_tags:
+        for tag in address_tags:
 
-                # Getting the address from the text of the tag
-                address = tag.get_text(strip=True)
+            address = tag.get_text(strip=True)
+            address_link = tag["href"]
+            full_address_link = base_url + address_link
 
-                # Getting the link associated with the address
-                address_link = tag["href"]
-                full_address_link = base_url + address_link
+            # Create base property dictionary
+            property_data = {
+                "Address": address,
+                "Detail_URL": full_address_link
+            }
 
-                # Then we write the address and the link associated with the address
-                f.write(address + "\n")
-                f.write(full_address_link + "\n")
-                f.write("-----------------------------------------------------------------------------\n")
+            # ----------------- Getting Detail Information ------------------- #
 
-                ### ----------------- Getting Detail Information ------------------- ###
+            detail_response = requests.get(full_address_link)
 
-                # Requesting the information from the detail url
-                detail_response = requests.get(full_address_link)
+            if detail_response.status_code == 200:
 
-                # Then we check to see if the url request succeeded
-                if detail_response.status_code == 200:
+                detail_soup = BeautifulSoup(detail_response.text, "html.parser")
+                list_items = detail_soup.find_all("li")
 
-                    # Getting the soup from the detail response
-                    detail_soup = BeautifulSoup(detail_response.text, "html.parser")
-                    
-                    # Creating a dictionary to hold each property
-                    property_data = {}
+                for item in list_items:
+                    strong_tag = item.find("strong")
+                    if strong_tag is not None:
 
-                    # Then we get all of the items in a list on this page
-                    list_items = detail_soup.find_all("li")
+                        label = strong_tag.get_text(strip=True).replace(":", "")
+                        full_text = item.get_text(strip=True)
+                        value = full_text.replace(strong_tag.get_text(strip=True), "").strip()
 
-                    # Now we loop through each of the items and look for strong_tags
-                    for item in list_items:
-                        strong_tag = item.find("strong")
-                        if strong_tag != None:
+                        property_data[label] = value
 
-                            # We take the lable and print it out into the txt
-                            label = strong_tag.get_text(strip=True).replace(":", "")
-                            full_text = item.get_text(strip=True)
-                            value = full_text.replace(strong_tag.get_text(strip=True), "").strip()
-
-                            property_data[label] = value
-                            f.write(f"{label}: {value}\n")
-                else:
-
-                    # Prints off an error message if unable to get any details
-                    f.write("Unable to find any details for this property.")
-                f.write("-----------------------------------------------------------------------------\n")
-
-            # Now we look for a next button using the title attribute
-            next_button = soup.find("a", title = "Go to Next Page")
-
-            # Then we make sure that the next button works and if not assigns the url to null to break the loop
-            if next_button != None:
-
-                # DEBUG: Prints off as a page has successfully been printed
-                print("Page " + str(page_num) + " has been successfully printed.")
-                page_num += 1
-
-                # Changes our url to the next page
-                url = base_url + next_button["href"]
             else:
-                url = None
+                property_data["Details_Error"] = "Unable to retrieve property details"
+
+            # Add this property to master list
+            all_properties.append(property_data)
+
+        # Handle Pagination
+        next_button = soup.find("a", title="Go to Next Page")
+
+        if next_button is not None:
+            print(f"Page {page_num} scraped successfully.")
+            page_num += 1
+            url = base_url + next_button["href"]
         else:
-            # If we do not get a code 200 then something has failed and we report an error message.
-            print("Request failed:", response.status_code)
-            break
+            url = None
+
+    else:
+        print("Request failed:", response.status_code)
+        break
+
+# ----------------- Convert to DataFrame ------------------- #
+
+df = pd.DataFrame(all_properties)
+
+# Optional: Fill missing values with empty string
+df = df.fillna("")
+
+# Save to CSV (optional)
+df.to_csv("osu_offcampus_housing.csv", index=False)
+
+# Save to JSON
+df.to_json("osu_offcampus_housing.json", orient="records", indent=4)
+
+print("Scraping complete. Data saved to CSV and JSON.")

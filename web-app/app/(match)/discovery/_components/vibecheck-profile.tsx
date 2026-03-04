@@ -3,25 +3,20 @@
 import { useState } from "react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
-import type { UserProfile } from "../discovery-page"; // adjust path as needed
+import { LikedYouProfile } from "../types";
 import Image from "next/image";
-
-interface VibeCheckProfileProps {
-  profile: UserProfile;
-  /** The message the other user sent when they vibed with you */
-  incomingMessage: string;
-  onAccept: (userId: string) => void;
-  onPass: (userId: string) => void;
-  isLoading?: boolean;
-}
 
 export function VibeCheckProfile({
   profile,
-  incomingMessage,
   onAccept,
   onPass,
   isLoading,
-}: VibeCheckProfileProps) {
+}: {
+  profile: LikedYouProfile;
+  onAccept: (userId: string) => void;
+  onPass: (userId: string) => void;
+  isLoading?: boolean;
+}) {
   const [replyText, setReplyText] = useState("");
 
   const yearLabel: Record<number, string> = {
@@ -43,7 +38,7 @@ export function VibeCheckProfile({
           sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-black/30 to-transparent" />
         <div className="absolute bottom-4 left-5 right-5">
           <h2 className="text-white text-2xl font-bold leading-tight">
             {profile.fname} {profile.lname}
@@ -78,16 +73,16 @@ export function VibeCheckProfile({
         {/* Preferences */}
         {profile.preferences.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
-            {profile.preferences.map(([key, value]) => (
+            {profile.preferences.map((pref) => (
               <div
-                key={key}
+                key={pref.preference_id}
                 className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
               >
                 <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
-                  {key}
+                  {pref.name}
                 </span>
                 <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {value}
+                  {pref.value}
                 </span>
               </div>
             ))}
@@ -103,7 +98,7 @@ export function VibeCheckProfile({
             Their message to you
           </p>
           <div className="rounded-2xl rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200 italic">
-            "{incomingMessage}"
+            &quot;{profile.message}&quot;
           </div>
         </div>
 
