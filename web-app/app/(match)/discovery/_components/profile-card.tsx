@@ -1,21 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Preference, UserProfile } from "../types";
-import { BookOpen, Cigarette, Cat, Moon, Users, Heart, X } from "lucide-react";
+import { UserProfile } from "../types";
+import { BookOpen, Cigarette, Cat, Moon, Users, } from "lucide-react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 
-// [dev-only] Dummy preferences moved outside component to prevent recreation on render
-const DUMMY_PREFERENCES: Preference[] = [
-  ["cleanliness", "Very Clean"],
-  ["cooking", "Often"],
-  ["noise_level", "Quiet"],
-  ["study_habits", "Night Owl"],
-  ["alcohol", "Socially"],
-];
 
 // [ready] Icon helper moved outside component for better performance
 const getPreferenceIcon = (key: string) => {
@@ -46,7 +38,7 @@ export function ProfileCard({
 
   // [dev-only] Combine real and dummy preferences for demonstration
   const allPreferences = profile
-    ? [...profile.preferences, ...DUMMY_PREFERENCES]
+    ? [...profile.preferences]
     : [];
 
   // [ready] Reset expand state when profile changes

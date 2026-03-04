@@ -25,6 +25,6 @@ export type RoommatePreferenceWithName = {
 }
 
 export type Preference = {
-    id: string;
+    preference_id: string;
     value: number;
 };
