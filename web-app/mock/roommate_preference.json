@@ -1,0 +1,15 @@
+[
+    { "preference_id": "smoker", "name": "Smoker" , "importance": 0},
+    { "preference_id": "pets", "name": "Pets", "importance": 1},
+    { "preference_id": "guests", "name": "Guests", "importance": 2},
+    { "preference_id": "overnight_guest", "name": "Overnight guest", "importance": 5},
+    { "preference_id": "tidiness", "name": "Tidiness level", "importance": 3},
+    { "preference_id": "noise", "name": "Noise level", "importance": 4},
+    { "preference_id": "sharing", "name": "Sharing items", "importance": 5},
+    { "preference_id": "alcohol", "name": "Alcohol use", "importance": 5},
+    { "preference_id": "smoking", "name": "Smoking", "importance": 2},
+    { "preference_id": "sleep", "name": "Sleep", "importance": 3},
+    { "preference_id": "activity", "name": "Activity", "importance": 0},
+    { "preference_id": "workload", "name": "Workload", "importance": 1},
+    { "preference_id": "sleep_schedule", "name": "Sleep Schedule", "importance": 2}
+  ]

@@ -11,17 +11,12 @@ export type UserProfile = {
     created_at: string;
     last_edited_at: string;
     hobbies: string[];
-    preferences: Preference[];
+    preferences: PreferenceWithName[];
   };
 
 export type LikedYouProfile = UserProfile & {
     message: string;
 };
-
-export type RoommatePreference = {
-    preference_id: string;
-    importance: number;
-}
 
 export type RoommatePreferenceWithName = {
     preference_id: string;
@@ -29,4 +24,13 @@ export type RoommatePreferenceWithName = {
     name: string;
 }
 
-export type Preference = [string, string];
+export type Preference = {
+    preference_id: string;
+    value: number;
+};
+
+export type PreferenceWithName = {
+    preference_id: string;
+    name: string;
+    value: number;
+};
