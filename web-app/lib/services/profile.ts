@@ -9,6 +9,7 @@ type Preference = {
 }
 
 export interface UserProfile {
+    user_id: string;
     is_active: boolean;
     fname: string;
     lname: string;
@@ -29,6 +30,7 @@ export async function getUserProfiles(user_ids: string[]): Promise<UserProfile[]
     const {data, error} = await supabase
         .from('user_profiles')
         .select(`
+            user_id,
             is_active,
             fname,
             lname,
@@ -39,11 +41,11 @@ export async function getUserProfiles(user_ids: string[]): Promise<UserProfile[]
             year,
             created_at,
             last_edited_at,
-            preferences (
+            user_profile_preferences (
                 name,
                 value
             ),
-            hobbies (
+            user_profile_hobbies (
                 name
             )
         `)
@@ -53,19 +55,20 @@ export async function getUserProfiles(user_ids: string[]): Promise<UserProfile[]
 
     const profiles: UserProfile[] = data.map(row => ({
         ...row,
-        preferences: row.preferences ?? [],
-        hobbies: row.hobbies?.map((h: {name: string}) => h.name) ?? []
+        preferences: row.user_profile_preferences ?? [],
+        hobbies: row.user_profile_hobbies?.map((h: {name: string}) => h.name) ?? []
     }));
 
     return profiles;
 }
 
-export async function GetAllUserProfiles() {
+export async function GetAllUserProfiles(): Promise<UserProfile[]> {
     const supabase = await createClient();
     
     const {data, error} = await supabase
         .from('user_profiles')
         .select(`
+            user_id,
             is_active,
             fname,
             lname,
@@ -76,11 +79,11 @@ export async function GetAllUserProfiles() {
             year,
             created_at,
             last_edited_at,
-            preferences (
+            user_profile_preferences (
                 name,
                 value
             ),
-            hobbies (
+            user_profile_hobbies (
                 name
             )
         `)
@@ -89,23 +92,32 @@ export async function GetAllUserProfiles() {
 
     const profiles: UserProfile[] = data.map(row => ({
         ...row,
-        preferences: row.preferences ?? [],
-        hobbies: row.hobbies?.map((h: {name: string}) => h.name) ?? []
+        preferences: row.user_profile_preferences ?? [],
+        hobbies: row.user_profile_hobbies?.map((h: {name: string}) => h.name) ?? []
     }));
 
     return profiles;
 }
 
-export async function getPotentialMatches(user_id: string) {
-    const userData: UserProfile[] = await GetAllUserProfiles();
+export async function getPotentialMatches(): Promise<Preference[]> {
+    const supabase = await createClient();
 
+    const {data, error} = await supabase
+        .from('user_preferences')
+        .select(`name, value`)
+        .order('random', { ascending: false })
+        .limit(30);
+
+    if (error) throw error;
+
+    return data as Preference[];
 }
 
-export async function getPreferences(preference_id: string): Promise<Preference> {
+export async function getPreference(preference_id: string): Promise<Preference> {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-        .from("preferences")
+        .from("user_preferences")
         .select(`name, value`)
         .eq("id", preference_id)
         .single();
@@ -115,3 +127,5 @@ export async function getPreferences(preference_id: string): Promise<Preference>
 
     return data as Preference;
 }
+
+console.log(GetAllUserProfiles());

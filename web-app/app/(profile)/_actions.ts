@@ -128,6 +128,27 @@ export async function createProfileAction(formData: FormData) {
   if (error) {
     return { error: error.message };
   }
-  
+
+  // ensure related records exist in the join tables so the user_id is linked
+  // these tables currently don't have any extra information, just associating
+  // the profile with hobbies/preferences; we'll insert a bare record for now
+  const { error: hobbiesError } = await supabase
+    .from("user_profile_hobbies")
+    .insert([{ 
+      user_id: user.id,
+      created_at: now
+     }]);
+  const { error: prefsError } = await supabase
+    .from("user_profile_preferences")
+    .insert([{
+      user_id: user.id,
+      created_at: now
+     }]);
+
+  if (hobbiesError || prefsError) {
+    // non-critical; log or ignore but could return an error if desired
+    console.warn("error creating empty user profile relations", hobbiesError, prefsError);
+  }
+
   redirect("/profile");
 }
