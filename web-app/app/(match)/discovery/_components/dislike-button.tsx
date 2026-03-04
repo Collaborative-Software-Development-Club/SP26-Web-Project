@@ -9,14 +9,21 @@ export function DislikeButton({
   handleNext,
   targetUserId,
   isDiscovery, // true on Discovery page, false on Liked You page
+  onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
   isDiscovery: boolean;
+  onClick?: () => void; // Optional callback for additional actions on click
 }) {
   const handleDislike = useCallback(() => {
     console.log("Dislike");
-    handleNext();
+    
+    if (onClick) {
+      onClick(); // Trigger animation first
+    } else {
+      handleNext(); // Fallback if no animation logic is passed
+    }
 
     //Commented out to prevent dislike actions until its ready
     if (isDiscovery) {
@@ -24,7 +31,7 @@ export function DislikeButton({
     } else {
       //saveMatchSwipe(targetUserId, "dislike", null);
     }
-  }, [handleNext, isDiscovery, targetUserId]);
+  }, [handleNext, isDiscovery, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

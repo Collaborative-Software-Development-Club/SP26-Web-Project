@@ -10,15 +10,23 @@ export function UndoButton({
   targetUserId,
   isDiscovery, // true on Discovery page, false on Liked You page
   lastEntry,
+  onClick,
 }: {
   handleBefore: () => void;
   targetUserId: string;
   isDiscovery: boolean;
   lastEntry?: string;
+  onClick?: () => void; // Optional callback for additional actions on click
 }) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
-    handleBefore();
+    
+    if (onClick) {
+      onClick(); 
+    } else {
+      // Fallback if used elsewhere without animation logic
+      handleBefore();
+    }
 
     //Commented out to prevent undo actions until its ready
     if (isDiscovery) {
@@ -26,7 +34,7 @@ export function UndoButton({
     } else {
       //undoMatchSwipe(targetUserId);
     }
-  }, [handleBefore, isDiscovery, targetUserId]);
+  }, [handleBefore, isDiscovery, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -45,7 +53,7 @@ export function UndoButton({
         onClick={handleUndo}
         className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
       >
-        <Undo2 className="w-10 h-10" />
+        <Undo2 className="w-8 h-8" />
       </button>
     );
   };
