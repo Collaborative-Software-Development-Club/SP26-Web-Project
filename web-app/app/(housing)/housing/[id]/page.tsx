@@ -4,8 +4,9 @@ import { HousingDetail } from "../_components/housing-detail";
 export default async function HousingDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const listing = await getHousingListing(params.id);
+  const { id } = await params;
+  const listing = await getHousingListing(id);
   return <HousingDetail listing={listing} />;
 }
