@@ -32,7 +32,7 @@ export function Navbar({ user }: { user: User | null }) {
 
         <nav className="flex flex-wrap items-center gap-4">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname.includes(link.href);
 
             return (
               <Button

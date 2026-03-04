@@ -48,7 +48,9 @@ export async function createConversation(
     );
 
   if (membersError) {
-    throw new Error(`Failed to add conversation members: ${membersError.message}`);
+    throw new Error(
+      `Failed to add conversation members: ${membersError.message}`,
+    );
   }
 
   const messagesToSend: { sender_id: string; content: string }[] = [];
@@ -71,7 +73,9 @@ export async function createConversation(
       );
 
     if (messagesError) {
-      throw new Error(`Failed to send initial messages: ${messagesError.message}`);
+      throw new Error(
+        `Failed to send initial messages: ${messagesError.message}`,
+      );
     }
 
     await supabase
@@ -86,61 +90,45 @@ export async function createConversation(
 /**
  * Returns all conversations that the given user is a part of.
  */
-export async function getConversations(user_id: string): Promise<ChatConversation[]> {
+export async function getConversations(
+  user_id: string,
+): Promise<ChatConversation[]> {
   const supabase = await createClient();
-
-  const { data: memberships, error: membersError } = await supabase
-    .from("chat_conversation_members")
-    .select("conversation_id")
-    .eq("user_id", user_id);
-
-  if (membersError) {
-    throw new Error(`Failed to fetch conversations: ${membersError.message}`);
-  }
-
-  if (!memberships || memberships.length === 0) {
-    return [];
-  }
-
-  const conversationIds = memberships.map((m) => m.conversation_id);
-
-  const { data: conversations, error: convError } = await supabase
+  const { data, error } = await supabase
     .from("chat_conversations")
-    .select("conversation_id, created_at, last_message_at")
-    .in("conversation_id", conversationIds)
-    .order("last_message_at", { ascending: false });
+    .select(
+      `conversation_id,
+     created_at,
+     last_message_at,
+     chat_conversation_members!inner(
+       user_id
+     ),
+     all_members:chat_conversation_members(
+       user_id
+     ),
+     latest_message:chat_messages(
+            message_id,
+            sender_id,
+            content,
+            created_at
+          )
+     `,
+    )
+    .eq("chat_conversation_members.user_id", user_id)
+    .order("last_message_at", { ascending: false })
+    .order("created_at", { ascending: false, referencedTable: "chat_messages" })
+    .limit(1, { referencedTable: "chat_messages" });
 
-  if (convError) {
-    throw new Error(`Failed to fetch conversations: ${convError.message}`);
+  if (error) {
+    throw new Error(`Failed to fetch conversations: ${error.message}`);
   }
-
-  const result: ChatConversation[] = [];
-
-  for (const conv of conversations ?? []) {
-    const { data: otherMembers } = await supabase
-      .from("chat_conversation_members")
-      .select("user_id")
-      .eq("conversation_id", conv.conversation_id)
-      .neq("user_id", user_id);
-
-    const other_member_ids = (otherMembers ?? []).map((m) => m.user_id);
-
-    const { data: lastMsg } = await supabase
-      .from("chat_messages")
-      .select("content, created_at")
-      .eq("conversation_id", conv.conversation_id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    result.push({
-      id: conv.conversation_id,
-      created_at: conv.created_at,
-      last_message: lastMsg?.content ?? undefined,
-      last_message_at: lastMsg?.created_at ?? conv.last_message_at ?? undefined,
-      other_member_ids,
-    });
-  }
-
-  return result;
+  return data.map((raw) => ({
+    id: raw.conversation_id,
+    created_at: raw.created_at,
+    last_message: raw.latest_message?.[0]?.content,
+    last_message_at: raw.latest_message?.[0]?.created_at,
+    other_member_ids: raw.all_members
+      .map((m) => m.user_id)
+      .filter((id) => id !== user_id),
+  }));
 }
