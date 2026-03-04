@@ -9,14 +9,21 @@ export function LikeButton({
   handleNext,
   targetUserId,
   isDiscovery, // true on Discovery page, false on Liked You page
+  onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
   isDiscovery: boolean;
+  onClick?: () => void; // Optional callback for additional actions on click
 }) {
   const handleLike = useCallback(() => {
     console.log("Like");
-    handleNext();
+    
+    if (onClick) {
+      onClick(); // Trigger animation first
+    } else {
+      handleNext(); // Fallback if no animation logic is passed
+    }
 
     //Commented out to prevent swipe actions until its ready
     if (isDiscovery) {
@@ -24,7 +31,7 @@ export function LikeButton({
     } else {
       //saveMatchSwipe(targetUserId, "like", null);
     }
-  }, [handleNext, isDiscovery, targetUserId]);
+  }, [handleNext, isDiscovery, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

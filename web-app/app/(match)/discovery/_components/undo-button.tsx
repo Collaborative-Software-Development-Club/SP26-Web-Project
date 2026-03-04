@@ -10,15 +10,23 @@ export function UndoButton({
   targetUserId,
   isDiscovery, // true on Discovery page, false on Liked You page
   lastEntry,
+  onClick,
 }: {
   handleBefore: () => void;
   targetUserId: string;
   isDiscovery: boolean;
   lastEntry?: string;
+  onClick?: () => void; // Optional callback for additional actions on click
 }) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
-    handleBefore();
+    
+    if (onClick) {
+      onClick(); 
+    } else {
+      // Fallback if used elsewhere without animation logic
+      handleBefore();
+    }
 
     //Commented out to prevent undo actions until its ready
     if (isDiscovery) {
@@ -26,7 +34,7 @@ export function UndoButton({
     } else {
       //undoMatchSwipe(targetUserId);
     }
-  }, [handleBefore, isDiscovery, targetUserId]);
+  }, [handleBefore, isDiscovery, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

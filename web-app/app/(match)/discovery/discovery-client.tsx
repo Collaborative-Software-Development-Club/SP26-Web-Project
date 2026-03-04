@@ -64,12 +64,7 @@ export function DiscoveryClient({
   return (
     <div className="h-full w-full flex flex-col items-center justify-center mb-10">
       <Filter preferences={roommatePreference}></Filter>
-      <ProfileCard profile={selectedProfile} handleNext={handleNext} />
-      <UndoButton
-        handleBefore={handleBefore}
-        isDiscovery={true}
-        targetUserId={selectedProfile.user_id}
-      />
+      <ProfileCard profile={selectedProfile} handleNext={handleNext} handleBefore={handleBefore} />
     </div>
   );
 }

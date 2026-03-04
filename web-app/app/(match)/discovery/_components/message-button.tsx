@@ -21,10 +21,12 @@ export function MessageButton({
   handleNext,
   targetUserId,
   isDiscovery, // true on Discovery page, false on Liked You page
+  onClick, // Optional callback for additional actions on click
 }: {
   handleNext: () => void;
   targetUserId: string;
   isDiscovery: boolean;
+  onClick?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -35,7 +37,13 @@ export function MessageButton({
       setError("You cannot send an empty message");
     } else {
       console.log(message);
-      handleNext();
+      
+      if (onClick) {
+        onClick(); // Trigger animation first
+      } else {
+        handleNext(); // Fallback if no animation logic is passed
+      }
+
       if (isDiscovery) {
         saveSwipe(targetUserId, "like", message);
       } else {
@@ -45,7 +53,7 @@ export function MessageButton({
       setError("");
       setOpen(false);
     }
-  }, [message, handleNext, isDiscovery, targetUserId]);
+  }, [message, handleNext, isDiscovery, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
