@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ImportanceSlider } from "./importance-slider";
-import { RoommatePreferenceWithName } from "../types";
+import { RoommatePreference } from "../types";
 
 //Map option to a value
 const yesNoPreferences = ["smoker", "pets"];
@@ -20,12 +20,12 @@ const yesNoPreferences = ["smoker", "pets"];
 export function Filter({
   preferences,
 }: {
-  preferences: RoommatePreferenceWithName[];
+  preferences: RoommatePreference[];
 }) {
   const [open, setOpen] = useState(false); //dialog window
 
   const [tempValues, setValues] =
-    useState<RoommatePreferenceWithName[]>(preferences);
+    useState<RoommatePreference[]>(preferences);
 
   const handleSliderUpdate = (id: string, newVal: number[]) => {
     setValues((prev) =>
