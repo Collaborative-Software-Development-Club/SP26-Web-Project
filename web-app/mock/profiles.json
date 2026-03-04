@@ -16,6 +16,11 @@
         ["smoker", "no"],
         ["pets", "yes"],
         ["sleep_schedule", "early"]
+      ],
+      "lifestyle_images": [
+        "/demo/selfie.png",
+        "/demo/room1.png",
+        "/demo/room2.png"
       ]
     },
     {

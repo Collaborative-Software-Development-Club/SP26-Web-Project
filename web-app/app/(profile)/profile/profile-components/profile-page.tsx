@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card"
 import EditName from "./modals/edit-name"
 import profiles from "mock/profiles.json"
 import SelectHobbies from "./modals/hobby-select";
+import ProfileImageScroll from "./image-scroll";
 export default function ProfilePage() {
   const user = profiles[0];
   
@@ -38,8 +39,10 @@ export default function ProfilePage() {
           </div>
           
         </Card>
-        
-        
+        <Card className="p-4 gap-1">
+          <h2 className="text-xl font-semibold">Images</h2>
+          <ProfileImageScroll userId="1"/>
+        </Card>
       </Card>
       
     </div>
