@@ -13,9 +13,10 @@
       "last_edited_at": "2025-02-08T14:32:10Z",
       "hobbies": ["gym", "reading", "boba"],
       "preferences": [
-        ["smoker", "no"],
-        ["pets", "yes"],
-        ["sleep_schedule", "early"]
+        {"preference_id": "1", "name": "Smoker", "value": 0},
+        {"preference_id": "2", "name": "Pets", "value": 1},
+        {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
+        {"preference_id": "4", "name": "Guests", "value": 3}
       ]
     },
     {
@@ -32,9 +33,10 @@
       "last_edited_at": "2025-03-05T09:10:45Z",
       "hobbies": ["gaming", "basketball", "anime"],
       "preferences": [
-        ["smoker", "no"],
-        ["pets", "no"],
-        ["sleep_schedule", "late"]
+        {"preference_id": "1", "name": "Smoker", "value": 0},
+        {"preference_id": "2", "name": "Pets", "value": 1},
+        {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
+        {"preference_id": "4", "name": "Guests", "value": 3}
       ]
     },
     {
@@ -51,9 +53,10 @@
       "last_edited_at": "2025-01-15T18:22:00Z",
       "hobbies": ["hiking", "cooking", "yoga"],
       "preferences": [
-        ["smoker", "no"],
-        ["pets", "yes"],
-        ["guests", "occasionally"]
+        {"preference_id": "1", "name": "Smoker", "value": 1},
+        {"preference_id": "2", "name": "Pets", "value": 1},
+        {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
+        {"preference_id": "4", "name": "Guests", "value": 0}
       ]
     },
     {
@@ -70,9 +73,10 @@
       "last_edited_at": "2025-02-15T21:05:33Z",
       "hobbies": ["music", "concerts", "photography"],
       "preferences": [
-        ["smoker", "yes"],
-        ["pets", "no"],
-        ["sleep_schedule", "late"]
+        {"preference_id": "1", "name": "Smoker", "value": 1},
+        {"preference_id": "2", "name": "Pets", "value": 0},
+        {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
+        {"preference_id": "4", "name": "Guests", "value": 0}
       ]
     },
     {
@@ -89,9 +93,10 @@
           "last_edited_at": "2025-02-12T11:20:45Z",
           "hobbies": ["basketball", "weightlifting", "podcasts"],
           "preferences": [
-            ["smoker", "no"],
-            ["pets", "no"],
-            ["sleep_schedule", "early"]
+            {"preference_id": "1", "name": "Smoker", "value": 0},
+            {"preference_id": "2", "name": "Pets", "value": 0},
+            {"preference_id": "3", "name": "Sleep Schedule", "value": 1},
+            {"preference_id": "4", "name": "Guests", "value": 0}
           ]
         },
         {
@@ -108,9 +113,10 @@
           "last_edited_at": "2025-01-22T16:05:12Z",
           "hobbies": ["cooking", "traveling", "yoga"],
           "preferences": [
-            ["smoker", "no"],
-            ["pets", "yes"],
-            ["guests", "frequently"]
+            {"preference_id": "1", "name": "Smoker", "value": 0},
+            {"preference_id": "2", "name": "Pets", "value": 1},
+            {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
+            {"preference_id": "4", "name": "Guests", "value": 3}
           ]
         },
         {
@@ -127,9 +133,10 @@
           "last_edited_at": "2025-02-14T23:40:18Z",
           "hobbies": ["coding", "gaming", "coffee"],
           "preferences": [
-            ["smoker", "no"],
-            ["pets", "no"],
-            ["sleep_schedule", "late"]
+            {"preference_id": "1", "name": "Smoker", "value": 0},
+            {"preference_id": "2", "name": "Pets", "value": 0},
+            {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
+            {"preference_id": "4", "name": "Guests", "value": 0}
           ]
         },
         {
@@ -146,9 +153,10 @@
           "last_edited_at": "2025-02-16T10:12:00Z",
           "hobbies": ["painting", "reading", "pilates"],
           "preferences": [
-            ["smoker", "no"],
-            ["pets", "yes"],
-            ["guests", "occasionally"]
+            {"preference_id": "1", "name": "Smoker", "value": 0},
+            {"preference_id": "2", "name": "Pets", "value": 1},
+            {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
+            {"preference_id": "4", "name": "Guests", "value": 3}
           ]
         },
         {
@@ -165,9 +173,10 @@
           "last_edited_at": "2025-02-17T08:45:29Z",
           "hobbies": ["football", "gym", "movies"],
           "preferences": [
-            ["smoker", "yes"],
-            ["pets", "no"],
-            ["sleep_schedule", "early"]
+            {"preference_id": "1", "name": "Smoker", "value": 1},
+            {"preference_id": "2", "name": "Pets", "value": 0},
+            {"preference_id": "3", "name": "Sleep Schedule", "value": 1},
+            {"preference_id": "4", "name": "Guests", "value": 0}
           ]
         }
   ] 
