@@ -37,7 +37,7 @@ export function MessageButton({
       setError("You cannot send an empty message");
     } else {
       console.log(message);
-      
+
       if (onClick) {
         onClick(); // Trigger animation first
       } else {
@@ -45,9 +45,9 @@ export function MessageButton({
       }
 
       if (isDiscovery) {
-        saveSwipe(targetUserId, "like", message);
+        //saveSwipe(targetUserId, "like", message);
       } else {
-        saveMatchSwipe(targetUserId, "like", message);
+        //saveMatchSwipe(targetUserId, "like", message);
       }
       setMessage("");
       setError("");

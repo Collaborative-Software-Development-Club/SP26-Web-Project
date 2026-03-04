@@ -53,7 +53,7 @@ export function UndoButton({
         onClick={handleUndo}
         className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
       >
-        <Undo2 className="w-10 h-10" />
+        <Undo2 className="w-8 h-8" />
       </button>
     );
   };
