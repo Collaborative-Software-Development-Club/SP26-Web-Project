@@ -14,6 +14,10 @@ export type UserProfile = {
     preferences: Preference[];
   };
 
+export type DiscoveryProfile = UserProfile & {
+    match_score: number;
+};
+
 export type LikedYouProfile = UserProfile & {
     message: string;
 };
@@ -22,6 +26,7 @@ export type RoommatePreference = {
     preference_id: string;
     importance: number;
     name: string;
+    value: number;
 }
 
 export type Preference = {

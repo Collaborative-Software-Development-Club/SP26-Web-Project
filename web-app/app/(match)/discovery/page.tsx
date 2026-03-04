@@ -1,10 +1,22 @@
 import { requireAuth } from "@/lib/auth";
 import { DiscoveryClient } from "./discovery-client";
-import profiles from "@/mock/profiles.json";
-import { UserProfile } from "./types";
+import { DiscoveryProfile, RoommatePreference } from "./types";
+import { getUserRoommatePreferences, getDiscoveryProfiles } from "./_actions";
+//mock
+import roommatePreference from "@/mock/roommate_preference.json";
+import discoveryProfiles from "@/mock/discover_profiles.json";
 
 export default async function DiscoveryPage() {
   const user = await requireAuth();
+  const c_roommatePreferences = await getUserRoommatePreferences(user.id);
+  const c_discoveryProfiles = await getDiscoveryProfiles(
+    c_roommatePreferences.map((preference) => preference.preference_id),
+  );
 
-  return <DiscoveryClient initialProfiles={profiles as UserProfile[]} />;
+  return (
+    <DiscoveryClient
+      initialProfiles={discoveryProfiles as DiscoveryProfile[]}
+      roommatePreferences={roommatePreference as RoommatePreference[]}
+    />
+  );
 }

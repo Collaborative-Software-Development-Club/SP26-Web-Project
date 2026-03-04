@@ -1,7 +1,7 @@
 /* LikedYouClient Skeleton */
 export default function LikedYouLoading() {
   return (
-    <div className="flex flex-col items-center h-full w-full px-4">
+    <div className="flex flex-col items-center w-full px-4">
       {/* Header */}
       <div className="w-full max-w-lg mb-8 text-center space-y-2">
         <div className="h-8 w-36 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse mx-auto" />

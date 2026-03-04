@@ -1,9 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { UserProfile, LikedYouProfile, RoommatePreference } from "./types";
+import { UserProfile, LikedYouProfile, RoommatePreference, DiscoveryProfile } from "./types";
+import { getUserProfiles } from "@/lib/services/profile";
 
-export async function getLikedYouProfiles() {
+export async function getLikedYouProfiles(): Promise<LikedYouProfile[]> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,15 +31,12 @@ export async function getLikedYouProfiles() {
     likedSwipes.map((swipe) => [swipe.user_id, swipe.message]),
   );
 
-  // const likedProfiles = await profileService.getProfiles(likedSwipes.map((swipe) => swipe.user_id);
+  const likedProfiles = await getUserProfiles(likedSwipes.map((swipe) => swipe.user_id));
 
-  //   const likedYouProfiles: LikedYouProfile[] = likedProfiles.map((profile) => ({
-  //     ...profile,
-  //     message: userIdToMessageMap.get(profile.user_id) ?? "",
-  //   }));
-
-  return userIdToMessageMap;
-  //return likedYouProfiles;
+  return likedProfiles.map((profile: UserProfile) => ({
+    ...profile,
+    message: userIdToMessageMap.get(profile.user_id) ?? "",
+  }));
 }
 
 // General feed swipe action
@@ -203,22 +201,23 @@ export async function undoMatchSwipe(targetUserId: string) {
 }
 
 // Gets users preference table
-export async function getUserRoommatePreferences(user_id: string) {
+export async function getUserRoommatePreferences(user_id: string): Promise<RoommatePreference[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("discovery_roommate_preferences")
-    .select("preference_id, importance")
+    .select("preference_id, importance, user_preferences(name, value)")
     .eq("user_id", user_id);
 
   if (error) {
     throw new Error(`Error fetching user roommate preferences: ${error.message}`);
   } else {
-    const preferenceIds = data.map((item) => ({
+    return data.map((item) => ({
       preference_id: item.preference_id,
       importance: item.importance,
+      name: item.user_preferences[0]?.name,
+      value: item.user_preferences[0]?.value,
     }));
-    return preferenceIds;
   }
 }
 
@@ -252,3 +251,34 @@ export async function saveUserRoommatePreferences(
     );
   }
 }
+    
+  
+  /* 
+    Function gets all active user profiles and then takes a user_id to return a sorted list of match score objects
+    Matches a user with all active users in the database based on the distance in preferences
+    If we do not have preferences or importance assigned the score will default to 0    
+  */
+  export async function getDiscoveryProfiles(preference_ids: string[]): Promise<DiscoveryProfile[]> {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || user === null) {
+      throw new Error(`Error fetching current user: ${userError?.message}`);
+    }
+
+    const { data, error } = await supabase.rpc("get_ranked_matches", {
+      current_user_id: user.id,
+      preference_ids,
+    }).select("*");
+
+    if (error) {
+      throw new Error(`Error fetching discovery profiles: ${error.message}`);
+    }
+
+    return data;
+  }
+  
+  

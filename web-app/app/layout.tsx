@@ -37,7 +37,7 @@ export default async function RootLayout({
       >
         <div className="h-screen w-full flex flex-col">
           <Navbar user={user} />
-          <main className="h-full w-full">{children}</main>
+          <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
         </div>
       </body>
     </html>

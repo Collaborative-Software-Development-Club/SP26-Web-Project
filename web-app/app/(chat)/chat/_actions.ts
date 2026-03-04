@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import * as chatService from "@/lib/services/chat";
+import { ChatMessage, ConversationPreview } from "../types";
 
 /* Example from match team
 // General feed swipe action
@@ -107,10 +108,7 @@ export async function saveMatchSwipe(
 }
 */
 
-export async function sendChatMessage(
-  conversationId: string,
-  message: string,
-): Promise<ChatMessage> {
+export async function sendChatMessage(conversationId: string, message: string) {
   const trimmed = message?.trim();
   if (!trimmed) {
     throw new Error("Message cannot be empty");
@@ -126,15 +124,11 @@ export async function sendChatMessage(
     throw new Error("Unauthorized");
   }
 
-  const { data: inserted, error } = await supabase
-    .from("chat_messages")
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: trimmed,
-    })
-    .select("message_id, content, sender_id, created_at")
-    .single();
+  const { error } = await supabase.from("chat_messages").insert({
+    conversation_id: conversationId,
+    sender_id: user.id,
+    content: trimmed,
+  });
 
   if (error) {
     throw new Error(`Failed to send message: ${error.message}`);
@@ -144,16 +138,7 @@ export async function sendChatMessage(
     .from("chat_conversations")
     .update({ last_message_at: new Date().toISOString() })
     .eq("conversation_id", conversationId);
-
-  return inserted;
 }
-
-export type ChatMessage = {
-  message_id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-};
 
 export async function getConversationMessages(
   conversationId: string,
@@ -162,7 +147,7 @@ export async function getConversationMessages(
 
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("message_id, content, sender_id, created_at")
+    .select("message_id, content, sender_id, created_at, conversation_id")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
@@ -176,14 +161,6 @@ export async function getConversationMessages(
 export async function getConversations(userId: string) {
   return chatService.getConversations(userId);
 }
-
-export type ConversationPreview = {
-  id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-};
 
 function formatTimestamp(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -203,43 +180,26 @@ export async function getConversationsForDisplay(
 ): Promise<ConversationPreview[]> {
   const supabase = await createClient();
   const conversations = await chatService.getConversations(userId);
-
-  const previews: ConversationPreview[] = [];
-
-  for (const conv of conversations) {
-    let name = "Unknown";
-    if (conv.other_member_ids.length > 0) {
-      try {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, fname, lname")
-          .in("user_id", conv.other_member_ids);
-
-        if (profiles && profiles.length > 0) {
-          name =
-            profiles
-              .map((p) => `${p.fname ?? ""} ${p.lname ?? ""}`.trim() || "Unknown")
-              .filter(Boolean)
-              .join(", ") || "Unknown";
-        } else {
-          name =
-            conv.other_member_ids.length === 1 ? "User" : `${conv.other_member_ids.length} users`;
-        }
-      } catch {
-        name =
-          conv.other_member_ids.length === 1 ? "User" : `${conv.other_member_ids.length} users`;
-      }
-    }
-
-    previews.push({
-      id: conv.id,
-      name,
-      lastMessage: conv.last_message ?? "No messages yet",
-      timestamp: conv.last_message_at ? formatTimestamp(conv.last_message_at) : "now",
-      unread: false,
-    });
-  }
-
+  const previews: ConversationPreview[] = await Promise.all(
+    conversations.map(async (conv) => {
+      const { data: members } = await supabase
+        .from("user_profiles")
+        .select("fname, lname")
+        .eq("user_id", conv.other_member_ids);
+      const name = members
+        ? members.map((m) => `${m.fname} ${m.lname}`).join(", ")
+        : "Unknown";
+      return {
+        id: conv.id,
+        name: name,
+        lastMessage: conv.last_message ?? "No messages yet",
+        timestamp: conv.last_message_at
+          ? formatTimestamp(conv.last_message_at)
+          : "",
+        unread: false,
+      };
+    }),
+  );
   return previews;
 }
 
@@ -276,7 +236,9 @@ export async function createConversation(
     );
 
   if (membersError) {
-    throw new Error(`Failed to add conversation members: ${membersError.message}`);
+    throw new Error(
+      `Failed to add conversation members: ${membersError.message}`,
+    );
   }
 
   return { conversation_id: conversation.conversation_id };
@@ -298,7 +260,9 @@ export async function createConversationWithCurrentUser(
   return createConversation(user.id, memberUserIds);
 }
 
-export async function getMatchedUserIds(): Promise<{ user_id: string; display_name?: string }[]> {
+export async function getMatchedUserIds(): Promise<
+  { user_id: string; display_name?: string }[]
+> {
   const supabase = await createClient();
   const {
     data: { user },
