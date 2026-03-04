@@ -3,7 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { GetAllUserProfiles } from "@/lib/services/profile";
+import { getUserProfiles } from "@/lib/services/profile";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 

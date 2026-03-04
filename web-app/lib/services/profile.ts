@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { User } from "@supabase/supabase-js";
-import { create } from "domain";
-import { userInfo } from "os";
 
 type Preference = {
     name: string,
     value: number
+}
+
+type PreferenceWithId = {
+    preference_id: string;
+    name: string;
+    value: number;
 }
 
 export interface UserProfile {
@@ -27,105 +30,48 @@ export interface UserProfile {
 export async function getUserProfiles(user_ids: string[]): Promise<UserProfile[]> {
     const supabase = await createClient();
     
-    const {data, error} = await supabase
-        .from('user_profiles')
-        .select(`
-            user_id,
-            is_active,
-            fname,
-            lname,
-            gender,
-            avatar_url,
-            bio,
-            major,
-            year,
-            created_at,
-            last_edited_at,
-            user_profile_preferences (
-                name,
-                value
-            ),
-            user_profile_hobbies (
-                name
-            )
-        `)
-        .in('user_id', user_ids);
+    const { data, error } = await supabase
+  .from("user_profile_aggregated_view")
+  .select("*")
+  .in("user_id", user_ids);
     
-    if (error) throw error;
+    if (error) throw new Error("Error getting user profiles");
+    if (!data) throw new Error("No data returned from getUserProfiles");
 
-    const profiles: UserProfile[] = data.map(row => ({
-        ...row,
-        preferences: row.user_profile_preferences ?? [],
-        hobbies: row.user_profile_hobbies?.map((h: {name: string}) => h.name) ?? []
-    }));
-
-    return profiles;
+    return data;
 }
 
-export async function GetAllUserProfiles(): Promise<UserProfile[]> {
+
+export async function getPotentialMatches(preference_ids: string[]): Promise<UserProfile[]> {
     const supabase = await createClient();
-    
-    const {data, error} = await supabase
-        .from('user_profiles')
-        .select(`
-            user_id,
-            is_active,
-            fname,
-            lname,
-            gender,
-            avatar_url,
-            bio,
-            major,
-            year,
-            created_at,
-            last_edited_at,
-            user_profile_preferences (
-                name,
-                value
-            ),
-            user_profile_hobbies (
-                name
-            )
-        `)
-    
-    if (error) throw error;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
 
-    const profiles: UserProfile[] = data.map(row => ({
-        ...row,
-        preferences: row.user_profile_preferences ?? [],
-        hobbies: row.user_profile_hobbies?.map((h: {name: string}) => h.name) ?? []
-    }));
+    const { data, error } = await supabase
+  .rpc("get_potential_matches", {
+    preference_ids,
+    user_id: user.id
+  })
+    .select("*");
 
-    return profiles;
+    if (error) throw new Error("Error getting potential matches");
+    if (!data) throw new Error("No data returned from getPotentialMatches");
+
+    return data;
 }
 
-export async function getPotentialMatches(): Promise<Preference[]> {
-    const supabase = await createClient();
-
-    const {data, error} = await supabase
-        .from('user_preferences')
-        .select(`name, value`)
-        .order('random', { ascending: false })
-        .limit(30);
-
-    if (error) throw error;
-
-    return data as Preference[];
-}
-
-export async function getPreference(preference_id: string): Promise<Preference> {
+export async function getPreferences(preference_ids: string[]): Promise<PreferenceWithId[]> {
     const supabase = await createClient();
 
     const { data, error } = await supabase
         .from("user_preferences")
-        .select(`name, value`)
-        .eq("id", preference_id)
-        .single();
+        .select(`id, name, value`)
+        .in("id", preference_ids);
 
     if (error) throw error;
     if (!data) throw new Error("Preference not found");
 
-    return data as Preference;
-}
-
-console.log(GetAllUserProfiles());
+    return data.map((p: { id: string; name: string; value: number }) => ({ preference_id: p.id, name: p.name, value: p.value }));
+}   
