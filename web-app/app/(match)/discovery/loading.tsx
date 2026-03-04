@@ -1,7 +1,7 @@
 /* DiscoveryClient Skeleton */
 export default function DiscoveryLoading() {
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center mb-10">
+    <div className="w-full flex flex-col items-center justify-center mb-10">
       {/* ProfileCard Skeleton */}
       <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
         {/* Main Card Container */}
