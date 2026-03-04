@@ -75,7 +75,7 @@ export function VibeCheckProfile({
           <div className="grid grid-cols-2 gap-2">
             {profile.preferences.map((pref) => (
               <div
-                key={pref.preference_id}
+                key={pref.name}
                 className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
               >
                 <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">

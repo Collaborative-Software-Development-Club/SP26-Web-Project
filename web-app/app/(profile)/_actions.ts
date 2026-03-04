@@ -3,6 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserProfiles } from "@/lib/services/profile";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -84,4 +85,70 @@ export async function signupAction(formData: FormData) {
       "Check your email and click the confirmation link to finish signing up.",
     )}`,
   );
+}
+
+export async function createProfileAction(formData: FormData) {
+  const fname = formData.get("fname") as string;
+  const lname = formData.get("lname") as string;
+  const gender = formData.get("gender") as string;
+  const bio = formData.get("bio") as string;
+  const major = formData.get("major") as string;
+  const year = formData.get("year") as string;
+
+  if (!fname || !lname || !gender || !bio || !major || !year) {
+    return { error: "All fields are required" };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("user_profiles")
+    .insert([
+      {
+        user_id: user.id,
+        is_active: true,
+        fname,
+        lname,
+        gender,
+        bio,
+        major,
+        year: parseInt(year),
+        avatar_url: "",
+        created_at: now,
+        last_edited_at: now,
+      },
+    ]);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  // ensure related records exist in the join tables so the user_id is linked
+  // these tables currently don't have any extra information, just associating
+  // the profile with hobbies/preferences; we'll insert a bare record for now
+  const { error: hobbiesError } = await supabase
+    .from("user_profile_hobbies")
+    .insert([{ 
+      user_id: user.id,
+      created_at: now
+     }]);
+  const { error: prefsError } = await supabase
+    .from("user_profile_preferences")
+    .insert([{
+      user_id: user.id,
+      created_at: now
+     }]);
+
+  if (hobbiesError || prefsError) {
+    // non-critical; log or ignore but could return an error if desired
+    console.warn("error creating empty user profile relations", hobbiesError, prefsError);
+  }
+
+  redirect("/profile");
 }
