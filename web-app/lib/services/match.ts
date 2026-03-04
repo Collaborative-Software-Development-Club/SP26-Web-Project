@@ -47,6 +47,7 @@ export async function createRoommatePreference({
 }
 
 
+//Service for the discovery team to match a user to potential roommates
 /* Numeric preference value on 1–5 scale (the "rating" for a preference) */
 export type PreferenceValue = 1 | 2 | 3 | 4 | 5;
 
@@ -66,6 +67,15 @@ export type MatchScore = {
   match_score: number;
 };
 
+/* Object so we can type-cast Supabase rows without running into errors */
+type PreferenceValueRow = {
+  user_id: string;
+  preference_id: string;
+  user_preferences: {
+    value: number | null;
+  } | null;
+};
+
 /* Internal helper algorithm that returns a single MatchScore object between
    one user's preferences and one roommate's preferences.
    Formula for each preference k:
@@ -73,7 +83,8 @@ export type MatchScore = {
      weight_k   = max(user_importance_k, roommate_importance_k)
      match_score_k = distance_k * weight_k
    Overall match_score is the sum of contribution_k across all k.
-   
+   If we do not have preferences or importance assigned the score will default to 0
+
    Input: User_id, roommate_id, userPrefs, roommatePrefs
    Output: MatchScore object
    */
@@ -157,3 +168,100 @@ export function computeMatchScoresForRoommates(
 
   return results.sort((a, b) => a.match_score - b.match_score);
 }
+
+/* 
+  Function gets all active user profiles and then takes a user_id to return a sorted list of match score objects
+  Matches a user with all active users in the database based on the distance in preferences
+  If we do not have preferences or importance assigned the score will default to 0
+  
+  TO NOTE: This function does not write to discovery_matches. We need to alter the Supabase to store MatchScore Values */
+export async function getMatchScoresForUser(
+  user_id: string,
+): Promise<MatchScore[]> {
+  const supabase = await createClient();
+
+  /* 1) Fetching all active users from the Supabase Relation - user_profiles
+    TEMPORARY: Queries all active users. Future implementation can break this function up to filter.
+    Gets all user ids (user_id + potential roommate ids) to use ComputeMatchScoresForRoommates
+  */
+  const { data: profiles, error: profilesError } = await supabase
+    .from("user_profiles")
+    .select("user_id, is_active")
+    .neq("user_id", user_id)
+    .eq("is_active", true);
+
+  if (profilesError) {
+    throw new Error(
+      `Failed to fetch roommate candidates: ${profilesError.message}`,
+    );
+  }
+
+  const roommateIds = (profiles ?? []).map((p) => p.user_id as string);
+
+  if (roommateIds.length === 0) {
+    return [];
+  }
+
+  const allUserIds = [user_id, ...roommateIds];
+
+  /*2)  Fetch preference id and the value for that preference for all users */
+  const { data: valueRows, error: valueError } = await supabase
+    .from("user_profile_preferences")
+    .select("user_id, preference_id, user_preferences(value)")
+    .in("user_id", allUserIds);
+
+  if (valueError) {
+    throw new Error(
+      `Failed to fetch preference values: ${valueError.message}`,
+    );
+  }
+
+  /* 3) Fetch importance values for all relevant users from user_roommate_preferences */
+  const { data: importanceRows, error: importanceError } = await supabase
+    .from("user_roommate_preferences")
+    .select("user_id, preference_id, importance")
+    .in("user_id", allUserIds);
+
+  if (importanceError) {
+    throw new Error(
+      `Failed to fetch roommate importance: ${importanceError.message}`,
+    );
+  }
+
+  // Map for "{user_id}:{preference_id}"" -> importance value */
+  const importanceMap = new Map<string, number>();
+
+  for (const row of importanceRows ?? []) {
+    const key = `${row.user_id}:${row.preference_id}`;
+    importanceMap.set(key, row.importance ?? 0);
+  }
+
+  /* 4) Building the UserPreferenceWithImportance[] to pass to our helper function */
+  const allPreferences: UserPreferenceWithImportance[] = [];
+  const typedValueRows = (valueRows ?? []) as unknown as PreferenceValueRow[];
+
+  for (const row of typedValueRows) {
+    //Grab the value for the nested user_preferences object 
+    const rawValue = row.user_preferences?.value;
+    //Check if that value is missing/not found
+    if (rawValue === null || rawValue === undefined) {
+      continue;
+    }
+
+    const value = Number(rawValue) as PreferenceValue;
+
+    const key = `${row.user_id}:${row.preference_id}`;
+    const importance = importanceMap.get(key) ?? 0;
+
+    allPreferences.push({
+      user_id: row.user_id as string,
+      preference_id: row.preference_id as string,
+      value,
+      importance,
+    });
+  }
+
+  /* 5) Use the helper to compute and sort scores */
+  return computeMatchScoresForRoommates(user_id, allPreferences, roommateIds);
+}
+
