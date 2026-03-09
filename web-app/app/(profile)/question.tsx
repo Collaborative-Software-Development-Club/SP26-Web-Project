@@ -8,6 +8,11 @@ import { cn } from "@/lib/utils"
 import { Textarea } from "../../components/ui/textarea";
 import { useState } from "react";
 
+type QuestionStateProps<T> = {
+  value: T,
+  setValue: React.Dispatch<React.SetStateAction<T>>
+}
+
 type QuestionProps = {
   question: string;
   questionDataName: string;
@@ -63,14 +68,14 @@ function QuestionScaleContainer({ children, items }: React.ComponentProps<"div">
 /**
  * A radio question (select one).
  */
-function QuestionScale({ question, questionDataName, scaleOptions }: QuestionPropsScale) {
+function QuestionScale({ question, questionDataName, scaleOptions, value, setValue }: QuestionPropsScale & QuestionStateProps<number>) {
   const items = [];
 
   for (let i = 0; i < scaleOptions.length; i++) {
     const id = `${questionDataName}-radio-${question}`;
     items.push(
       <div id={`${id}-container`} className="relative flex flex-col items-center basis-4 w-sm">
-        <Input type="radio" name={questionDataName} id={id} className="h-fit" />
+        <Input type="radio" name={questionDataName} id={id} className="h-fit" onChange={() => setValue(i)} />
         <Label className="absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm" htmlFor={id}>{scaleOptions[i]}</Label>
       </div>
     );
@@ -82,14 +87,22 @@ function QuestionScale({ question, questionDataName, scaleOptions }: QuestionPro
 /**
  * A checkbox question (select multiple).
  */
-function QuestionScaleMultiple({ question, questionDataName, scaleOptions }: QuestionPropsScale) {
+function QuestionScaleMultiple({ question, questionDataName, scaleOptions, value, setValue }: QuestionPropsScale & QuestionStateProps<Set<number>>) {
   const items = [];
 
   for (let i = 0; i < scaleOptions.length; i++) {
     const id = `${questionDataName}-radio-${question}`;
     items.push(
       <div id={`${id}-container`} className="relative flex flex-col items-center basis-4 w-sm">
-        <Input type="checkbox" name={questionDataName} id={id} className="h-fit" />
+        <Input type="checkbox" name={questionDataName} id={id} className="h-fit" checked={value.has(i)} onChange={() => {
+          const newSet = new Set(value);
+          if (newSet.has(i)) {
+            newSet.delete(i);
+          } else {
+            newSet.add(i);
+          }
+          setValue(newSet);
+        }}/>
         <Label className="absolute top-full mt-1 whitespace-nowrap text-neutral-500 text-sm" htmlFor={id}>{scaleOptions[i]}</Label>
       </div>
     )
@@ -101,11 +114,11 @@ function QuestionScaleMultiple({ question, questionDataName, scaleOptions }: Que
 /**
  * A freeform textarea question.
  */
-function QuestionFreeform({ question, questionDataName }: QuestionProps) {
+function QuestionFreeform({ question, questionDataName, value, setValue }: QuestionProps & QuestionStateProps<string>) {
   return (
     <div className="ml-2 mb-9">
       <h3 className="mb-1">{question}</h3>
-      <Textarea name={questionDataName} placeholder=". . ." className="w-xs" />
+      <Textarea name={questionDataName} placeholder=". . ." className="w-xs" value={value} onChange={(e) => setValue(e.target.value)} />
     </div>
   );
 }
@@ -114,18 +127,12 @@ function QuestionFreeform({ question, questionDataName }: QuestionProps) {
  * A yes or no question.
  * TODO make it a proper switch. Right now it looks awful.
  */
-function QuestionBoolean({ question, questionDataName }: QuestionProps) {
-  
-  const [ value, setValue ] = useState(false);
-
+function QuestionBoolean({ question, questionDataName, value, setValue }: QuestionProps & QuestionStateProps<boolean>) {
   return (
     <div className="ml-2 mb-9">
       <h3 className="mb-1">{question}</h3>
       <i className="text-xs text-neutral-500">placeholder for a proper switch component</i>
-      <Input type="checkbox" className="h-9 w-6" checked={value} onChange={(e) => {
-        setValue(e.target.checked);
-        console.log("hello");
-      }} />
+      <Input type="checkbox" className="h-9 w-6" name={questionDataName} checked={value} onChange={(e) => setValue(e.target.checked)} />
     </div>
   );
 }
