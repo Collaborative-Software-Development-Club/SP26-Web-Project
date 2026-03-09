@@ -3,7 +3,7 @@
 import { QuestionScale, QuestionScaleMultiple, QuestionFreeform, QuestionBoolean } from "@/app/(profile)/question";
 import { Button } from "@/components/ui/button";
 // import { requireAuth } from "@/lib/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type QuestionType = "scale" | "scalem" | "free" | "bool";
 
@@ -62,7 +62,7 @@ export default function FormTestPage() {
   // const user = await requireAuth();
 
   // Map that will contain the user's responses.
-  const responses = new Map<string, QuestionResponse>();
+  const responsesRef = useRef<Map<string, QuestionResponse>>(new Map());
 
   // The questions to put.
   const sectionsData: SectionData[] = [
@@ -108,6 +108,15 @@ export default function FormTestPage() {
     }
   ];
 
+  // initialize default entries once
+  if (responsesRef.current.size === 0) {
+    for (const section of sectionsData) {
+      for (const question of section.questions) {
+        responsesRef.current.set(question.questionDataName, { type: question.type });
+      }
+    }
+  }
+
   /* Create the DOM */
   /* 
   Yes, there is quite a bit of code that violated DRY, but for sake of readability, I think this code is fine.
@@ -124,7 +133,7 @@ export default function FormTestPage() {
       const { type, question, questionDataName, scaleOptions } = questionData;
 
       // Set initial values to the map.
-      responses.set(questionDataName, { type });
+      responsesRef.current.set(questionDataName, { type });
 
       // For scale questions, set responseIdx to the index of the input checked.
       if (type == "scale") {
@@ -132,8 +141,8 @@ export default function FormTestPage() {
         const [ selectedOption, setSelectedOption ] = useState<number>(0);
         useEffect(() => {
           console.log("Effect used for scale. Selected option: " + selectedOption);
-          console.log(responses.set(questionDataName, { type, responseIdx: selectedOption }));
-        }, [selectedOption]);
+          responsesRef.current.set(questionDataName, { type, responseIdx: selectedOption });
+        }, [questionDataName, type, selectedOption]);
 
         questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
           <QuestionScale question={question} questionDataName={questionDataName} scaleOptions={scaleOptions} value={selectedOption} setValue={setSelectedOption} />
@@ -144,8 +153,8 @@ export default function FormTestPage() {
         
         const [ selectedOptions, setSelectedOptions ] = useState<Set<number>>(new Set());
         useEffect(() => {
-          responses.set(questionDataName, { type, responseIdxM: selectedOptions });
-        }, [selectedOptions]);
+          responsesRef.current.set(questionDataName, { type, responseIdxM: new Set(selectedOptions) }); // to avoid setting bullshit
+        }, [questionDataName, type, selectedOptions]);
 
         questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
           <QuestionScaleMultiple question={question} questionDataName={questionDataName} scaleOptions={scaleOptions} value={selectedOptions} setValue={setSelectedOptions} />
@@ -156,8 +165,8 @@ export default function FormTestPage() {
 
         const [ response, setResponse ] = useState<string>("");
         useEffect(() => {
-          responses.set(questionDataName, { type, responseText: response });
-        }, [response]);
+          responsesRef.current.set(questionDataName, { type, responseText: response });
+        }, [questionDataName, type, response]);
 
         questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
           <QuestionFreeform question={question} questionDataName={questionDataName} value={response} setValue={setResponse} />
@@ -168,8 +177,8 @@ export default function FormTestPage() {
         
         const [ checked, setChecked ] = useState<boolean>(false);
         useEffect(() => {
-          responses.set(questionDataName, { type, responseBool: checked });
-        }, [checked]);
+          responsesRef.current.set(questionDataName, { type, responseBool: checked });
+        }, [questionDataName, type, checked]);
 
         questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
           <QuestionBoolean question={question} questionDataName={questionDataName} value={checked} setValue={setChecked} />
@@ -192,7 +201,7 @@ export default function FormTestPage() {
       {sections}
       <Button onClick={() => {
         console.log("Submitting!");
-        console.log(responses);
+        console.log(responsesRef.current);
       }}>Submit</Button>
       <br/>
       <br/>
