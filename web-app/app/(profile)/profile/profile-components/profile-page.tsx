@@ -1,47 +1,70 @@
 import { Card } from "@/components/ui/card"
-import EditName from "./modals/edit-name"
+import EditBio from "./modals/edit-bio";
 import profiles from "mock/profiles.json"
 import SelectHobbies from "./modals/hobby-select";
 export default function ProfilePage() {
   const user = profiles[0];
-  
+  const images = ["demo/room1.png","demo/room2.png","add-img.webp"];
   return (
-    <div className="flex-1 mr-20 my-20">
-      <Card className="h-full w-full p-4 rounded-l-none max-h-[80vh] overflow-auto">
-        <h2 className="text-2xl font-bold">Account</h2>
-        <hr className="bg-gray-200 h-0.5"/>
-        <Card className="border-none flex-row max-h-1/2 w-full items-center p-4">
-          <img src={user.avatar_url} className="max-w-20 h-20 rounded-full flex-1 border-2"/>
-          <Card className="border-none flex-1 p-4 shadow-none gap-1">
-            <h3 className="text-lg">Name</h3>
-            <p className="text-sm">{user.fname+" "+user.lname}</p>
-            <EditName fname={user.fname} lname={user.lname} id={user.user_id}/>
-          </Card>
-          
-        </Card>
-
-        <Card className="p-4 gap-1">
-          <h2 className="text-xl font-semibold">Account Details</h2>
-          <hr className="bg-gray-200 h-0.5"/>
-          <h3 className="text-lg ml-4 mt-4">Bio</h3>
-          <p className="ml-4 text-sm">{user.bio}</p>
-          <h3 className="text-lg ml-4 mt-4">Hobbies</h3>
-          <div>
-            <Card className="bg-gray-100 flex flex-row flex-wrap gap-1 p-2 ml-4">
-              {user.hobbies.map(hobby=>
-                <Card key={hobby} className="min-w-20 text-center text-sm h-10 p-2 mx-0.5 rounded-md">
-                  {hobby}
-                </Card>
-              )}
-            </Card>
-            <SelectHobbies/>
-          </div>
-          
-        </Card>
+    <>
+      <Card className="h-full w-full overflow-auto rounded-none border-none p-6 shadow-none min-h-0">
         
+        {/* Header */}
+        <Card className="flex items-start gap-4 border-none bg-transparent p-0 shadow-none">
+          <img
+            src="demo/selfie.png"
+            className="h-30 w-30 rounded-full border-2 border-gray-200 object-cover"
+          />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {user.fname + " " + user.lname}
+            </h2>
+          </div>
+        </Card>
+        <Card className="flex flex-row border-none rounded-none shadow-none">
+          {/* About Section */}
+          <Card className="flex-1 mt-6 rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900">About You</h2>
+            <hr className="my-1 h-px border-0 bg-gray-200" />
+
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-lg font-medium text-gray-800">Bio</h3>
+                <EditBio bio={user.bio}/>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-800">Hobbies</h3>
+                <div className="mt-1 flex flex-row">
+                  <Card className="flex-1 flex flex-wrap flex-row gap-1 rounded-xl border-none bg-gray-100 p-2 shadow-none">
+                    {user.hobbies.map((hobby) => (
+                      <Card
+                        key={hobby}
+                        className="rounded-md border border-gray-200 bg-white px-3 p-3 text-sm text-gray-700 shadow-none"
+                      >
+                        {hobby}
+                      </Card>
+                    ))}
+                  </Card>
+                  <SelectHobbies />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Room Images */}
+          <Card className="mt-6 flex-1 flex flex-row flex-wrap gap-4 border-gray-200 bg-transparent p-6">
+            {images.map((image)=>
+             (
+              <img
+              src={image} key={image} 
+              className="w-full max-w-45 max-h-45 rounded-xl border border-gray-200 object-cover"
+            />
+            ))}
+          </Card>
+        </Card>
         
       </Card>
-      
-    </div>
+    </>
   )
 }

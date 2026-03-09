@@ -8,7 +8,7 @@ export default async function Profile() {
   const user = await requireAuth();
 
   return (
-    <div className="min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="h-full justify-center bg-zinc-50 font-sans dark:bg-black">
       <ProfileHeader/>
     </div>
   );
