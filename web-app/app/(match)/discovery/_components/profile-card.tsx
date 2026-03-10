@@ -9,6 +9,7 @@ import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { YesNoPreferences } from "../types";
 
 // [ready] Icon helper moved outside component for better performance
 const getPreferenceIcon = (key: string) => {
@@ -25,8 +26,6 @@ const getPreferenceIcon = (key: string) => {
       return <BookOpen className="w-4 h-4" />;
   }
 };
-
-const YesNoPreferences = ["Smoker", "Pets"];
 
 export function ProfileCard({
   profile,

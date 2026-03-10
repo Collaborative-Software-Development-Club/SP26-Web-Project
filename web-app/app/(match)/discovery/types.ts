@@ -33,3 +33,5 @@ export type Preference = {
     name: string;
     value: number;
 };
+
+export const YesNoPreferences = ["Smoker", "Pets"];

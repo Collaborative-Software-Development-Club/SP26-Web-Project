@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
 import { LikedYouProfile } from "../types";
+import { YesNoPreferences } from "../types";
 import Image from "next/image";
 
 export function VibeCheckProfile({
@@ -82,7 +83,11 @@ export function VibeCheckProfile({
                   {pref.name}
                 </span>
                 <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {pref.value}
+                  {YesNoPreferences.includes(pref.name)
+                    ? pref.value === 1
+                      ? "Yes"
+                      : "No"
+                    : pref.value}
                 </span>
               </div>
             ))}
