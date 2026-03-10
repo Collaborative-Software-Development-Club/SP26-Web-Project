@@ -26,15 +26,9 @@ export type RoommatePreference = {
     preference_id: string;
     importance: number;
     name: string;
-    value: number;
 }
 
 export type Preference = {
-    name: string;
-    value: number;
-};
-
-export type PreferenceWithId = {
     preference_id: string;
     name: string;
     value: number;

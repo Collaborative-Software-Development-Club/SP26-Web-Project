@@ -1,14 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 
 type Preference = {
-    name: string,
-    value: number
-}
-
-type PreferenceWithId = {
     preference_id: string;
-    name: string;
-    value: number;
+    name: string,
+    value: number,
 }
 
 export interface UserProfile {

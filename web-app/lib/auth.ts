@@ -28,6 +28,7 @@ export async function requireUser(): Promise<UserProfile> {
             created_at,
             last_edited_at,
             user_profile_preferences (
+                preference_id,
                 name,
                 value
             ),

@@ -206,7 +206,7 @@ export async function getUserRoommatePreferences(user_id: string): Promise<Roomm
 
   const { data, error } = await supabase
     .from("discovery_roommate_preferences")
-    .select("preference_id, importance, user_preferences(name, value)")
+    .select("preference_id, importance, user_preferences(name)")
     .eq("user_id", user_id);
 
   if (error) {
@@ -216,7 +216,6 @@ export async function getUserRoommatePreferences(user_id: string): Promise<Roomm
       preference_id: item.preference_id,
       importance: item.importance,
       name: item.user_preferences[0]?.name,
-      value: item.user_preferences[0]?.value,
     }));
   }
 }
