@@ -1,10 +1,14 @@
 import { Card } from "@/components/ui/card"
 import EditBio from "./modals/edit-bio";
-import profiles from "mock/profiles.json"
+import profiles from "mock/profiles.json" 
 import SelectHobbies from "./modals/hobby-select";
 import MajorSelect from "./modals/major-select";
-export default function ProfilePage() {
-  const user = profiles[0];
+import { UserProfile } from "@/app/(match)/discovery/types";
+type ProfilePageProps = {
+  profile: UserProfile
+}
+export default function ProfilePage({profile}: ProfilePageProps) {
+  const user = profile;
   const images = ["demo/room1.png","demo/room2.png","add-img.webp"];
   const year = ["1st","2nd","3rd","4th","5th"];
   return (
@@ -61,7 +65,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center">
                   <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-4 flex-1 shadow-sm shadow-gray-300">
-                    {user.hobbies.map((hobby) => (
+                    {user.hobbies?.map((hobby) => (
                       <div
                         key={hobby}
                         className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700"

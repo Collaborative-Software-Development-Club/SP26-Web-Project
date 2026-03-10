@@ -5,8 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
-export default function SettingsPage() {
+import { UserProfile } from "@/app/(match)/discovery/types";
+type ProfilePageProps = {
+  profile: UserProfile
+}
+export default function SettingsPage({profile}: ProfilePageProps) {
   const [darkMode, setDarkMode] = useState(false);
 
   return (

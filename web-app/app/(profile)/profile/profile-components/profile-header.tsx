@@ -8,8 +8,12 @@ import SettingsPage from './settings-page';
 import { useState } from 'react';
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { UserProfile } from '@/app/(match)/discovery/types';
 //type Page = "profile" | "bio" | "settings";
-export default function ProfileHeader() {
+type ProfilePageProps = {
+  profile: UserProfile
+}
+export default function ProfileHeader({profile}: ProfilePageProps) {
   const [page,setPage] = useState("profile");
 
   return (
@@ -45,8 +49,8 @@ export default function ProfileHeader() {
             </Button>
           </div>
         </Card>
-        {page === "profile" && <ProfilePage/>}
-        {page === "settings" && <SettingsPage/>}
+        {page === "profile" && <ProfilePage profile={profile}/>}
+        {page === "settings" && <SettingsPage profile={profile}/>}
     </div>
   )
 }
