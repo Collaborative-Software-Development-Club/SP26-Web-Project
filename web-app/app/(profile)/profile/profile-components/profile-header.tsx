@@ -14,9 +14,36 @@ export default function ProfileHeader() {
 
   return (
     <div className="flex-1 flex flex-row w-full h-full min-h-0">
-        <Card className="bg-gray-300 w-32 flex flex-col gap-0 px-1 py-2 rounded-none">
-            <Button className="bg-gray-300 hover:bg-gray-200 w-full justify-start text-gray-500" onClick={()=>setPage("profile")}>Profile</Button>
-            <Button className="bg-gray-300 hover:bg-gray-200 w-full justify-start text-gray-500" onClick={()=>setPage("settings")}>Settings</Button>
+        <Card className="w-64 rounded-2xl rounded-l-none border border-gray-200 bg-white p-3 shadow-sm">
+          <div className="mb-2 px-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              Account
+            </h2>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Button
+              onClick={() => setPage("profile")}
+              className={`w-full justify-start rounded-lg px-3 py-2 text-sm shadow-none ${
+                page === "profile"
+                  ? "bg-red-50 text-red-600 hover:bg-red-100"
+                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              Profile
+            </Button>
+
+            <Button
+              onClick={() => setPage("settings")}
+              className={`w-full justify-start rounded-lg px-3 py-2 text-sm shadow-none ${
+                page === "settings"
+                  ? "bg-red-50 text-red-600 hover:bg-red-100"
+                  : "bg-transparent text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              Settings
+            </Button>
+          </div>
         </Card>
         {page === "profile" && <ProfilePage/>}
         {page === "settings" && <SettingsPage/>}

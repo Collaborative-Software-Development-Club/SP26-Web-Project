@@ -14,7 +14,7 @@ export default function SelectHobbies() {
     
   return (
     <>
-        <Button onClick={()=>setMode(true)} className="w-20 hover:bg-red-400 ml-4 mt-2">Edit</Button>
+        <Button onClick={()=>setMode(true)} className="w-20 hover:bg-red-400 ml-4">Edit</Button>
         {editMode && 
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <Card className="w-full max-w-2xl shadow-xl">
@@ -37,7 +37,7 @@ export default function SelectHobbies() {
                         <div className="space-y-2">
                           {list.map((hobby: string) => (
                             <Label key={hobby} className="flex items-center gap-3 text-sm">
-                              <Input type="checkbox" className="h-4 w-4" />
+                              <Input type="checkbox" className="h-4 w-4" value={hobby}/>
                               {hobby}
                             </Label>
                           ))}
