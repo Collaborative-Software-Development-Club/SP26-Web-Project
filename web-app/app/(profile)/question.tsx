@@ -10,7 +10,7 @@ import { useState } from "react";
 
 type QuestionStateProps<T> = {
   value: T,
-  setValue: React.Dispatch<React.SetStateAction<T>>
+  setValue: (value: T) => void,
 }
 
 type QuestionProps = {
@@ -54,8 +54,8 @@ type QuestionPropsScale = QuestionProps & {
  * @param children The question text component.
  * @param items The `QuestionOptionItem`s to select from.
  */
-function QuestionScaleContainer({ children, items }: React.ComponentProps<"div"> & { items: any[] }) {
-  return (<div className="ml-2 mb-9">
+function QuestionScaleContainer({ children, items, ...props }: React.ComponentProps<"div"> & { items: any[] }) {
+  return (<div className="ml-2 mb-9" {...props} >
     <h3 className="mb-1">
       {children}
     </h3>

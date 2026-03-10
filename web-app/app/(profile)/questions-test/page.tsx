@@ -61,9 +61,6 @@ class _ResponseFull {
 export default function FormTestPage() {
   // const user = await requireAuth();
 
-  // Map that will contain the user's responses.
-  const responsesRef = useRef<Map<string, QuestionResponse>>(new Map());
-
   // The questions to put.
   const sectionsData: SectionData[] = [
     {
@@ -108,100 +105,113 @@ export default function FormTestPage() {
     }
   ];
 
-  // initialize default entries once
-  if (responsesRef.current.size === 0) {
+  const [ responses, setResponses ] = useState<Record<string, QuestionResponse>>(() => {
+    const initial: Record<string, QuestionResponse> = {};
     for (const section of sectionsData) {
-      for (const question of section.questions) {
-        responsesRef.current.set(question.questionDataName, { type: question.type });
+      for (const q of section.questions) {
+        if (q.type === "scale") {
+          initial[q.questionDataName] = { type: q.type, responseIdx: 0 };
+        } else if (q.type === "scalem") {
+          initial[q.questionDataName] = { type: q.type, responseIdxM: new Set() };
+        } else if (q.type === "free") {
+          initial[q.questionDataName] = { type: q.type, responseText: "" };
+        } else if (q.type === "bool") {
+          initial[q.questionDataName] = { type: q.type, responseBool: false};
+        }
       }
     }
-  }
+    return initial;
+  });
+
+  // Handler. for updating responses.
+  const handleResponseChange = (dataName: string, response: QuestionResponse) => {
+    setResponses(prev => ({
+      ...prev,
+      [dataName]: response
+    }));
+  };
 
   /* Create the DOM */
   /* 
   Yes, there is quite a bit of code that violated DRY, but for sake of readability, I think this code is fine.
   After all, this is kinda stupid code and whenever someone else might want to take a look, they'll need to read it.
   Graveyard:
-    Nate Levison
+    Nate Levison (3/6/26)
+    ChatGPT (3/9/26)
+    Copilot (3/9/26)
   */
-  const sections = [];
-  for (let sectionIdx = 0; sectionIdx < sectionsData.length; sectionIdx++) {
-    const { name, questions } = sectionsData[sectionIdx];
-    const questionsElement = [];
-    
-    for (const questionData of questions) {
-      const { type, question, questionDataName, scaleOptions } = questionData;
-
-      // Set initial values to the map.
-      responsesRef.current.set(questionDataName, { type });
-
-      // For scale questions, set responseIdx to the index of the input checked.
-      if (type == "scale") {
-
-        const [ selectedOption, setSelectedOption ] = useState<number>(0);
-        useEffect(() => {
-          console.log("Effect used for scale. Selected option: " + selectedOption);
-          responsesRef.current.set(questionDataName, { type, responseIdx: selectedOption });
-        }, [questionDataName, type, selectedOption]);
-
-        questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
-          <QuestionScale question={question} questionDataName={questionDataName} scaleOptions={scaleOptions} value={selectedOption} setValue={setSelectedOption} />
-        </li>);
-
-      // For multiple choice questions, set responseIdxM to a Set of indexes selected.
-      } else if (type == "scalem") {
-        
-        const [ selectedOptions, setSelectedOptions ] = useState<Set<number>>(new Set());
-        useEffect(() => {
-          responsesRef.current.set(questionDataName, { type, responseIdxM: new Set(selectedOptions) }); // to avoid setting bullshit
-        }, [questionDataName, type, selectedOptions]);
-
-        questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
-          <QuestionScaleMultiple question={question} questionDataName={questionDataName} scaleOptions={scaleOptions} value={selectedOptions} setValue={setSelectedOptions} />
-        </li>);
-
-      // For free response questions, set responseText to the inputted text.
-      } else if (type == "free") {
-
-        const [ response, setResponse ] = useState<string>("");
-        useEffect(() => {
-          responsesRef.current.set(questionDataName, { type, responseText: response });
-        }, [questionDataName, type, response]);
-
-        questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
-          <QuestionFreeform question={question} questionDataName={questionDataName} value={response} setValue={setResponse} />
-        </li>);
-
-      // For yes/no questions, set responseBool to whether or not it is checked.
-      } else if (type == "bool") {
-        
-        const [ checked, setChecked ] = useState<boolean>(false);
-        useEffect(() => {
-          responsesRef.current.set(questionDataName, { type, responseBool: checked });
-        }, [questionDataName, type, checked]);
-
-        questionsElement.push(<li key={`${questionDataName}-${type}-${sectionIdx}`}>
-          <QuestionBoolean question={question} questionDataName={questionDataName} value={checked} setValue={setChecked} />
-        </li>);
-
-      }
-    }
-
-    sections.push(<section key={`section-${name}-${sectionIdx}`}>
-      <h2 className="text-lg font-bold">{name}</h2>
+  const sections = sectionsData.map((section, sectionIdx) => (
+    <section key={`section-${section.name}-${sectionIdx}`}>
+      <h2 className="text-lg font-bold">{section.name}</h2>
       <ol className="list-decimal ml-4">
-        {questionsElement}
+        {section.questions.map((q, qIdx) => {
+          if (q.type === "scale") {
+            return (
+              <li key={`${q.questionDataName}-${q.type}-${sectionIdx}`}>
+                <QuestionScale
+                  question={q.question}
+                  questionDataName={q.questionDataName}
+                  scaleOptions={q.scaleOptions}
+                  value={responses[q.questionDataName]?.responseIdx ?? 0}
+                  setValue={idx =>
+                    handleResponseChange(q.questionDataName, { type: q.type, responseIdx: idx })
+                  }
+                />
+              </li>
+            );
+          } else if (q.type === "scalem") {
+            return (
+              <li key={`${q.questionDataName}-${q.type}-${sectionIdx}`}>
+                <QuestionScaleMultiple
+                  question={q.question}
+                  questionDataName={q.questionDataName}
+                  scaleOptions={q.scaleOptions}
+                  value={responses[q.questionDataName]?.responseIdxM ?? new Set()}
+                  setValue={set =>
+                    handleResponseChange(q.questionDataName, { type: q.type, responseIdxM: set })
+                  }
+                />
+              </li>
+            );
+          } else if (q.type === "free") {
+            return (
+              <li key={`${q.questionDataName}-${q.type}-${sectionIdx}`}>
+                <QuestionFreeform
+                  question={q.question}
+                  questionDataName={q.questionDataName}
+                  value={responses[q.questionDataName]?.responseText ?? ""}
+                  setValue={text =>
+                    handleResponseChange(q.questionDataName, { type: q.type, responseText: text })
+                  }
+                />
+              </li>
+            );
+          } else if (q.type === "bool") {
+            return (
+              <li key={`${q.questionDataName}-${q.type}-${sectionIdx}`}>
+                <QuestionBoolean
+                  question={q.question}
+                  questionDataName={q.questionDataName}
+                  value={responses[q.questionDataName]?.responseBool ?? false}
+                  setValue={bool =>
+                    handleResponseChange(q.questionDataName, { type: q.type, responseBool: bool })
+                  }
+                />
+              </li>
+            );
+          }
+          return null;
+        })}
       </ol>
-    </section>);
-
-  }
+    </section>
+  ));
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black p-3">
       {sections}
       <Button onClick={() => {
         console.log("Submitting!");
-        console.log(responsesRef.current);
+        console.log(responses);
       }}>Submit</Button>
       <br/>
       <br/>
