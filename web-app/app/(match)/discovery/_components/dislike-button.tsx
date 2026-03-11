@@ -18,7 +18,7 @@ export function DislikeButton({
 }) {
   const handleDislike = useCallback(() => {
     console.log("Dislike");
-    
+
     if (onClick) {
       onClick(); // Trigger animation first
     } else {

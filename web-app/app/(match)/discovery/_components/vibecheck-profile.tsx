@@ -3,19 +3,17 @@
 import { useState } from "react";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
-import { LikedYouProfile } from "../types";
+import { LikedYouProfile, YesNoPreferences } from "../types";
 import Image from "next/image";
 
 export function VibeCheckProfile({
   profile,
   onAccept,
   onPass,
-  isLoading,
 }: {
   profile: LikedYouProfile;
   onAccept: (userId: string) => void;
   onPass: (userId: string) => void;
-  isLoading?: boolean;
 }) {
   const [replyText, setReplyText] = useState("");
 
@@ -49,8 +47,8 @@ export function VibeCheckProfile({
           </p>
         </div>
       </div>
-
       <div className="p-5 space-y-4">
+
         {/* Bio */}
         <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
           {profile.bio}
@@ -82,7 +80,11 @@ export function VibeCheckProfile({
                   {pref.name}
                 </span>
                 <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {pref.value}
+                  {YesNoPreferences.includes(pref.name)
+                    ? pref.value === 1
+                      ? "Yes"
+                      : "No"
+                    : pref.value}
                 </span>
               </div>
             ))}

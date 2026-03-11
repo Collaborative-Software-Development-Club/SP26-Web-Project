@@ -160,7 +160,7 @@ export default function CreateProfilePage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-2 rounded-md transition"
+            className="w-full bg-linear-to-r from-red-400 to-red-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-2 rounded-md transition"
           >
             {isSubmitting ? "Creating Profile..." : "Create Profile"}
           </Button>
