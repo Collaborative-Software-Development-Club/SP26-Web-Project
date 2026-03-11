@@ -1,12 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 
 export async function getUserProfiles(user_ids: string[]): Promise<UserProfile[]> {
     const supabase = await createClient();
     
     const { data, error } = await supabase
   .from("user_profile_aggregated_view")
-  .select("*")
+  .select("*")  
   .in("user_id", user_ids);
     
     if (error) throw new Error("Error getting user profiles");

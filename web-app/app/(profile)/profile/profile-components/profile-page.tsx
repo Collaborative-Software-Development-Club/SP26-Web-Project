@@ -3,7 +3,7 @@ import EditBio from "./modals/edit-bio";
 import profiles from "mock/profiles.json";
 import SelectHobbies from "./modals/hobby-select";
 import MajorSelect from "./modals/major-select";
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile;
 };

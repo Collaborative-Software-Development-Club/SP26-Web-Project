@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile
 }

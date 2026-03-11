@@ -1,4 +1,4 @@
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 
 export type DiscoveryProfile = UserProfile & {
     match_score: number;

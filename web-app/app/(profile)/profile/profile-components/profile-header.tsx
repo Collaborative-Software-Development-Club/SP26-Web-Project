@@ -8,7 +8,7 @@ import SettingsPage from "./settings-page";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 //type Page = "profile" | "bio" | "settings";
 type ProfilePageProps = {
   profile: UserProfile;

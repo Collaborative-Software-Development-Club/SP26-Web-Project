@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { LikedYouProfile, RoommatePreference, DiscoveryProfile } from "./types";
-import { UserProfile } from "@/app/(profile)/types";
+import type { UserProfile } from "@/app/(profile)/types";
 import { getUserProfiles } from "@/lib/services/profile";
 
 export async function getLikedYouProfiles(): Promise<LikedYouProfile[]> {
