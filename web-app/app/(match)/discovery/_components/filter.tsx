@@ -13,19 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { ImportanceSlider } from "./importance-slider";
 import { RoommatePreference } from "../types";
+import { YesNoPreferences } from "../types";
 
-//Map option to a value
-const yesNoPreferences = ["smoker", "pets"];
-
-export function Filter({
-  preferences,
-}: {
-  preferences: RoommatePreference[];
-}) {
+export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
   const [open, setOpen] = useState(false); //dialog window
 
-  const [tempValues, setValues] =
-    useState<RoommatePreference[]>(preferences);
+  const [tempValues, setValues] = useState<RoommatePreference[]>(preferences);
 
   const handleSliderUpdate = (id: string, newVal: number[]) => {
     setValues((prev) =>
@@ -65,15 +58,15 @@ export function Filter({
         <DialogHeader>
           <DialogTitle>Edit Your Roommate Preferences</DialogTitle>
           <DialogDescription>
-          Set how important each preference is for finding your match. Slide right
-          for must-haves (dealbreakers) or turn off if
-          you don&apos;t care.
-        </DialogDescription>
+            Set how important each preference is for finding your match. Slide
+            right for must-haves (dealbreakers) or turn off if you don&apos;t
+            care.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex max-h-[60vh] overflow-y-auto pr-2 flex-col gap-1">
           {tempValues.map((pref) => {
             const isActive = pref.importance > 0;
-            const isYesNo = yesNoPreferences.includes(pref.preference_id);
+            const isYesNo = YesNoPreferences.includes(pref.name);
 
             return (
               <div

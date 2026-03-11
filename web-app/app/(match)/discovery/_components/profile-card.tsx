@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserProfile } from "../types";
+import { DiscoveryProfile, YesNoPreferences } from "../types";
 import { BookOpen, Cigarette, Cat, Moon, Users } from "lucide-react";
 import { LikeButton } from "./like-button";
 import { UndoButton } from "./undo-button";
@@ -9,7 +9,6 @@ import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { YesNoPreferences } from "../types";
 
 // [ready] Icon helper moved outside component for better performance
 const getPreferenceIcon = (key: string) => {
@@ -32,7 +31,7 @@ export function ProfileCard({
   handleNext,
   handleBefore,
 }: {
-  profile: UserProfile;
+  profile: DiscoveryProfile;
   handleNext: () => void;
   handleBefore: () => void;
 }) {
