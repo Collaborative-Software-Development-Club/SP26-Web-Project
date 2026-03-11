@@ -4,6 +4,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfiles } from "@/lib/services/profile";
+import type { Preference } from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -151,4 +152,41 @@ export async function createProfileAction(formData: FormData) {
   }
 
   redirect("/profile");
+}
+
+export async function getAllPreferences(): Promise<Preference[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+  .from('user_preferences')
+  .select('*');
+
+  if (error) throw new Error("Error getting all preferences");
+  if (!data) throw new Error("Could not retrieve preferences");
+
+  return data.map(p => ({
+    preference_id: p.preference_id,
+    name: p.name,
+    value: 0 // default value is 0
+  })) as Preference[];
+}
+
+export async function setPreferences(preferences: Preference[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+    }
+
+  const {error} = await supabase
+  .from("user_profile_preferences")
+  .insert(
+    preferences.map(p => ({
+      user_id: user.id,
+      preference_id: p.preference_id,
+      value: p.value
+    }))
+  );
+
+  if (error) throw new Error(`Error updating user preferences: ${error.message}`);
 }
