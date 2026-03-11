@@ -102,7 +102,6 @@ export function LikedYouClient({
             profile={current}
             onAccept={handleAccept}
             onPass={handlePass}
-            isLoading={isLoading}
           />
         </div>
       ) : (
