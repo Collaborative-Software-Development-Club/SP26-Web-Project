@@ -1,16 +1,16 @@
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card";
 import EditBio from "./modals/edit-bio";
-import profiles from "mock/profiles.json" 
+import profiles from "mock/profiles.json";
 import SelectHobbies from "./modals/hobby-select";
 import MajorSelect from "./modals/major-select";
-import { UserProfile } from "@/app/(match)/discovery/types";
+import { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
-  profile: UserProfile
-}
-export default function ProfilePage({profile}: ProfilePageProps) {
+  profile: UserProfile;
+};
+export default function ProfilePage({ profile }: ProfilePageProps) {
   const user = profile;
-  const images = ["demo/room1.png","demo/room2.png","add-img.webp"];
-  const year = ["1st","2nd","3rd","4th","5th"];
+  const images = ["demo/room1.png", "demo/room2.png", "add-img.webp"];
+  const year = ["1st", "2nd", "3rd", "4th", "5th"];
   return (
     <>
       <Card className="h-full w-full overflow-auto rounded-none border-none bg-zinc-50 p-8 shadow-none">
@@ -36,7 +36,9 @@ export default function ProfilePage({profile}: ProfilePageProps) {
           {/* Left column */}
           <Card className="xl:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">About You</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                About You
+              </h2>
               <p className="mt-1 text-sm text-gray-500">
                 Update your personal details and profile information.
               </p>
@@ -47,21 +49,24 @@ export default function ProfilePage({profile}: ProfilePageProps) {
               {/* Major */}
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
-                  <h3 className="text-base font-semibold text-gray-800">Major</h3>
+                  <h3 className="text-base font-semibold text-gray-800">
+                    Major
+                  </h3>
                 </div>
                 <div className="flex items-center">
                   <p className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700 flex-1 shadow-sm shadow-gray-300">
-                  {user.major}
+                    {user.major}
                   </p>
                   <MajorSelect />
                 </div>
-                
               </div>
 
               {/* Hobbies */}
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
-                  <h3 className="text-base font-semibold text-gray-800">Hobbies</h3>
+                  <h3 className="text-base font-semibold text-gray-800">
+                    Hobbies
+                  </h3>
                 </div>
                 <div className="flex items-center">
                   <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-4 flex-1 shadow-sm shadow-gray-300">
@@ -74,24 +79,26 @@ export default function ProfilePage({profile}: ProfilePageProps) {
                       </div>
                     ))}
                   </div>
-                  <SelectHobbies/>
+                  <SelectHobbies />
                 </div>
               </div>
             </div>
 
-              {/* Bio */}
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-gray-800">Bio</h3>
-                <div className="p-2">
-                  <EditBio bio={user.bio} />
-                </div>
+            {/* Bio */}
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-gray-800">Bio</h3>
+              <div className="p-2">
+                <EditBio bio={user.bio} />
               </div>
+            </div>
           </Card>
 
           {/* Right column */}
           <Card className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Room Photos</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Room Photos
+              </h2>
               <p className="mt-1 text-sm text-gray-500">
                 Show what your space looks like.
               </p>
@@ -111,5 +118,5 @@ export default function ProfilePage({profile}: ProfilePageProps) {
         </div>
       </Card>
     </>
-  )
+  );
 }
