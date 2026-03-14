@@ -11,38 +11,55 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { ImportanceSlider } from "./importance-slider";
-import { RoommatePreference } from "../types";
-import { YesNoPreferences } from "../types";
+import {
+  saveUserProfileFilters,
+  saveUserRoommatePreferences,
+} from "../_actions";
+import { ProfileFilter, RoommatePreference, YesNoPreferences } from "../types";
 
 export function Filter({
-  profile_filters,
-  roommate_preferences,
+  profileFilters,
+  roommatePreferences,
 }: {
-  profile_filters: ProfileFilter[];
-  roommate_preferences: RoommatePreference[];
+  profileFilters: ProfileFilter;
+  roommatePreferences: RoommatePreference[];
 }) {
   const [open, setOpen] = useState(false); //dialog window
 
-  const [tempValues, setValues] =
-    useState<RoommatePreference[]>(roommate_preferences);
+  const [tempRoommatePreferences, setTempRoommatePreferences] =
+    useState<RoommatePreference[]>(roommatePreferences);
 
-  const handleSliderUpdate = (id: string, newVal: number[]) => {
-    setValues((prev) =>
+  const [tempProfileFilters, setTempProfileFilters] =
+    useState<ProfileFilter>(profileFilters);
+
+  const handleRoommatePreferenceSliderUpdate = (
+    id: string,
+    newVal: number[],
+  ) => {
+    setTempRoommatePreferences((prev) =>
       prev.map((p) =>
         p.preference_id === id ? { ...p, importance: newVal[0] } : p,
       ),
     );
   };
 
-  const handleButtonUpdate = (id: string) => {
-    setValues((prev) =>
+  const handleRoommatePreferenceButtonUpdate = (id: string) => {
+    setTempRoommatePreferences((prev) =>
       prev.map((p) =>
         p.preference_id === id
           ? { ...p, importance: p.importance > 0 ? 0 : 1 }
           : p,
       ),
     );
+  };
+
+  const handleProfileButtonUpdate = (filter: string) => {
+    setTempProfileFilters((prev) => ({
+      ...prev,
+      [filter as keyof ProfileFilter]: !prev[filter as keyof ProfileFilter],
+    }));
   };
 
   const handleSave = () => {
@@ -59,51 +76,99 @@ export function Filter({
         </DialogTrigger>
       </div>
       <DialogContent
-        className="sm:max-w-[550px]"
+        className="sm:max-w-[500px] max-h-[70vh] flex flex-col p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle>Edit Your Roommate Preferences</DialogTitle>
+        <DialogHeader className="shrink-0 px-6 pt-6">
+          <DialogTitle>Edit Your Roommate Filters</DialogTitle>
           <DialogDescription>
-            Set how important each preference is for finding your match. Slide
-            right for must-haves (dealbreakers) or turn off if you don&apos;t
-            care.
+            Set how important each filter is for finding your match. Slide right
+            for must-haves (dealbreakers) or turn off if you don&apos;t care.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex max-h-[60vh] overflow-y-auto pr-2 flex-col gap-1">
-          {tempValues.map((pref) => {
-            const isActive = pref.importance > 0;
-            const isYesNo = YesNoPreferences.includes(pref.name);
-
-            return (
-              <div
-                key={pref.preference_id}
-                className="group flex items-center gap-6"
+        <div className="flex flex-col overflow-y-auto px-6 pb-4 gap-2">
+          <div className="flex flex-row items-center justify-between">
+            <h2 className="text-gray-700 font-medium">Profile:</h2>
+            <div className="flex flex-row items-center gap-8">
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-20 shrink-0 rounded-full whitespace-normal",
+                  tempProfileFilters.use_major
+                    ? "bg-red-400 text-white"
+                    : "bg-white text-gray-700",
+                )}
+                onClick={() => handleProfileButtonUpdate("use_major")}
               >
-                {/* Item tile */}
-                <Button
-                  variant={isActive ? "outline" : "ghost"}
-                  className="w-24 min-h-11 shrink-0 rounded-full whitespace-normal"
-                  onClick={() => handleButtonUpdate(pref.preference_id)}
-                >
-                  {pref.name}
-                </Button>
+                Major
+              </Button>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-20 shrink-0 rounded-full whitespace-normal",
+                  tempProfileFilters.use_year
+                    ? "bg-red-400 text-white"
+                    : "bg-white text-gray-700",
+                )}
+                onClick={() => handleProfileButtonUpdate("use_year")}
+              >
+                Year
+              </Button>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-20 shrink-0 rounded-full whitespace-normal",
+                  tempProfileFilters.use_gender
+                    ? "bg-red-400 text-white"
+                    : "bg-white text-gray-700",
+                )}
+                onClick={() => handleProfileButtonUpdate("use_gender")}
+              >
+                Gender
+              </Button>
+            </div>
+          </div>
+          <div className="flex pr-2 flex-col gap-1">
+            <h2 className="text-gray-700 font-medium">Living Habits:</h2>
+            {tempRoommatePreferences.map((pref) => {
+              const isActive = pref.importance > 0;
+              const isYesNo = YesNoPreferences.includes(pref.name);
 
-                {/* SLIDER */}
-                <ImportanceSlider
-                  value={pref.importance}
-                  isYesNo={isYesNo}
-                  onValueChange={(val) =>
-                    handleSliderUpdate(pref.preference_id, val)
-                  }
-                />
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={pref.preference_id}
+                  className="group flex items-center gap-6"
+                >
+                  {/* Item tile */}
+                  <Button
+                    variant={isActive ? "outline" : "ghost"}
+                    className="w-24 min-h-11 shrink-0 rounded-full whitespace-normal"
+                    onClick={() =>
+                      handleRoommatePreferenceButtonUpdate(pref.preference_id)
+                    }
+                  >
+                    {pref.name}
+                  </Button>
+
+                  {/* SLIDER */}
+                  <ImportanceSlider
+                    value={pref.importance}
+                    isYesNo={isYesNo}
+                    onValueChange={(val) =>
+                      handleRoommatePreferenceSliderUpdate(
+                        pref.preference_id,
+                        val,
+                      )
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/*SAVE BUTTON */}
-        <DialogFooter>
+        <DialogFooter className="shrink-0 px-6 pb-6 pt-4 border-t">
           <DialogClose asChild>
             <Button variant="ghost">Cancel</Button>
           </DialogClose>
