@@ -76,7 +76,7 @@ export function Filter({
         </DialogTrigger>
       </div>
       <DialogContent
-        className="sm:max-w-[500px] max-h-[70vh] flex flex-col p-0"
+        className="sm:max-w-[475px] max-h-[70vh] flex flex-col p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="shrink-0 px-6 pt-6">
@@ -86,17 +86,17 @@ export function Filter({
             for must-haves (dealbreakers) or turn off if you don&apos;t care.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col overflow-y-auto px-6 pb-4 gap-2">
-          <div className="flex flex-row items-center justify-between">
-            <h2 className="text-gray-700 font-medium">Profile:</h2>
-            <div className="flex flex-row items-center gap-8">
+        <div className="flex flex-col overflow-y-auto px-6 pb-2 gap-2">
+          <div className="flex flex-row items-center justify-between pt-2">
+            <h2 className="text-gray-800 font-medium">Profile:</h2>
+            <div className="flex flex-row items-center gap-4">
               <Button
                 variant="outline"
                 className={cn(
                   "w-20 shrink-0 rounded-full whitespace-normal",
                   tempProfileFilters.use_major
-                    ? "bg-red-400 text-white"
-                    : "bg-white text-gray-700",
+                    ? "bg-secondary text-white"
+                    : " text-gray-700",
                 )}
                 onClick={() => handleProfileButtonUpdate("use_major")}
               >
@@ -107,8 +107,8 @@ export function Filter({
                 className={cn(
                   "w-20 shrink-0 rounded-full whitespace-normal",
                   tempProfileFilters.use_year
-                    ? "bg-red-400 text-white"
-                    : "bg-white text-gray-700",
+                    ? "bg-secondary text-white"
+                    : "text-gray-700",
                 )}
                 onClick={() => handleProfileButtonUpdate("use_year")}
               >
@@ -119,8 +119,8 @@ export function Filter({
                 className={cn(
                   "w-20 shrink-0 rounded-full whitespace-normal",
                   tempProfileFilters.use_gender
-                    ? "bg-red-400 text-white"
-                    : "bg-white text-gray-700",
+                    ? "bg-secondary text-white"
+                    : "text-gray-700",
                 )}
                 onClick={() => handleProfileButtonUpdate("use_gender")}
               >
@@ -129,7 +129,7 @@ export function Filter({
             </div>
           </div>
           <div className="flex pr-2 flex-col gap-1">
-            <h2 className="text-gray-700 font-medium">Living Habits:</h2>
+            <h2 className="text-gray-800 mb-2">Living Habits:</h2>
             {tempRoommatePreferences.map((pref) => {
               const isActive = pref.importance > 0;
               const isYesNo = YesNoPreferences.includes(pref.name);
@@ -141,8 +141,11 @@ export function Filter({
                 >
                   {/* Item tile */}
                   <Button
-                    variant={isActive ? "outline" : "ghost"}
-                    className="w-24 min-h-11 shrink-0 rounded-full whitespace-normal"
+                    variant={isActive ? "secondary" : "outline"}
+                    className={cn(
+                      "w-20 shrink-0 rounded-full whitespace-normal text-[12px]",
+                      isActive ? "text-white" : "text-gray-700",
+                    )}
                     onClick={() =>
                       handleRoommatePreferenceButtonUpdate(pref.preference_id)
                     }
