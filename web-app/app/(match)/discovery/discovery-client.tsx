@@ -41,8 +41,11 @@ export function DiscoveryClient({
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center mb-10">
-      <Filter preferences={roommatePreferences}></Filter>
+    <div className="w-full h-full flex flex-col items-center justify-center mb-10">
+      <Filter
+        profile_filters={[]}
+        roommate_preferences={roommatePreferences}
+      ></Filter>
       <ProfileCard
         profile={selectedProfile}
         handleNext={handleNext}

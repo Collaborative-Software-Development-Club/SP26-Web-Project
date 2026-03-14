@@ -9,9 +9,9 @@ import discoveryProfiles from "@/mock/discover_profiles.json";
 export default async function DiscoveryPage() {
   const user = await requireAuth();
   const c_roommatePreferences = await getUserRoommatePreferences(user.id);
-  const c_discoveryProfiles = await getDiscoveryProfiles(
-    c_roommatePreferences.map((preference) => preference.preference_id),
-  );
+  const c_discoveryProfiles = await getDiscoveryProfiles();
+
+  console.log(c_discoveryProfiles);
 
   return (
     <DiscoveryClient

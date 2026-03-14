@@ -15,10 +15,17 @@ import { ImportanceSlider } from "./importance-slider";
 import { RoommatePreference } from "../types";
 import { YesNoPreferences } from "../types";
 
-export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
+export function Filter({
+  profile_filters,
+  roommate_preferences,
+}: {
+  profile_filters: ProfileFilter[];
+  roommate_preferences: RoommatePreference[];
+}) {
   const [open, setOpen] = useState(false); //dialog window
 
-  const [tempValues, setValues] = useState<RoommatePreference[]>(preferences);
+  const [tempValues, setValues] =
+    useState<RoommatePreference[]>(roommate_preferences);
 
   const handleSliderUpdate = (id: string, newVal: number[]) => {
     setValues((prev) =>
@@ -52,7 +59,7 @@ export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
         </DialogTrigger>
       </div>
       <DialogContent
-        className="sm:max-w-[450px]"
+        className="sm:max-w-[550px]"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { LikedYouProfile, RoommatePreference, DiscoveryProfile } from "./types";
+import type { LikedYouProfile, RoommatePreference, DiscoveryProfile, ProfileFilter } from "./types";
 import type { UserProfile } from "@/app/(profile)/types";
 import { getUserProfiles } from "@/lib/services/profile";
 
@@ -201,14 +201,71 @@ export async function undoMatchSwipe(targetUserId: string) {
   }
 }
 
-// Gets users preference table
-export async function getUserRoommatePreferences(user_id: string): Promise<RoommatePreference[]> {
+// Gets users profile filters table
+export async function getUserProfileFilters(): Promise<ProfileFilter> {
   const supabase = await createClient();
+  const {data: {user}} = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
 
+  const { data, error } = await supabase
+    .from("discovery_profile_filters")
+    .select("use_major, use_year, use_gender")
+    .eq("user_id", user.id);
+
+  if (error) {
+    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
+  } else {
+    return data[0];
+  }
+}
+
+export async function saveUserProfileFilters(
+  profile_filter: ProfileFilter,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { error: saveError } = await supabase
+    .from("discovery_profile_filters")
+    .upsert(
+      {
+        user_id: user.id,
+        use_major: profile_filter.use_major,
+        use_year: profile_filter.use_year,
+        use_gender: profile_filter.use_gender,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (saveError) {
+    throw new Error(
+      `Failed to save user profile filters: ${saveError.message}`,
+    );
+  }
+}
+
+// Gets users roommate preference table
+export async function getUserRoommatePreferences(): Promise<RoommatePreference[]> {
+  const supabase = await createClient();
+  const {data: {user}} = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
   const { data, error } = await supabase
     .from("discovery_roommate_preferences")
     .select("preference_id, importance, user_preferences(name)")
-    .eq("user_id", user_id);
+    .eq("user_id", user.id);
 
   if (error) {
     throw new Error(`Error fetching user roommate preferences: ${error.message}`);
@@ -258,7 +315,7 @@ export async function saveUserRoommatePreferences(
     Matches a user with all active users in the database based on the distance in preferences
     If we do not have preferences or importance assigned the score will default to 0    
   */
-  export async function getDiscoveryProfiles(preference_ids: string[]): Promise<DiscoveryProfile[]> {
+  export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
     const supabase = await createClient();
     const {
       data: { user },
@@ -271,7 +328,6 @@ export async function saveUserRoommatePreferences(
 
     const { data, error } = await supabase.rpc("get_ranked_matches", {
       current_user_id: user.id,
-      preference_ids,
     }).select("*");
 
     if (error) {

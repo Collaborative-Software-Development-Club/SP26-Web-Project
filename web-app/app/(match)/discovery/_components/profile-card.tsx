@@ -62,7 +62,7 @@ export function ProfileCard({
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
       <AnimatePresence mode="wait" custom={swipeDirection}>
         <motion.div
           key={profile.user_id}

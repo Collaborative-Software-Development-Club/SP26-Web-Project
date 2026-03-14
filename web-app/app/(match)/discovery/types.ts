@@ -14,4 +14,10 @@ export type RoommatePreference = {
     name: string;
 }
 
+export type ProfileFilter = {
+    use_major: boolean;
+    use_year: boolean;
+    use_gender: boolean;
+}
+
 export const YesNoPreferences = ["Smoker", "Pets"];
