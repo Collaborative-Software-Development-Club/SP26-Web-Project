@@ -10,6 +10,7 @@ export interface House {
   full_bathrooms: number;
   half_bathrooms: number;
   sector: string;
+  all_images?: string[];
 }
 
 function parsePriceNumber(rent: string): number | null {
@@ -33,8 +34,16 @@ export function HouseCard({ house }: { house: House }) {
 
   return (
     <article className="bg-card rounded-lg shadow-sm overflow-hidden">
-      <div className="h-44 bg-muted flex items-center justify-center">
-        <span className="text-muted-foreground text-sm">No image available</span>
+      <div className="h-44 bg-muted flex items-center justify-center overflow-hidden">
+        {house.all_images?.[0] ? (
+          <img 
+            src={house.all_images[0]} 
+            alt={house.address}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-muted-foreground text-sm">No image available</span>
+        )}
       </div>
       <div className="p-4">
         <h2 className="text-lg font-medium text-card-foreground">{house.address}</h2>

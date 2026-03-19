@@ -11,7 +11,7 @@ page_num = 1
 # This will store every property as a dictionary
 all_properties = []
 
-while url is not None:
+while url is not None: 
 
     response = requests.get(url)
 
@@ -40,6 +40,28 @@ while url is not None:
             if detail_response.status_code == 200:
 
                 detail_soup = BeautifulSoup(detail_response.text, "html.parser")
+                
+                # Extract all images from the carousel
+                all_image_urls = []
+                image_slides = detail_soup.find_all("div", class_="c-propertyimages__slide")
+                
+                for slide in image_slides:
+                    img_tag = slide.find("img")
+                    if img_tag and img_tag.get("src"):
+                        image_url = img_tag["src"]
+                        
+                        # Make the image URL absolute if it's relative
+                        if image_url and not image_url.startswith("http"):
+                            if image_url.startswith("/"):
+                                image_url = base_url + image_url
+                            else:
+                                image_url = base_url + "/" + image_url
+                        
+                        all_image_urls.append(image_url)
+                
+                # Store all images as a list
+                property_data["Property_Images"] = all_image_urls
+
                 list_items = detail_soup.find_all("li")
 
                 for item in list_items:
