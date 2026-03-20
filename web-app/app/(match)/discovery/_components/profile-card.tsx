@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { DiscoveryProfile, YesNoPreferences } from "../types";
+import { useState } from "react";
+import { DiscoveryProfile } from "../types";
+import { LivingHabits } from "./living-habits";
 import { LikeButton } from "./like-button";
 import { UndoButton } from "./undo-button";
 import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { LivingHabits } from "./living-habits";
 
 export function ProfileCard({
   profile,
