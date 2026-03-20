@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DiscoveryProfile, YesNoPreferences } from "../types";
+import { DiscoveryProfile, LikedYouProfile, YesNoPreferences } from "../types";
 // replace with useContext for signed-in user
 import discoveryProfiles from "@/mock/discover_profiles.json";
 import { BookOpen, Cigarette, Cat, Moon, Users } from "lucide-react";
@@ -43,7 +43,11 @@ const getMatchBorderClass = (
   return "border-zinc-100 dark:border-zinc-800";
 };
 
-export function LivingHabits({ profile }: { profile: DiscoveryProfile }) {
+export function LivingHabits({
+  profile,
+}: {
+  profile: DiscoveryProfile | LikedYouProfile;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const INITIAL_VISIBLE_PREFS = 4;
 
