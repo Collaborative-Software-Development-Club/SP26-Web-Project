@@ -7,6 +7,7 @@ import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile;
 };
+//ADD FETCHES HERE SINCE THIS IS A SERVER COMPONENT
 export default function ProfilePage({ profile }: ProfilePageProps) {
   const user = profile;
   const images = ["demo/room1.png", "demo/room2.png", "add-img.webp"];

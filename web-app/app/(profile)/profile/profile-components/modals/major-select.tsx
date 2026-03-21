@@ -5,10 +5,35 @@ import majors from "../data/majors.json"
 import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { UserField } from "@/app/(profile)/types"
+import { setUserProfile } from "@/app/(profile)/_actions"
+import { useRouter } from "next/navigation"
 export default function MajorSelect() {
     const [editMode,setMode] = useState(false);
-    function handleSubmit(){
-        setMode(false)
+    const [error,setError] = useState<string|null>(null);
+    const router = useRouter();
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+        
+        const formData = new FormData(e.currentTarget);
+        const major = formData.get("major") as string;
+        const majorData:UserField = {
+            field:"major",
+            value:major
+        }
+        
+        try {
+            await setUserProfile(majorData);
+            setMode(false);
+            router.refresh();
+        } catch (error) {
+            setError("Unexpected error occured");
+            setMode(true);
+        }
+
+
+        
     }
   return (
     <>
@@ -16,7 +41,7 @@ export default function MajorSelect() {
         {editMode &&
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                 <Card className="w-full max-w-2xl rounded-2xl border border-gray-200 shadow-xl">
-                    <form onSubmit={handleSubmit} className="flex flex-col">
+                    <form onSubmit={(e)=> handleSubmit(e)} className="flex flex-col">
                     
                     {/* Header */}
                     <div className="border-b px-6 py-4">
@@ -24,8 +49,13 @@ export default function MajorSelect() {
                         <p className="mt-1 text-sm text-gray-500">
                         Choose the major that best matches your field of study.
                         </p>
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                                {error}
+                            </div>
+                        )}
                     </div>
-
+                    
                     {/* Scrollable content */}
                     <div className="max-h-[55vh] overflow-auto px-6 py-4">
                         <div className="space-y-2">
@@ -38,6 +68,7 @@ export default function MajorSelect() {
                                 <Input
                                     type="radio"
                                     name="major"
+                                    id={major}
                                     value={major}
                                     className="h-4 w-4 accent-red-500"
                                 />

@@ -19,3 +19,8 @@ export type UserProfile = {
     hobbies: string[];
     preferences: Preference[];
 }
+
+export type UserField = {
+    field: string;
+    value: string;
+}

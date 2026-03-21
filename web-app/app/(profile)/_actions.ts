@@ -4,7 +4,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfiles } from "@/lib/services/profile";
-import type { Preference } from "./types";
+import type { Preference, UserField } from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -189,4 +189,23 @@ export async function setPreferences(preferences: Preference[]) {
   );
 
   if (error) throw new Error(`Error updating user preferences: ${error.message}`);
+}
+
+export async function setUserProfile(data: UserField){
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const {error} = await supabase.from("user_profiles")
+  .update(
+    {
+      [data.field]:data.value
+    }
+  )
+  .eq("user_id",user.id);
+
+  
+  if (error) throw new Error(`Error updating user profile: ${error.message}`);
 }
