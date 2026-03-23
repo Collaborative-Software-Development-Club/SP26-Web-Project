@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DiscoveryProfile } from "../types";
-import { LivingHabits } from "./living-habits";
+import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { UndoButton } from "./undo-button";
 import { DislikeButton } from "./dislike-button";
@@ -135,7 +135,7 @@ export function ProfileCard({
                     <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
                       Living Habits
                     </h3>
-                    <LivingHabits profile={profile} />
+                    <ProfilePreferences profile={profile} />
                   </div>
                 </div>
               </div>

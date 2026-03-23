@@ -43,7 +43,7 @@ const getMatchBorderClass = (
   return "border-zinc-100 dark:border-zinc-800";
 };
 
-export function LivingHabits({
+export function ProfilePreferences({
   profile,
 }: {
   profile: DiscoveryProfile | LikedYouProfile;

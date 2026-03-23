@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LivingHabits } from "./living-habits";
+import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
 import { LikedYouProfile } from "../types";
@@ -69,7 +69,7 @@ export function VibeCheckProfile({
         )}
 
         {/* Preferences */}
-        <LivingHabits profile={profile} />
+        <ProfilePreferences profile={profile} />
 
         {/* Divider */}
         <div className="border-t border-zinc-100 dark:border-zinc-800" />
