@@ -27,7 +27,6 @@ export function DiscoveryClient({
     if (currentIndex < profiles.length - 1) {
       setSelectedProfile(profiles[currentIndex + 1]);
     } else {
-      //setSelectedProfile(profiles[0]);
       setReachedEnd(true);
     }
   };
@@ -36,14 +35,13 @@ export function DiscoveryClient({
     const currentIndex = profiles.findIndex(
       (p) => p.user_id === selectedProfile.user_id,
     );
-    if(!reachedEnd){
+    if (!reachedEnd) {
       if (currentIndex > 0) {
         setSelectedProfile(profiles[currentIndex - 1]);
-      } 
-      else {
+      } else {
         setSelectedProfile(profiles[profiles.length - 1]);
       }
-    }else{
+    } else {
       setReachedEnd(false);
     }
   };
@@ -51,17 +49,36 @@ export function DiscoveryClient({
   return (
     <div className="w-full flex flex-col items-center justify-center mb-10">
       <Filter preferences={roommatePreferences}></Filter>
-      {reachedEnd 
-        ?<NoMoreResults handleBefore={handleBefore} profile={selectedProfile}/>
-        :<ProfileCard
-        profile={selectedProfile}
-        handleNext={handleNext}
-        handleBefore={handleBefore}
+      {profiles.length === 0 ? (
+        <NoResultsReturned />
+      ) : reachedEnd ? (
+        <NoMoreResults handleBefore={handleBefore} profile={selectedProfile} />
+      ) : (
+        <ProfileCard
+          profile={selectedProfile}
+          handleNext={handleNext}
+          handleBefore={handleBefore}
         />
-      }
+      )}
     </div>
   );
 }
+
+const NoResultsReturned = () => {
+  return (
+    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+      <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[560px] flex flex-col center-items text-center">
+        <span className="text-5xl">✦</span>
+        <h2 className="px-16 pt-16 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+          Oops! We couldn&apos;t find any matches...
+        </h2>
+        <p className="px-12 pt-8 text-zinc-400 dark:text-zinc-100">
+          Try adjusting your filters to discover more matches!
+        </p>
+      </div>
+    </div>
+  );
+};
 
 function NoMoreResults({
   handleBefore,
@@ -75,11 +92,10 @@ function NoMoreResults({
       <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[560px] flex flex-col center-items text-center">
         <span className="text-5xl">✦</span>
         <h2 className="px-16 pt-16 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          You're all caught up
+          You're all caught up!
         </h2>
         <p className="px-12 pt-8 text-zinc-400 dark:text-zinc-100">
-          You've seen everyone. Try adjusting your filters to discover more
-          people
+          Try adjusting your filters to discover more matches!
         </p>
         <div className="p-[1rem] mt-auto flex flex-col items-center">
           <UndoButton
