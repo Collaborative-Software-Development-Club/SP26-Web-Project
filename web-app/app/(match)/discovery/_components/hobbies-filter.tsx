@@ -8,7 +8,7 @@ export function HobbiesFilter({
   userHobbies,
   handleHobbyFilterUpdate,
 }: {
-  selectedHobbies: Set<string>;
+  selectedHobbies: string[];
   userHobbies: Hobby[];
   handleHobbyFilterUpdate: (hobby: Hobby) => void;
 }) {
@@ -17,7 +17,7 @@ export function HobbiesFilter({
       <h2 className="text-gray-800 font-medium">Hobbies:</h2>
       <div className="flex flex-wrap gap-2 p-2">
         {userHobbies.map((hobby) =>
-          selectedHobbies.has(hobby.hobby_id) ? (
+          selectedHobbies.includes(hobby.hobby_id) ? (
             <Button
               key={hobby.hobby_id}
               variant="default"

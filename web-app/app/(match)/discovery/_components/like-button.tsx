@@ -19,7 +19,7 @@ export function LikeButton({
 }) {
   const handleLike = useCallback(() => {
     console.log("Like");
-    
+
     if (onClick) {
       onClick(); // Trigger animation first
     } else {
@@ -36,10 +36,15 @@ export function LikeButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        handleLike();
-      }
+      if (e.key !== "ArrowRight") return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        t.closest("textarea, input, select, [contenteditable]")
+      )
+        return;
+      e.preventDefault();
+      handleLike();
     };
 
     window.addEventListener("keydown", handleKeyPress);

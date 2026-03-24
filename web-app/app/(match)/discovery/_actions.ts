@@ -216,9 +216,7 @@ export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
   if (error) {
     throw new Error(`Error fetching discovery filter: ${error.message}`);
   }
-  return {...data,
-    hobby_filters: new Set(data.hobby_filters),
-  };
+  return data;
 }
 
 export async function saveDiscoveryFilter(

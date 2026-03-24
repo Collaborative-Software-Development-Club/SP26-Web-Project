@@ -38,10 +38,15 @@ export function UndoButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "z" || e.key === "Z") {
-        e.preventDefault();
-        handleUndo();
-      }
+      if (e.key !== "z" && e.key !== "Z") return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        t.closest("textarea, input, select, [contenteditable]")
+      )
+        return;
+      e.preventDefault();
+      handleUndo();
     };
 
     window.addEventListener("keydown", handleKeyPress);

@@ -23,7 +23,7 @@ export type ProfileFilter = {
 export type DiscoveryFilter = {
     roommate_preferences: RoommatePreference[];
     profile_filters: ProfileFilter;
-    hobby_filters: Set<string>;
+    hobby_filters: string[];
 }
 
 export const YesNoPreferences = ["Smoker", "Pets"];

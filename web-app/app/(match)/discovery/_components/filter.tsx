@@ -38,7 +38,11 @@ export function Filter({
   const handlePreferenceUpdate = (id: string, val: number) => {
     setTempDiscoveryFilter((prev) => ({
       ...prev,
-      roommate_preferences: { ...prev.roommate_preferences, [id]: val },
+      roommate_preferences: prev.roommate_preferences.map((preference) =>
+        preference.preference_id === id
+          ? { ...preference, importance: val }
+          : preference,
+      ),
     }));
   };
 
@@ -56,9 +60,9 @@ export function Filter({
   const handleHobbyFilterUpdate = (hobby: Hobby) => {
     setTempDiscoveryFilter((prev) => ({
       ...prev,
-      hobby_filters: prev.hobby_filters.has(hobby.hobby_id)
-        ? new Set([...prev.hobby_filters].filter((h) => h !== hobby.hobby_id))
-        : new Set([...prev.hobby_filters, hobby.hobby_id]),
+      hobby_filters: prev.hobby_filters.includes(hobby.hobby_id)
+        ? prev.hobby_filters.filter((h) => h !== hobby.hobby_id)
+        : [...prev.hobby_filters, hobby.hobby_id],
     }));
   };
 

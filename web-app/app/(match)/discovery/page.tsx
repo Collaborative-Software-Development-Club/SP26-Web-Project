@@ -14,10 +14,7 @@ export default async function DiscoveryPage() {
   return (
     <DiscoveryClient
       initialProfiles={discoveryProfiles}
-      discoveryFilters={{
-        ...discoveryFilter,
-        hobby_filters: new Set(discoveryFilter.hobby_filters),
-      }}
+      discoveryFilters={discoveryFilter}
     />
   );
 }
