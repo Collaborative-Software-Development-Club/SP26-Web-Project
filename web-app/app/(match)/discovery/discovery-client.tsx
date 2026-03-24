@@ -4,6 +4,7 @@ import { ProfileCard } from "./_components/profile-card";
 import { Filter } from "./_components/filter";
 import { useState } from "react";
 import { DiscoveryFilter, DiscoveryProfile } from "./types";
+import { UndoButton } from "./_components/undo-button";
 
 export function DiscoveryClient({
   initialProfiles,
@@ -47,7 +48,7 @@ export function DiscoveryClient({
 
   return (
     <div className="w-full flex flex-col items-center justify-center mb-10">
-      <Filter preferences={roommatePreferences}></Filter>
+      <Filter discoveryFilter={discoveryFilters}></Filter>
       {profiles.length === 0 ? (
         <NoResultsReturned />
       ) : reachedEnd ? (
