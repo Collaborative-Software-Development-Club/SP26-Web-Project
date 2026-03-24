@@ -91,37 +91,22 @@ export function Filter({
             <h2 className="text-gray-800 font-medium">Profile:</h2>
             <div className="flex flex-row items-center gap-4">
               <Button
-                variant="outline"
-                className={cn(
-                  "w-20 shrink-0 rounded-full whitespace-normal",
-                  tempProfileFilters.use_major
-                    ? "bg-secondary text-white"
-                    : " text-gray-700",
-                )}
+                variant={tempProfileFilters.use_major ? "default" : "outline"}
+                className="w-20 shrink-0 rounded-full whitespace-normal"
                 onClick={() => handleProfileButtonUpdate("use_major")}
               >
                 Major
               </Button>
               <Button
-                variant="outline"
-                className={cn(
-                  "w-20 shrink-0 rounded-full whitespace-normal",
-                  tempProfileFilters.use_year
-                    ? "bg-secondary text-white"
-                    : "text-gray-700",
-                )}
+                variant={tempProfileFilters.use_year ? "default" : "outline"}
+                className="w-20 shrink-0 rounded-full whitespace-normal"
                 onClick={() => handleProfileButtonUpdate("use_year")}
               >
                 Year
               </Button>
               <Button
-                variant="outline"
-                className={cn(
-                  "w-20 shrink-0 rounded-full whitespace-normal",
-                  tempProfileFilters.use_gender
-                    ? "bg-secondary text-white"
-                    : "text-gray-700",
-                )}
+                variant={tempProfileFilters.use_gender ? "default" : "outline"}
+                className="w-20 shrink-0 rounded-full whitespace-normal"
                 onClick={() => handleProfileButtonUpdate("use_gender")}
               >
                 Gender
@@ -141,11 +126,8 @@ export function Filter({
                 >
                   {/* Item tile */}
                   <Button
-                    variant={isActive ? "secondary" : "outline"}
-                    className={cn(
-                      "w-20 shrink-0 rounded-full whitespace-normal text-[12px]",
-                      isActive ? "text-white" : "text-gray-700",
-                    )}
+                    variant={isActive ? "default" : "outline"}
+                    className="w-20 shrink-0 rounded-full whitespace-normal text-[12px]"
                     onClick={() =>
                       handleRoommatePreferenceButtonUpdate(pref.preference_id)
                     }
@@ -177,7 +159,7 @@ export function Filter({
           </DialogClose>
           <Button
             onClick={handleSave}
-            className="bg-primary hover:bg-primary text-white cursor-pointer"
+            className="bg-primary text-white cursor-pointer"
           >
             Save
           </Button>
