@@ -148,10 +148,10 @@ export function ProfileCard({
                     <div className="flex flex-wrap gap-2">
                       {profile.hobbies.map((hobby) => (
                         <span
-                          key={hobby}
+                          key={hobby.hobby_id}
                           className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium border border-zinc-200 dark:border-zinc-700"
                         >
-                          {hobby}
+                          {hobby.name}
                         </span>
                       ))}
                     </div>

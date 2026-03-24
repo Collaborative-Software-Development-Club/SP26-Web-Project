@@ -19,10 +19,12 @@ import {
   saveUserRoommatePreferences,
 } from "../_actions";
 import { ProfileFilter, RoommatePreference, YesNoPreferences } from "../types";
+import { HobbiesFilter } from "./hobbies-filter";
 
 export function Filter({
   profileFilters,
   roommatePreferences,
+  
 }: {
   profileFilters: ProfileFilter;
   roommatePreferences: RoommatePreference[];
@@ -101,6 +103,7 @@ export function Filter({
               </Button>
             </div>
           </div>
+          <HobbiesFilter />
           <div className="flex pr-2 flex-col gap-1">
             <h2 className="text-gray-800 font-medium">Living Habits:</h2>
             {tempRoommatePreferences.map((pref) => {
