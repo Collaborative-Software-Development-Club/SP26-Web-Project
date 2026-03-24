@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
@@ -29,10 +29,6 @@ export function VibeCheckProfile({
       }
     }, 10);
   };
-
-  useEffect(() => {
-    setSwipeDirection(0);
-  }, [profile.user_id]);
 
   const yearLabel: Record<number, string> = {
     1: "Freshman",
@@ -84,73 +80,72 @@ export function VibeCheckProfile({
             </div>
           </div>
           <div className="p-5 space-y-4">
+            {/* Bio */}
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+              {profile.bio}
+            </p>
 
-        {/* Bio */}
-        <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
-          {profile.bio}
-        </p>
-
-        {/* Hobbies */}
-        {profile.hobbies.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {profile.hobbies.map((hobby) => (
-              <span
-                key={hobby}
-                className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs font-medium"
-              >
-                {hobby}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Preferences */}
-        {profile.preferences.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {profile.preferences.map((pref) => (
-              <div
-                key={pref.name}
-                className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
-              >
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
-                  {pref.name}
-                </span>
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {YesNoPreferences.includes(pref.name)
-                    ? pref.value === 1
-                      ? "Yes"
-                      : "No"
-                    : pref.value}
-                </span>
+            {/* Hobbies */}
+            {profile.hobbies.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {profile.hobbies.map((hobby) => (
+                  <span
+                    key={hobby}
+                    className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs font-medium"
+                  >
+                    {hobby}
+                  </span>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Divider */}
-        <div className="border-t border-zinc-100 dark:border-zinc-800" />
+            {/* Preferences */}
+            {profile.preferences.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {profile.preferences.map((pref) => (
+                  <div
+                    key={pref.name}
+                    className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
+                  >
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
+                      {pref.name}
+                    </span>
+                    <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
+                      {YesNoPreferences.includes(pref.name)
+                        ? pref.value === 1
+                          ? "Yes"
+                          : "No"
+                        : pref.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        {/* Incoming message */}
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-            Their message to you
-          </p>
-          <div className="rounded-2xl rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200 italic">
-            &quot;{profile.message}&quot;
-          </div>
-        </div>
+            {/* Divider */}
+            <div className="border-t border-zinc-100 dark:border-zinc-800" />
 
-        {/* Reply box */}
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-            Your reply (optional)
-          </p>
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder={`Reply to ${profile.fname}...`}
-            rows={3}
-            className="
+            {/* Incoming message */}
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Their message to you
+              </p>
+              <div className="rounded-2xl rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200 italic">
+                &quot;{profile.message}&quot;
+              </div>
+            </div>
+
+            {/* Reply box */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Your reply (optional)
+              </p>
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder={`Reply to ${profile.fname}...`}
+                rows={3}
+                className="
               w-full resize-none rounded-2xl px-4 py-3
               bg-zinc-50 dark:bg-zinc-800
               border border-zinc-200 dark:border-zinc-700
@@ -159,27 +154,27 @@ export function VibeCheckProfile({
               focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
               transition
             "
-          />
-        </div>
+              />
+            </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-row justify-around gap-3 pt-1">
-          <DislikeButton
-            onClick={() => onAction(-1)}
-            handleNext={() => onAction(-1)}
-            targetUserId={profile.user_id}
-            isDiscovery={false}
-          />
-          <LikeButton
-            onClick={() => onAction(1)}
-            handleNext={() => onAction(1)}
-            targetUserId={profile.user_id}
-            isDiscovery={false}
-          />
-        </div>
-      </div>
-    </motion.div>
-  </AnimatePresence>
-</div>
+            {/* Action buttons */}
+            <div className="flex flex-row justify-around gap-3 pt-1">
+              <DislikeButton
+                onClick={() => onAction(-1)}
+                handleNext={() => onAction(-1)}
+                targetUserId={profile.user_id}
+                isDiscovery={false}
+              />
+              <LikeButton
+                onClick={() => onAction(1)}
+                handleNext={() => onAction(1)}
+                targetUserId={profile.user_id}
+                isDiscovery={false}
+              />
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { ImportanceSlider } from "./importance-slider";
+import { ImportanceControl } from "./importance-control";
 import {
   saveUserProfileFilters,
   saveUserRoommatePreferences,
@@ -61,7 +61,7 @@ export function Filter({
         </DialogTrigger>
       </div>
       <DialogContent
-        className="sm:max-w-[475px] max-h-[70vh] flex flex-col p-0"
+        className="sm:max-w-[480px] max-h-[70vh] flex flex-col p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="shrink-0 px-6 pt-6">
@@ -71,27 +71,30 @@ export function Filter({
             how much it matters, or &apos;!&apos; for dealbreaker.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col overflow-y-auto px-6 pb-2 gap-2">
-          <div className="flex flex-row items-center justify-between pt-2">
+        <div className="flex flex-col overflow-y-auto px-6 pb-2 gap-4">
+          <div className="flex flex-col">
             <h2 className="text-gray-800 font-medium">Profile:</h2>
-            <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center w-full gap-2 p-2">
               <Button
                 variant={tempProfileFilters.use_major ? "default" : "outline"}
-                className="w-20 shrink-0 rounded-full whitespace-normal"
+                size="sm"
+                className="flex-1"
                 onClick={() => handleProfileButtonUpdate("use_major")}
               >
                 Major
               </Button>
               <Button
                 variant={tempProfileFilters.use_year ? "default" : "outline"}
-                className="w-20 shrink-0 rounded-full whitespace-normal"
+                size="sm"
+                className="flex-1"
                 onClick={() => handleProfileButtonUpdate("use_year")}
               >
                 Year
               </Button>
               <Button
                 variant={tempProfileFilters.use_gender ? "default" : "outline"}
-                className="w-20 shrink-0 rounded-full whitespace-normal"
+                size="sm"
+                className="flex-1"
                 onClick={() => handleProfileButtonUpdate("use_gender")}
               >
                 Gender
@@ -99,32 +102,35 @@ export function Filter({
             </div>
           </div>
           <div className="flex pr-2 flex-col gap-1">
-            <h2 className="text-gray-800 mb-2">Living Habits:</h2>
+            <h2 className="text-gray-800 font-medium">Living Habits:</h2>
             {tempRoommatePreferences.map((pref) => {
               const isActive = pref.importance > 0;
               const isYesNo = YesNoPreferences.includes(pref.name);
 
-            return (
-              <div
-                key={pref.preference_id}
-                className="flex flex-col gap-1 py-2 px-2 rounded-md"
-              >
-                <Label
-                  className={cn(
-                    "text-sm cursor-default",
-                    !isActive && "text-muted-foreground",
-                  )}
+              return (
+                <div
+                  key={pref.preference_id}
+                  className="flex flex-col gap-1 py-1 px-2 rounded-md"
                 >
-                  {pref.name}
-                </Label>
-                <ImportanceControl
-                  value={pref.importance}
-                  isYesNo={isYesNo}
-                  onValueChange={(val) => handleUpdate(pref.preference_id, val)}
-                />
-              </div>
-            );
-          })}
+                  <Label
+                    className={cn(
+                      "text-sm cursor-default",
+                      !isActive && "text-muted-foreground",
+                    )}
+                  >
+                    {pref.name}
+                  </Label>
+                  <ImportanceControl
+                    value={pref.importance}
+                    isYesNo={isYesNo}
+                    onValueChange={(val) =>
+                      handleUpdate(pref.preference_id, val)
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/*SAVE BUTTON */}
