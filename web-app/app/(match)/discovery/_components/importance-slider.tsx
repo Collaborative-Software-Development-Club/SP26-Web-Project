@@ -1,39 +1,53 @@
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
 
-export function ImportanceSlider({
+const LABELS: Record<number, string> = {
+  0: "Off",
+  1: "Nice to have",
+  2: "Somewhat important",
+  3: "Important",
+  4: "Very important",
+  5: "Dealbreaker",
+};
+
+export function ImportanceControl({
   value,
   isYesNo,
   onValueChange,
 }: {
   value: number;
   isYesNo: boolean;
-  onValueChange: (value: number[]) => void;
+  onValueChange: (value: number) => void;
 }) {
-  const max = isYesNo ? 1 : 5;
+  if (isYesNo) {
+    return (
+      <div className="flex w-full gap-1">
+        {([0, 1] as const).map((v) => (
+          <Button
+            key={v}
+            size="xs"
+            className="flex-1"
+            variant={value === v ? "default" : "ghost"}
+            onClick={() => onValueChange(v)}
+          >
+            {v === 0 ? "Don't care" : "Care"}
+          </Button>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full flex flex-col gap-2 justify-center">
+    <div className="flex w-full flex-col gap-1">
+      <span className="text-xs text-muted-foreground">{LABELS[value]}</span>
       <Slider
         value={[value]}
-        max={max}
+        min={0}
+        max={5}
         step={1}
-        className={cn("mx-auto w-full max-w-xs")}
-        onValueChange={onValueChange}
+        className="w-full"
+        onValueChange={(val) => onValueChange(val[0])}
       />
-      {isYesNo ? (
-        <div className="flex justify-between px-1">
-          <span className="text-[10px] text-muted-foreground">No</span>
-          <span className="text-[10px] text-muted-foreground">Yes</span>
-        </div>
-      ) : (
-        <div className="flex justify-between px-1">
-          {Array.from({ length: 6 }, (_, i) => i).map((num) => (
-            <span key={num} className={`text-[10px] text-muted-foreground`}>
-              {num}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

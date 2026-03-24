@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
-import { LikedYouProfile, YesNoPreferences } from "../types";
+import { LikedYouProfile } from "../types";
 import Image from "next/image";
 
 export function VibeCheckProfile({
@@ -16,6 +18,22 @@ export function VibeCheckProfile({
   onPass: (userId: string) => void;
 }) {
   const [replyText, setReplyText] = useState("");
+  const [swipeDirection, setSwipeDirection] = useState(0);
+
+  const onAction = (dir: number) => {
+    setSwipeDirection(dir);
+    setTimeout(() => {
+      if (dir === 1) {
+        onAccept(profile.user_id);
+      } else {
+        onPass(profile.user_id);
+      }
+    }, 10);
+  };
+
+  useEffect(() => {
+    setSwipeDirection(0);
+  }, [profile.user_id]);
 
   const yearLabel: Record<number, string> = {
     1: "Freshman",
@@ -26,28 +44,47 @@ export function VibeCheckProfile({
   };
 
   return (
-    <div className="w-full max-w-lg rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl shadow-black/5">
-      {/* Avatar & header */}
-      <div className="relative h-52 bg-zinc-100 dark:bg-zinc-800">
-        <Image
-          src="/demo/selfie.png"
-          alt="User Avatar"
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-br from-black/30 to-transparent" />
-        <div className="absolute bottom-4 left-5 right-5">
-          <h2 className="text-white text-2xl font-bold leading-tight">
-            {profile.fname} {profile.lname}
-          </h2>
-          <p className="text-white/75 text-sm">
-            {yearLabel[profile.year] ?? `Year ${profile.year}`} ·{" "}
-            {profile.major}
-          </p>
-        </div>
-      </div>
-      <div className="p-5 space-y-4">
+    <div className="w-full flex justify-center">
+      <AnimatePresence mode="wait" custom={swipeDirection}>
+        <motion.div
+          key={profile.user_id}
+          custom={swipeDirection}
+          initial={{
+            opacity: 0,
+            x: swipeDirection === 1 ? 100 : swipeDirection === -1 ? -100 : 0,
+            scale: 0.98,
+          }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{
+            x: swipeDirection === 1 ? 500 : swipeDirection === -1 ? -500 : 0,
+            opacity: 0,
+            rotate: swipeDirection * 10,
+            scale: 0.8,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="w-full max-w-lg rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl shadow-black/5"
+        >
+          {/* Avatar & header */}
+          <div className="relative h-52 bg-zinc-100 dark:bg-zinc-800">
+            <Image
+              src="/demo/selfie.png"
+              alt="User Avatar"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-br from-black/30 to-transparent" />
+            <div className="absolute bottom-4 left-5 right-5">
+              <h2 className="text-white text-2xl font-bold leading-tight">
+                {profile.fname} {profile.lname}
+              </h2>
+              <p className="text-white/75 text-sm">
+                {yearLabel[profile.year] ?? `Year ${profile.year}`} ·{" "}
+                {profile.major}
+              </p>
+            </div>
+          </div>
+          <div className="p-5 space-y-4">
 
         {/* Bio */}
         <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
@@ -69,27 +106,7 @@ export function VibeCheckProfile({
         )}
 
         {/* Preferences */}
-        {profile.preferences.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {profile.preferences.map((pref) => (
-              <div
-                key={pref.name}
-                className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
-              >
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
-                  {pref.name}
-                </span>
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {YesNoPreferences.includes(pref.name)
-                    ? pref.value === 1
-                      ? "Yes"
-                      : "No"
-                    : pref.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <ProfilePreferences profile={profile} />
 
         {/* Divider */}
         <div className="border-t border-zinc-100 dark:border-zinc-800" />
@@ -129,17 +146,21 @@ export function VibeCheckProfile({
         {/* Action buttons */}
         <div className="flex flex-row justify-around gap-3 pt-1">
           <DislikeButton
-            handleNext={() => onPass(profile.user_id)}
+            onClick={() => onAction(-1)}
+            handleNext={() => onAction(-1)}
             targetUserId={profile.user_id}
             isDiscovery={false}
           />
           <LikeButton
-            handleNext={() => onAccept(profile.user_id)}
+            onClick={() => onAction(1)}
+            handleNext={() => onAction(1)}
             targetUserId={profile.user_id}
             isDiscovery={false}
           />
         </div>
       </div>
-    </div>
+    </motion.div>
+  </AnimatePresence>
+</div>
   );
 }
