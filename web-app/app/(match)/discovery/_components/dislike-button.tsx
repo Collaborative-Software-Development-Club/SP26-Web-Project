@@ -26,11 +26,25 @@ export function DislikeButton({
       handleNext(); // Fallback if no animation logic is passed
     }
 
-    //Commented out to prevent dislike actions until its ready
+    const isDemoMode = typeof window !== 'undefined' && localStorage.getItem("demoMode") === "true";
+
+    if (isDemoMode) {
+      const swipes = JSON.parse(localStorage.getItem("demoSwipes") || "[]");
+      swipes.unshift({
+        target_user_id: targetUserId,
+        action: "dislike",
+        message: null,
+        created_at: new Date().toISOString(),
+        matched: false
+      });
+      localStorage.setItem("demoSwipes", JSON.stringify(swipes));
+      return;
+    }
+
     if (isDiscovery) {
-      //saveSwipe(targetUserId, "dislike", null);
+      saveSwipe(targetUserId, "dislike", null);
     } else {
-      //saveMatchSwipe(targetUserId, "dislike", null);
+      saveMatchSwipe(targetUserId, "dislike", null);
     }
   }, [handleNext, isDiscovery, targetUserId, onClick]);
 

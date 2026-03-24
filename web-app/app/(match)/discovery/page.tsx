@@ -15,8 +15,8 @@ export default async function DiscoveryPage() {
 
   return (
     <DiscoveryClient
-      initialProfiles={discoveryProfiles as DiscoveryProfile[]}
-      roommatePreferences={roommatePreference as RoommatePreference[]}
+      initialProfiles={c_discoveryProfiles.length > 0 ? c_discoveryProfiles : (discoveryProfiles as DiscoveryProfile[])}
+      roommatePreferences={c_roommatePreferences.length > 0 ? c_roommatePreferences : (roommatePreference as RoommatePreference[])}
     />
   );
 }
