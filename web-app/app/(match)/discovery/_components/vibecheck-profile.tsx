@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
-import { LikedYouProfile, YesNoPreferences } from "../types";
+import { LikedYouProfile } from "../types";
 import Image from "next/image";
 
 export function VibeCheckProfile({
@@ -105,27 +106,7 @@ export function VibeCheckProfile({
         )}
 
         {/* Preferences */}
-        {profile.preferences.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {profile.preferences.map((pref) => (
-              <div
-                key={pref.name}
-                className="flex items-center gap-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 px-3 py-2"
-              >
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
-                  {pref.name}
-                </span>
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 ml-auto">
-                  {YesNoPreferences.includes(pref.name)
-                    ? pref.value === 1
-                      ? "Yes"
-                      : "No"
-                    : pref.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <ProfilePreferences profile={profile} />
 
         {/* Divider */}
         <div className="border-t border-zinc-100 dark:border-zinc-800" />
