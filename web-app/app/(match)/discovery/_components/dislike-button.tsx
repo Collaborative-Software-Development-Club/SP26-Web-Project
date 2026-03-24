@@ -26,11 +26,10 @@ export function DislikeButton({
       handleNext(); // Fallback if no animation logic is passed
     }
 
-    //Commented out to prevent dislike actions until its ready
     if (isDiscovery) {
-      //saveSwipe(targetUserId, "dislike", null);
+      saveSwipe(targetUserId, "dislike", null);
     } else {
-      //saveMatchSwipe(targetUserId, "dislike", null);
+      saveMatchSwipe(targetUserId, "dislike", null);
     }
   }, [handleNext, isDiscovery, targetUserId, onClick]);
 

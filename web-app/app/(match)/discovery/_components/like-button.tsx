@@ -26,11 +26,10 @@ export function LikeButton({
       handleNext(); // Fallback if no animation logic is passed
     }
 
-    //Commented out to prevent swipe actions until its ready
     if (isDiscovery) {
-      //saveSwipe(targetUserId, "like", null);
+      saveSwipe(targetUserId, "like", null);
     } else {
-      //saveMatchSwipe(targetUserId, "like", null);
+      saveMatchSwipe(targetUserId, "like", null);
     }
   }, [handleNext, isDiscovery, targetUserId, onClick]);
 
