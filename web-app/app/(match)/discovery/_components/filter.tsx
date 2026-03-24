@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogClose,
@@ -11,39 +12,26 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ImportanceSlider } from "./importance-slider";
+import { cn } from "@/lib/utils";
+import { ImportanceControl } from "./importance-slider";
 import { RoommatePreference } from "../types";
 import { YesNoPreferences } from "../types";
 
 export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
-  const [open, setOpen] = useState(false); //dialog window
-
+  const [open, setOpen] = useState(false);
   const [tempValues, setValues] = useState<RoommatePreference[]>(preferences);
 
-  const handleSliderUpdate = (id: string, newVal: number[]) => {
+  const handleUpdate = (id: string, val: number) => {
     setValues((prev) =>
-      prev.map((p) =>
-        p.preference_id === id ? { ...p, importance: newVal[0] } : p,
-      ),
-    );
-  };
-
-  const handleButtonUpdate = (id: string) => {
-    setValues((prev) =>
-      prev.map((p) =>
-        p.preference_id === id
-          ? { ...p, importance: p.importance > 0 ? 0 : 1 }
-          : p,
-      ),
+      prev.map((p) => (p.preference_id === id ? { ...p, importance: val } : p)),
     );
   };
 
   const handleSave = () => {
-    // valuesToSave already has correct values (0 for inactive, >0 for active)
-    //save preferences to database (PENDING)
-    //...
+    // save preferences to database (PENDING)
     setOpen(false);
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div className="w-full max-w-4xl flex justify-end mb-4">
@@ -52,15 +40,14 @@ export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
         </DialogTrigger>
       </div>
       <DialogContent
-        className="sm:max-w-[450px]"
+        className="sm:max-w-[480px]"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>Edit Your Roommate Preferences</DialogTitle>
           <DialogDescription>
-            Set how important each preference is for finding your match. Slide
-            right for must-haves (dealbreakers) or turn off if you don&apos;t
-            care.
+            Turn preferences on to filter your matches. Pick a level (1–5) for
+            how much it matters, or &apos;!&apos; for dealbreaker.
           </DialogDescription>
         </DialogHeader>
         <div className="flex max-h-[60vh] overflow-y-auto pr-2 flex-col gap-1">
@@ -71,31 +58,26 @@ export function Filter({ preferences }: { preferences: RoommatePreference[] }) {
             return (
               <div
                 key={pref.preference_id}
-                className="group flex items-center gap-6"
+                className="flex flex-col gap-1 py-2 px-2 rounded-md"
               >
-                {/* Item tile */}
-                <Button
-                  variant={isActive ? "outline" : "ghost"}
-                  className="w-24 min-h-11 shrink-0 rounded-full whitespace-normal"
-                  onClick={() => handleButtonUpdate(pref.preference_id)}
+                <Label
+                  className={cn(
+                    "text-sm cursor-default",
+                    !isActive && "text-muted-foreground",
+                  )}
                 >
                   {pref.name}
-                </Button>
-
-                {/* SLIDER */}
-                <ImportanceSlider
+                </Label>
+                <ImportanceControl
                   value={pref.importance}
                   isYesNo={isYesNo}
-                  onValueChange={(val) =>
-                    handleSliderUpdate(pref.preference_id, val)
-                  }
+                  onValueChange={(val) => handleUpdate(pref.preference_id, val)}
                 />
               </div>
             );
           })}
         </div>
 
-        {/*SAVE BUTTON */}
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">Cancel</Button>
