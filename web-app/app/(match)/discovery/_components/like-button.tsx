@@ -26,6 +26,21 @@ export function LikeButton({
       handleNext(); // Fallback if no animation logic is passed
     }
 
+    const isDemoMode = typeof window !== 'undefined' && localStorage.getItem("demoMode") === "true";
+
+    if (isDemoMode) {
+      const swipes = JSON.parse(localStorage.getItem("demoSwipes") || "[]");
+      swipes.unshift({
+        target_user_id: targetUserId,
+        action: "like",
+        message: null,
+        created_at: new Date().toISOString(),
+        matched: Math.random() > 0.7 // Randomly simulate a match in demo mode
+      });
+      localStorage.setItem("demoSwipes", JSON.stringify(swipes));
+      return;
+    }
+
     if (isDiscovery) {
       saveSwipe(targetUserId, "like", null);
     } else {

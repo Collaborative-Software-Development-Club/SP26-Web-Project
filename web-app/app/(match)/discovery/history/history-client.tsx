@@ -2,6 +2,8 @@
 
 import { HistoryProfile } from "../types";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import discoveryProfiles from "@/mock/discover_profiles.json";
 
 function timeAgo(dateString: string) {
   const date = new Date(dateString);
@@ -26,30 +28,105 @@ export function HistoryClient({
 }: {
   history: HistoryProfile[];
 }) {
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [demoSwipes, setDemoSwipes] = useState<HistoryProfile[]>([]);
+
+  useEffect(() => {
+    const demo = localStorage.getItem("demoMode") === "true";
+    setIsDemoMode(demo);
+    if (demo) {
+      loadDemoSwipes();
+    }
+  }, []);
+
+  const loadDemoSwipes = () => {
+    const localSwipes = JSON.parse(localStorage.getItem("demoSwipes") || "[]");
+    const mockProfilesMap = new Map((discoveryProfiles as any[]).map((p) => [p.user_id, p]));
+    
+    const dSwipes = localSwipes.map((s: any) => {
+      const p = mockProfilesMap.get(s.target_user_id) || { fname: "Unknown", lname: "" };
+      return {
+        ...p,
+        user_id: s.target_user_id,
+        action: s.action,
+        message: s.message || "",
+        created_at: s.created_at,
+        matched: s.matched
+      };
+    });
+    setDemoSwipes(dSwipes);
+  };
+
+  const toggleDemoMode = () => {
+    const newMode = !isDemoMode;
+    setIsDemoMode(newMode);
+    localStorage.setItem("demoMode", newMode.toString());
+    if (newMode) {
+      loadDemoSwipes();
+    }
+  };
+
+  const clearDemoHistory = () => {
+    localStorage.removeItem("demoSwipes");
+    setDemoSwipes([]);
+  };
+
+  const displayedHistory = isDemoMode ? demoSwipes : history;
+
   return (
     <div className="flex flex-col items-center w-full px-4 mb-20 max-w-lg">
-      <div className="w-full text-center space-y-1 mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-          Swipe History
-        </h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-          Your active journey
-        </p>
+      <div className="w-full flex items-center justify-between space-y-1 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            Swipe History
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+            Your active journey
+          </p>
+        </div>
+        
+
+        {/* Toggle for Demo Mode */}
+        <div className="flex flex-col items-end gap-1">
+          <label className="flex items-center cursor-pointer">
+            <div className="relative">
+              <input 
+                type="checkbox" 
+                className="sr-only" 
+                checked={isDemoMode}
+                onChange={toggleDemoMode}
+              />
+              <div className={`block w-14 h-8 rounded-full transition-colors ${isDemoMode ? 'bg-green-500' : 'bg-gray-300 dark:bg-zinc-700'}`}></div>
+              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${isDemoMode ? 'transform translate-x-6' : ''}`}></div>
+            </div>
+            <div className="ml-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Demo Mode
+            </div>
+          </label>
+          {isDemoMode && demoSwipes.length > 0 && (
+            <button 
+              onClick={clearDemoHistory}
+              className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+            >
+              Clear demo data
+            </button>
+          )}
+        </div>
       </div>
 
-      {history.length === 0 ? (
+      {displayedHistory.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="flex flex-col gap-4 w-full">
-          {history.map((item) => (
+          {displayedHistory.map((item, idx) => (
             <div
-              key={`${item.user_id}-${item.created_at}`}
+              key={`${item.user_id}-${item.created_at}-${idx}`}
               className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm"
             >
-              <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0">
+              <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
                 <Image
-                  src={item.avatar_url || "/demo/default.png"}
-                  alt={item.fname}
+                  src={item.avatar_url && !item.avatar_url.includes('example.com') ? item.avatar_url : "/demo/selfie.png"}
+                  alt={item.fname || "Profile"}
                   fill
                   className="object-cover"
                 />
