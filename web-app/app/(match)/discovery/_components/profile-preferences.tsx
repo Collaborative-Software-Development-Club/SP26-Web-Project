@@ -31,16 +31,10 @@ const getMatchBorderClass = (
   const userPref = user.preferences.find((p) => p.name === prefName);
   if (!userPref) return "border-zinc-100 dark:border-zinc-800";
 
-  let diff = Math.abs(userPref.value - profileValue);
-
-  // For yes/no preferences, diff value results in green/red outline
-  if (prefName === "Smoker" || prefName === "Pets") diff *= 5;
-
-  if (diff === 0) return "border-green-300 dark:border-green-400";
-  if (diff < 3) return "border-yellow-300 dark:border-yellow-400";
-  if (diff <= 5) return "border-red-300 dark:border-red-400";
-
-  return "border-zinc-100 dark:border-zinc-800";
+  const diff = Math.abs(userPref.value - profileValue);
+  if (diff === 0) return "border-green-200 dark:border-green-300";
+  else if (diff < 3) return "border-yellow-200 dark:border-yellow-300";
+  else return "border-red-200 dark:border-red-300";
 };
 
 export function ProfilePreferences({
@@ -79,7 +73,7 @@ export function ProfilePreferences({
                 </p>
                 <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 capitalize truncate">
                   {YesNoPreferences.includes(pref.name)
-                    ? pref.value === 1
+                    ? pref.value === 5
                       ? "Yes"
                       : "No"
                     : pref.value}
