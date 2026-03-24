@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogClose,
@@ -34,24 +35,9 @@ export function Filter({
   const [tempProfileFilters, setTempProfileFilters] =
     useState<ProfileFilter>(profileFilters);
 
-  const handleRoommatePreferenceSliderUpdate = (
-    id: string,
-    newVal: number[],
-  ) => {
+  const handleUpdate = (id: string, val: number) => {
     setTempRoommatePreferences((prev) =>
-      prev.map((p) =>
-        p.preference_id === id ? { ...p, importance: newVal[0] } : p,
-      ),
-    );
-  };
-
-  const handleRoommatePreferenceButtonUpdate = (id: string) => {
-    setTempRoommatePreferences((prev) =>
-      prev.map((p) =>
-        p.preference_id === id
-          ? { ...p, importance: p.importance > 0 ? 0 : 1 }
-          : p,
-      ),
+      prev.map((p) => (p.preference_id === id ? { ...p, importance: val } : p)),
     );
   };
 
@@ -63,11 +49,10 @@ export function Filter({
   };
 
   const handleSave = () => {
-    // valuesToSave already has correct values (0 for inactive, >0 for active)
-    //save preferences to database (PENDING)
-    //...
+    // save preferences to database (PENDING)
     setOpen(false);
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div className="w-full max-w-4xl flex justify-end mb-4">
@@ -82,8 +67,8 @@ export function Filter({
         <DialogHeader className="shrink-0 px-6 pt-6">
           <DialogTitle>Edit Your Roommate Filters</DialogTitle>
           <DialogDescription>
-            Set how important each filter is for finding your match. Slide right
-            for must-haves (dealbreakers) or turn off if you don&apos;t care.
+            Turn preferences on to filter your matches. Pick a level (1–5) for
+            how much it matters, or &apos;!&apos; for dealbreaker.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col overflow-y-auto px-6 pb-2 gap-2">
@@ -119,37 +104,27 @@ export function Filter({
               const isActive = pref.importance > 0;
               const isYesNo = YesNoPreferences.includes(pref.name);
 
-              return (
-                <div
-                  key={pref.preference_id}
-                  className="group flex items-center gap-6"
+            return (
+              <div
+                key={pref.preference_id}
+                className="flex flex-col gap-1 py-2 px-2 rounded-md"
+              >
+                <Label
+                  className={cn(
+                    "text-sm cursor-default",
+                    !isActive && "text-muted-foreground",
+                  )}
                 >
-                  {/* Item tile */}
-                  <Button
-                    variant={isActive ? "default" : "outline"}
-                    className="w-20 shrink-0 rounded-full whitespace-normal text-[12px]"
-                    onClick={() =>
-                      handleRoommatePreferenceButtonUpdate(pref.preference_id)
-                    }
-                  >
-                    {pref.name}
-                  </Button>
-
-                  {/* SLIDER */}
-                  <ImportanceSlider
-                    value={pref.importance}
-                    isYesNo={isYesNo}
-                    onValueChange={(val) =>
-                      handleRoommatePreferenceSliderUpdate(
-                        pref.preference_id,
-                        val,
-                      )
-                    }
-                  />
-                </div>
-              );
-            })}
-          </div>
+                  {pref.name}
+                </Label>
+                <ImportanceControl
+                  value={pref.importance}
+                  isYesNo={isYesNo}
+                  onValueChange={(val) => handleUpdate(pref.preference_id, val)}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/*SAVE BUTTON */}
