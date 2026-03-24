@@ -8,6 +8,10 @@ import { DislikeButton } from "./dislike-button";
 import { LikedYouProfile } from "../types";
 import Image from "next/image";
 
+// TODO: replace with user context
+import profiles from "@/mock/profiles.json";
+const user = profiles[0];
+
 export function VibeCheckProfile({
   profile,
   onAccept,
@@ -100,8 +104,12 @@ export function VibeCheckProfile({
               </div>
             )}
 
-        {/* Preferences */}
-        <ProfilePreferences profile={profile} />
+            {/* Preferences */}
+            {/* TODO: Replace with actual user preferences */}
+            <ProfilePreferences
+              preferences={profile.preferences}
+              userPreferences={user.preferences}
+            />
 
             {/* Divider */}
             <div className="border-t border-zinc-100 dark:border-zinc-800" />

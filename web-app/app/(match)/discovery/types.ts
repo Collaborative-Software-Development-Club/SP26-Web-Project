@@ -20,4 +20,10 @@ export type ProfileFilter = {
     use_gender: boolean;
 }
 
+export type DiscoveryFilter = {
+    roommate_preferences: RoommatePreference[];
+    profile_filters: ProfileFilter;
+    hobby_filters: Set<string>;
+}
+
 export const YesNoPreferences = ["Smoker", "Pets"];

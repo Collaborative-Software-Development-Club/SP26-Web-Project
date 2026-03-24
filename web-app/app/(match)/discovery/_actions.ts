@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { LikedYouProfile, RoommatePreference, DiscoveryProfile, ProfileFilter } from "./types";
+import type { LikedYouProfile, DiscoveryProfile, DiscoveryFilter } from "./types";
 import type { UserProfile } from "@/app/(profile)/types";
 import { getUserProfiles } from "@/lib/services/profile";
 
@@ -201,85 +201,28 @@ export async function undoMatchSwipe(targetUserId: string) {
   }
 }
 
-// Gets users profile filters table
-export async function getUserProfileFilters(): Promise<ProfileFilter> {
+// Gets user's profile filters, roommate preferences, and hobby filters aggregated to one json object
+export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
   
   if (!user) {
     throw new Error("Unauthorized");
   }
-
-  const { data, error } = await supabase
-    .from("discovery_profile_filters")
-    .select("use_major, use_year, use_gender")
-    .eq("user_id", user.id);
+  const { data, error } = await supabase.rpc("get_discovery_filter", {
+    user_id: user.id,
+  }).select("*");
 
   if (error) {
-    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
-  } else {
-    return data[0];
+    throw new Error(`Error fetching discovery filter: ${error.message}`);
   }
+  return {...data,
+    hobby_filters: new Set(data.hobby_filters),
+  };
 }
 
-export async function saveUserProfileFilters(
-  profile_filter: ProfileFilter,
-) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  const { error: saveError } = await supabase
-    .from("discovery_profile_filters")
-    .upsert(
-      {
-        user_id: user.id,
-        use_major: profile_filter.use_major,
-        use_year: profile_filter.use_year,
-        use_gender: profile_filter.use_gender,
-      },
-      { onConflict: "user_id" },
-    );
-
-  if (saveError) {
-    throw new Error(
-      `Failed to save user profile filters: ${saveError.message}`,
-    );
-  }
-}
-
-// Gets users roommate preference table
-export async function getUserRoommatePreferences(): Promise<RoommatePreference[]> {
-  const supabase = await createClient();
-  const {data: {user}} = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-  const { data, error } = await supabase
-    .from("discovery_roommate_preferences")
-    .select("preference_id, importance, user_preferences(name)")
-    .eq("user_id", user.id);
-
-  if (error) {
-    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
-  } else {
-    return data.map((item) => ({
-      preference_id: item.preference_id,
-      importance: item.importance,
-      name: item.user_preferences[0]?.name,
-    }));
-  }
-}
-
-export async function saveUserRoommatePreferences(
-  preferences: RoommatePreference[],
+export async function saveDiscoveryFilter(
+  filters: DiscoveryFilter,
 ) {
   const supabase = await createClient();
   const {
@@ -292,28 +235,30 @@ export async function saveUserRoommatePreferences(
   }
 
   const { error: saveError } = await supabase
-    .from("discovery_roommate_preferences")
-    .upsert(
-      preferences.map((preference) => ({
-        user_id: user.id,
-        preference_id: preference.preference_id,
-        importance: preference.importance,
-      })),
-      { onConflict: "user_id,preference_id" },
-    );
+    .rpc("save_discovery_filter", {
+      user_id: user.id,
+      roommate_preferences: filters.roommate_preferences,
+      profile_filters: filters.profile_filters,
+      hobby_filters: filters.hobby_filters,
+    });
 
   if (saveError) {
     throw new Error(
-      `Failed to save user roommate preferences: ${saveError.message}`,
+      `Failed to save discovery filter: ${saveError.message}`,
     );
   }
 }
     
   
   /* 
-    Function gets all active user profiles and then takes a user_id to return a sorted list of match score objects
-    Matches a user with all active users in the database based on the distance in preferences
-    If we do not have preferences or importance assigned the score will default to 0    
+    This action gets the profiles with the calculated match score for potential matches. 
+    It calls the get_ranked_matches function in the database.
+
+    Here is how the get_ranked_matches function works:
+    1. It gets the user's profile, profile filters, roommate preferences, and hobby filters
+    2. It filters the candidates based on the profile filters, hobby filters, dealbreaker roommate preferences, and if user already swiped on them
+    3. It computes the match score for each candidate by doing Sum(importance * (1 - |user_preference - candidate_preference| / ))
+    4. It returns the candidates sorted by the match score in descending order
   */
   export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
     const supabase = await createClient();

@@ -1,19 +1,16 @@
 "use client";
 
-import { UndoButton } from "./_components/undo-button";
 import { ProfileCard } from "./_components/profile-card";
 import { Filter } from "./_components/filter";
 import { useState } from "react";
-import { DiscoveryProfile, ProfileFilter, RoommatePreference } from "./types";
+import { DiscoveryFilter, DiscoveryProfile } from "./types";
 
 export function DiscoveryClient({
   initialProfiles,
-  profileFilters,
-  roommatePreferences,
+  discoveryFilters,
 }: {
   initialProfiles: DiscoveryProfile[];
-  profileFilters: ProfileFilter;
-  roommatePreferences: RoommatePreference[];
+  discoveryFilters: DiscoveryFilter;
 }) {
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>(initialProfiles);
   const [selectedProfile, setSelectedProfile] = useState<DiscoveryProfile>(
@@ -44,14 +41,7 @@ export function DiscoveryClient({
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center mb-10">
-      <Filter
-        profileFilters={{
-          use_major: profileFilters.use_major,
-          use_year: profileFilters.use_year,
-          use_gender: profileFilters.use_gender,
-        }}
-        roommatePreferences={roommatePreferences}
-      ></Filter>
+      <Filter discoveryFilter={discoveryFilters} />
       <ProfileCard
         profile={selectedProfile}
         handleNext={handleNext}

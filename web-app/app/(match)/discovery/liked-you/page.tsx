@@ -9,7 +9,7 @@ export default async function LikedYouPage() {
   return (
     <LikedYouClient
       initialLikedYouProfiles={
-        likedYouProfiles.map((profile) => ({
+        profiles.map((profile) => ({
           ...profile,
           message:
             "I vibe with you! What housing options on campus are you interested in?",

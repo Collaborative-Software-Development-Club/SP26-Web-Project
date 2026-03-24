@@ -10,6 +10,10 @@ import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
+// TODO: replace with user context
+import profiles from "@/mock/profiles.json";
+const user = profiles[0];
+
 export function ProfileCard({
   profile,
   handleNext,
@@ -135,7 +139,11 @@ export function ProfileCard({
                     <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
                       Living Habits
                     </h3>
-                    <ProfilePreferences profile={profile} />
+                    {/* TODO: Replace with actual user preferences */}
+                    <ProfilePreferences
+                      preferences={profile.preferences}
+                      userPreferences={user.preferences}
+                    />
                   </div>
                 </div>
               </div>

@@ -160,7 +160,7 @@
           "last_edited_at": "2025-02-16T10:12:00Z",
           "hobbies": [{"hobby_id": "18", "name": "painting"}, {"hobby_id": "2", "name": "reading"}, {"hobby_id": "19", "name": "pilates"}],
           "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 0},
+            {"preference_id": "1", "name": "Smoker", "value": 1},
             {"preference_id": "2", "name": "Pets", "value": 5},
             {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
             {"preference_id": "4", "name": "Guests", "value": 3}

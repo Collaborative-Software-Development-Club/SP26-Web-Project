@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,44 +16,54 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ImportanceControl } from "./importance-control";
-import {
-  saveUserProfileFilters,
-  saveUserRoommatePreferences,
-} from "../_actions";
-import { ProfileFilter, RoommatePreference, YesNoPreferences } from "../types";
+import { saveDiscoveryFilter } from "../_actions";
+import { DiscoveryFilter, ProfileFilter, YesNoPreferences } from "../types";
 import { HobbiesFilter } from "./hobbies-filter";
 
+// TODO: replace with user context
+import profiles from "@/mock/profiles.json";
+import { Hobby } from "@/app/(profile)/types";
+const user = profiles[0];
+
 export function Filter({
-  profileFilters,
-  roommatePreferences,
-  
+  discoveryFilter,
 }: {
-  profileFilters: ProfileFilter;
-  roommatePreferences: RoommatePreference[];
+  discoveryFilter: DiscoveryFilter;
 }) {
-  const [open, setOpen] = useState(false); //dialog window
+  const [open, setOpen] = useState(false);
 
-  const [tempRoommatePreferences, setTempRoommatePreferences] =
-    useState<RoommatePreference[]>(roommatePreferences);
+  const [tempDiscoveryFilter, setTempDiscoveryFilter] =
+    useState<DiscoveryFilter>(discoveryFilter);
 
-  const [tempProfileFilters, setTempProfileFilters] =
-    useState<ProfileFilter>(profileFilters);
-
-  const handleUpdate = (id: string, val: number) => {
-    setTempRoommatePreferences((prev) =>
-      prev.map((p) => (p.preference_id === id ? { ...p, importance: val } : p)),
-    );
+  const handlePreferenceUpdate = (id: string, val: number) => {
+    setTempDiscoveryFilter((prev) => ({
+      ...prev,
+      roommate_preferences: { ...prev.roommate_preferences, [id]: val },
+    }));
   };
 
-  const handleProfileButtonUpdate = (filter: string) => {
-    setTempProfileFilters((prev) => ({
+  const handleProfileFilterUpdate = (filter: string) => {
+    setTempDiscoveryFilter((prev) => ({
       ...prev,
-      [filter as keyof ProfileFilter]: !prev[filter as keyof ProfileFilter],
+      profile_filters: {
+        ...prev.profile_filters,
+        [filter as keyof ProfileFilter]:
+          !prev.profile_filters[filter as keyof ProfileFilter],
+      },
+    }));
+  };
+
+  const handleHobbyFilterUpdate = (hobby: Hobby) => {
+    setTempDiscoveryFilter((prev) => ({
+      ...prev,
+      hobby_filters: prev.hobby_filters.has(hobby.hobby_id)
+        ? new Set([...prev.hobby_filters].filter((h) => h !== hobby.hobby_id))
+        : new Set([...prev.hobby_filters, hobby.hobby_id]),
     }));
   };
 
   const handleSave = () => {
-    // save preferences to database (PENDING)
+    // TODO: save preferences to database (PENDING)
     setOpen(false);
   };
 
@@ -69,44 +81,61 @@ export function Filter({
         <DialogHeader className="shrink-0 px-6 pt-6">
           <DialogTitle>Edit Your Roommate Filters</DialogTitle>
           <DialogDescription>
-            Turn preferences on to filter your matches. Pick a level (1–5) for
-            how much it matters, or &apos;!&apos; for dealbreaker.
+            Turn preferences on to filter your matches. For profile and hobbies,
+            turn on the filters that you want to use. For living habits, pick a
+            level (0–4) for how much it matters, or 5 for dealbreaker.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col overflow-y-auto px-6 pb-2 gap-4">
+        <div className="flex flex-col overflow-y-auto px-6 gap-3">
           <div className="flex flex-col">
             <h2 className="text-gray-800 font-medium">Profile:</h2>
             <div className="flex flex-row items-center w-full gap-2 p-2">
               <Button
-                variant={tempProfileFilters.use_major ? "default" : "outline"}
+                variant={
+                  tempDiscoveryFilter?.profile_filters?.use_major
+                    ? "default"
+                    : "outline"
+                }
                 size="sm"
                 className="flex-1"
-                onClick={() => handleProfileButtonUpdate("use_major")}
+                onClick={() => handleProfileFilterUpdate("use_major")}
               >
                 Major
               </Button>
               <Button
-                variant={tempProfileFilters.use_year ? "default" : "outline"}
+                variant={
+                  tempDiscoveryFilter?.profile_filters?.use_year
+                    ? "default"
+                    : "outline"
+                }
                 size="sm"
                 className="flex-1"
-                onClick={() => handleProfileButtonUpdate("use_year")}
+                onClick={() => handleProfileFilterUpdate("use_year")}
               >
                 Year
               </Button>
               <Button
-                variant={tempProfileFilters.use_gender ? "default" : "outline"}
+                variant={
+                  tempDiscoveryFilter?.profile_filters?.use_gender
+                    ? "default"
+                    : "outline"
+                }
                 size="sm"
                 className="flex-1"
-                onClick={() => handleProfileButtonUpdate("use_gender")}
+                onClick={() => handleProfileFilterUpdate("use_gender")}
               >
                 Gender
               </Button>
             </div>
           </div>
-          <HobbiesFilter />
+          <HobbiesFilter
+            selectedHobbies={tempDiscoveryFilter?.hobby_filters}
+            userHobbies={user.hobbies}
+            handleHobbyFilterUpdate={handleHobbyFilterUpdate}
+          />
           <div className="flex pr-2 flex-col gap-1">
             <h2 className="text-gray-800 font-medium">Living Habits:</h2>
-            {tempRoommatePreferences.map((pref) => {
+            {tempDiscoveryFilter?.roommate_preferences.map((pref) => {
               const isActive = pref.importance > 0;
               const isYesNo = YesNoPreferences.includes(pref.name);
 
@@ -127,7 +156,7 @@ export function Filter({
                     value={pref.importance}
                     isYesNo={isYesNo}
                     onValueChange={(val) =>
-                      handleUpdate(pref.preference_id, val)
+                      handlePreferenceUpdate(pref.preference_id, val)
                     }
                   />
                 </div>

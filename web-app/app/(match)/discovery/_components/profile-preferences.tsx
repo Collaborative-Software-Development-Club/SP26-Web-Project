@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DiscoveryProfile, LikedYouProfile, YesNoPreferences } from "../types";
-// replace with useContext for signed-in user
-import discoveryProfiles from "@/mock/discover_profiles.json";
+import { useState } from "react";
+import { YesNoPreferences } from "../types";
+import type { Preference } from "@/app/(profile)/types";
 import { BookOpen, Cigarette, Cat, Moon, Users } from "lucide-react";
 
 const getPreferenceIcon = (key: string) => {
@@ -21,44 +20,36 @@ const getPreferenceIcon = (key: string) => {
   }
 };
 
-// replace with useContext
-const user = discoveryProfiles[0];
-
-const getMatchBorderClass = (
-  prefName: string,
-  profileValue: number,
-): string => {
-  const userPref = user.preferences.find((p) => p.name === prefName);
-  if (!userPref) return "border-zinc-100 dark:border-zinc-800";
-
-  const diff = Math.abs(userPref.value - profileValue);
-  if (diff === 0) return "border-green-200 dark:border-green-300";
-  else if (diff < 3) return "border-yellow-200 dark:border-yellow-300";
-  else return "border-red-200 dark:border-red-300";
-};
-
 export function ProfilePreferences({
-  profile,
+  preferences,
+  userPreferences,
 }: {
-  profile: DiscoveryProfile | LikedYouProfile;
+  preferences: Preference[];
+  userPreferences: Preference[];
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const INITIAL_VISIBLE_PREFS = 4;
 
-  useEffect(() => {
-    setTimeout(() => {
-      setIsExpanded(false);
-    }, 0);
-  }, [profile?.user_id]);
+  const getMatchBorderClass = (
+    prefName: string,
+    profileValue: number,
+  ): string => {
+    const userPref = userPreferences.find(
+      (p: Preference) => p.name === prefName,
+    );
+    if (!userPref) return "border-zinc-100 dark:border-zinc-800";
+
+    const diff = Math.abs(userPref.value - profileValue);
+    if (diff === 0) return "border-green-200 dark:border-green-300";
+    else if (diff < 3) return "border-yellow-200 dark:border-yellow-300";
+    else return "border-red-200 dark:border-red-300";
+  };
 
   return (
     <div>
       <div className="grid grid-cols-2 gap-2">
-        {profile.preferences
-          .slice(
-            0,
-            isExpanded ? profile.preferences.length : INITIAL_VISIBLE_PREFS,
-          )
+        {preferences
+          .slice(0, isExpanded ? preferences.length : INITIAL_VISIBLE_PREFS)
           .map((pref) => (
             <div
               key={pref.name}
@@ -82,14 +73,14 @@ export function ProfilePreferences({
             </div>
           ))}
       </div>
-      {profile.preferences.length > INITIAL_VISIBLE_PREFS && (
+      {preferences.length > INITIAL_VISIBLE_PREFS && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
         >
           {isExpanded
             ? "Show Less"
-            : `+${profile.preferences.length - INITIAL_VISIBLE_PREFS} More`}
+            : `+${preferences.length - INITIAL_VISIBLE_PREFS} More`}
         </button>
       )}
     </div>
