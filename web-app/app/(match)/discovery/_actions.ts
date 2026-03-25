@@ -304,6 +304,17 @@ export async function getUserSwipeHistory(): Promise<HistoryProfile[]> {
     throw new Error(`Failed to fetch history: ${swipesError.message}`);
   }
 
+  const { data: incomingSwipes, error: incomingSwipesError } = await supabase
+    .from("discovery_swipes")
+    .select("user_id, action, message, created_at")
+    .eq("target_user_id", user.id)
+    .eq("action", "like")
+    .order("created_at", { ascending: false });
+
+  if (incomingSwipesError) {
+    throw new Error(`Failed to fetch incoming history: ${incomingSwipesError.message}`);
+  }
+
   const { data: matches, error: matchesError } = await supabase
     .from("discovery_matches")
     .select("user1_id, user2_id")
@@ -318,12 +329,13 @@ export async function getUserSwipeHistory(): Promise<HistoryProfile[]> {
   );
 
   const targetUserIds = swipes.map((swipe) => swipe.target_user_id);
-  const userProfiles = await getUserProfiles(targetUserIds);
+  const incomingUserIds = incomingSwipes.map((swipe) => swipe.user_id);
+  const allUserIds = Array.from(new Set([...targetUserIds, ...incomingUserIds]));
   
+  const userProfiles = await getUserProfiles(allUserIds);
   const profileMap = new Map(userProfiles.map(p => [p.user_id, p]));
 
-  // Ensure returning profiles even if user is missing, though they shouldn't be
-  return swipes
+  const outboundHistory: HistoryProfile[] = swipes
     .filter(swipe => profileMap.has(swipe.target_user_id))
     .map(swipe => {
       const profile = profileMap.get(swipe.target_user_id)!;
@@ -335,4 +347,25 @@ export async function getUserSwipeHistory(): Promise<HistoryProfile[]> {
         matched: matchSet.has(swipe.target_user_id),
       };
     });
+
+  const inboundHistory: HistoryProfile[] = incomingSwipes
+    .filter(swipe => profileMap.has(swipe.user_id))
+    .map(swipe => {
+      const profile = profileMap.get(swipe.user_id)!;
+      const isMatched = matchSet.has(swipe.user_id);
+      return {
+        ...profile,
+        action: isMatched ? "matched" : "liked_you",
+        message: swipe.message ?? "",
+        created_at: swipe.created_at,
+        matched: isMatched,
+      };
+    });
+
+  // Combine and sort by date descending
+  return [...outboundHistory, ...inboundHistory]
+    // Filter out duplicate user entries, favoring the more recent action if any, 
+    // or just showing the match correctly since we handle matches via matched flag.
+    .filter((v, i, a) => a.findIndex(t => (t.user_id === v.user_id)) === i)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }

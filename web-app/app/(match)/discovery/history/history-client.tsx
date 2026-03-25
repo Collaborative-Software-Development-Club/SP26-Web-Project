@@ -28,50 +28,41 @@ export function HistoryClient({
 }: {
   history: HistoryProfile[];
 }) {
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoSwipes, setDemoSwipes] = useState<HistoryProfile[]>([]);
+  const [combinedHistory, setCombinedHistory] = useState<HistoryProfile[]>(history);
 
   useEffect(() => {
-    const demo = localStorage.getItem("demoMode") === "true";
-    setIsDemoMode(demo);
-    if (demo) {
-      loadDemoSwipes();
-    }
-  }, []);
+    // Load and merge demo swipes from local storage with real history
+    const loadDemoSwipes = () => {
+      try {
+        const localSwipes = JSON.parse(localStorage.getItem("demoSwipes") || "[]");
+        const mockProfilesMap = new Map((discoveryProfiles as any[]).map((p) => [p.user_id, p]));
+        
+        const dSwipes = localSwipes.map((s: any) => {
+          const p = mockProfilesMap.get(s.target_user_id) || { fname: "Unknown", lname: "" };
+          return {
+            ...p,
+            user_id: s.target_user_id,
+            action: s.action,
+            message: s.message || "",
+            created_at: s.created_at,
+            matched: s.matched
+          };
+        });
 
-  const loadDemoSwipes = () => {
-    const localSwipes = JSON.parse(localStorage.getItem("demoSwipes") || "[]");
-    const mockProfilesMap = new Map((discoveryProfiles as any[]).map((p) => [p.user_id, p]));
-    
-    const dSwipes = localSwipes.map((s: any) => {
-      const p = mockProfilesMap.get(s.target_user_id) || { fname: "Unknown", lname: "" };
-      return {
-        ...p,
-        user_id: s.target_user_id,
-        action: s.action,
-        message: s.message || "",
-        created_at: s.created_at,
-        matched: s.matched
-      };
-    });
-    setDemoSwipes(dSwipes);
-  };
+        if (dSwipes.length > 0) {
+          // Merge real history with demo history, sorted by created_at descending
+          const all = [...history, ...dSwipes].sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          setCombinedHistory(all);
+        }
+      } catch (e) {
+        console.error("Failed to load demo swipes", e);
+      }
+    };
 
-  const toggleDemoMode = () => {
-    const newMode = !isDemoMode;
-    setIsDemoMode(newMode);
-    localStorage.setItem("demoMode", newMode.toString());
-    if (newMode) {
-      loadDemoSwipes();
-    }
-  };
-
-  const clearDemoHistory = () => {
-    localStorage.removeItem("demoSwipes");
-    setDemoSwipes([]);
-  };
-
-  const displayedHistory = isDemoMode ? demoSwipes : history;
+    loadDemoSwipes();
+  }, [history]);
 
   return (
     <div className="flex flex-col items-center w-full px-4 mb-20 max-w-lg">
@@ -84,41 +75,13 @@ export function HistoryClient({
             Your active journey
           </p>
         </div>
-        
-
-        {/* Toggle for Demo Mode */}
-        <div className="flex flex-col items-end gap-1">
-          <label className="flex items-center cursor-pointer">
-            <div className="relative">
-              <input 
-                type="checkbox" 
-                className="sr-only" 
-                checked={isDemoMode}
-                onChange={toggleDemoMode}
-              />
-              <div className={`block w-14 h-8 rounded-full transition-colors ${isDemoMode ? 'bg-green-500' : 'bg-gray-300 dark:bg-zinc-700'}`}></div>
-              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${isDemoMode ? 'transform translate-x-6' : ''}`}></div>
-            </div>
-            <div className="ml-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Demo Mode
-            </div>
-          </label>
-          {isDemoMode && demoSwipes.length > 0 && (
-            <button 
-              onClick={clearDemoHistory}
-              className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-            >
-              Clear demo data
-            </button>
-          )}
-        </div>
       </div>
 
-      {displayedHistory.length === 0 ? (
+      {combinedHistory.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="flex flex-col gap-4 w-full">
-          {displayedHistory.map((item, idx) => (
+          {combinedHistory.map((item, idx) => (
             <div
               key={`${item.user_id}-${item.created_at}-${idx}`}
               className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm"
@@ -143,7 +106,7 @@ export function HistoryClient({
                 <div className="mt-1 flex items-center gap-2">
                   <ActionBadge action={item.action} matched={item.matched} />
                   {item.message && (
-                    <span className="text-sm text-zinc-500 truncate">
+                    <span className="text-sm text-zinc-500 truncate mt-1">
                       &quot;{item.message}&quot;
                     </span>
                   )}
@@ -170,6 +133,14 @@ function ActionBadge({ action, matched }: { action: string; matched: boolean }) 
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-800/50">
         Liked
+      </span>
+    );
+  }
+
+  if (action === "liked_you") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
+        Liked You
       </span>
     );
   }
