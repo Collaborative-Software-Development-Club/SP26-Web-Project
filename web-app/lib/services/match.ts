@@ -26,7 +26,7 @@ export async function createRoommatePreference({
         throw new Error(`Error fetching current user: ${userError?.message}`);
       }
   
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("discovery_roommate_preferences")
       .upsert(
         roommate_preferences.map((preference) => ({

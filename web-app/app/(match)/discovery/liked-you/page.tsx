@@ -4,7 +4,7 @@ import { LikedYouClient } from "./liked-you-client";
 import { LikedYouProfile } from "../types";
 
 export default async function LikedYouPage() {
-  const likedYouProfiles = await getLikedYouProfiles();
+  // const likedYouProfiles = await getLikedYouProfiles();
 
   return (
     <LikedYouClient

@@ -31,9 +31,7 @@ export function VibeCheckProfile({
     }, 10);
   };
 
-  useEffect(() => {
-    setSwipeDirection(0);
-  }, [profile.user_id]);
+  // Use effect removed to prevent sync setState cascade
 
   const yearLabel: Record<number, string> = {
     1: "Freshman",

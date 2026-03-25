@@ -23,7 +23,7 @@ export default function CreateProfilePage() {
       if (result?.error) {
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

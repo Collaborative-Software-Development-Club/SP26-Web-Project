@@ -362,10 +362,77 @@ export async function getUserSwipeHistory(): Promise<HistoryProfile[]> {
       };
     });
 
-  // Combine and sort by date descending
-  return [...outboundHistory, ...inboundHistory]
-    // Filter out duplicate user entries, favoring the more recent action if any, 
-    // or just showing the match correctly since we handle matches via matched flag.
-    .filter((v, i, a) => a.findIndex(t => (t.user_id === v.user_id)) === i)
+  // [production-ready] Logic for grouping history and handling two colored labels
+  const allHistory = [...outboundHistory, ...inboundHistory];
+  
+  // Group by user_id to correctly show multiple states like "liked you" and "passed", or "liked you" and "match"
+  const userActionMap = new Map<string, HistoryProfile>();
+  
+  for (const item of allHistory) {
+    const existing = userActionMap.get(item.user_id);
+    if (!existing) {
+      userActionMap.set(item.user_id, { ...item });
+    } else {
+      // Merge multiple actions into a comma-separated string to decode on the client
+      const currentActions = existing.action ? existing.action.split(",") : [];
+      const newActions = item.action ? item.action.split(",") : [];
+      const actions = new Set([...currentActions, ...newActions]);
+      
+      existing.action = Array.from(actions).filter(Boolean).join(",");
+      
+      if (new Date(item.created_at) > new Date(existing.created_at)) {
+        existing.created_at = item.created_at;
+      }
+      
+      existing.matched = existing.matched || item.matched;
+    }
+  }
+  
+  return Array.from(userActionMap.values())
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+export async function clearSwipeHistory() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  // Delete all swipes where user is the swiper or the target
+  const { error: error1 } = await supabase
+    .from("discovery_swipes")
+    .delete()
+    .eq("user_id", user.id);
+
+  const { error: error2 } = await supabase
+    .from("discovery_swipes")
+    .delete()
+    .eq("target_user_id", user.id);
+
+  // Also delete matches
+  const { error: error3 } = await supabase
+    .from("discovery_matches")
+    .delete()
+    .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+  if (error1 || error2 || error3) {
+    console.error("Error clearing history:", error1 || error2 || error3);
+    return { success: false, error: "Failed to clear history" };
+  }
+
+  // Also delete interactions
+  const { error: error4 } = await supabase
+    .from("discovery_profile_interactions")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error4) {
+    console.error("Error clearing interactions:", error4);
+  }
+
+  return { success: true };
 }
