@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { CreateConversationDialog } from "./create-conversation-dialog";
@@ -14,6 +15,29 @@ const AVATAR_COLORS = [
   "bg-purple-500",
   "bg-amber-500",
 ];
+
+function nameMatchesSearch(name: string, searchEntry: string) {
+  const search = searchEntry.toLowerCase().trim();
+  if (!search) return true;
+  if (search.length > name.trim().length) return false;
+
+  let matches = true;
+  const searchArr = search.split(" ");
+  searchArr.forEach((searchTerm) => {
+    if (
+      !name
+        .toLowerCase()
+        .trim()
+        .split(/\s+/)
+        .some((part) => part.startsWith(searchTerm)) &&
+      !name.toLowerCase().startsWith(searchEntry.toLowerCase())
+    ) {
+      matches = false;
+    }
+  });
+
+  return matches;
+}
 
 function getInitials(name: string) {
   return name
@@ -86,6 +110,10 @@ export function ChatSidebar({
   conversations: Conversation[];
 }) {
   const pathname = usePathname();
+  const [searchEntry, setSearchEntry] = useState("");
+  const filteredConversations = conversations.filter((c) =>
+    nameMatchesSearch(c.name, searchEntry),
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -94,7 +122,12 @@ export function ChatSidebar({
           <h2 className="text-lg font-semibold">Messages</h2>
           <CreateConversationDialog />
         </div>
-        <Input type="text" placeholder="Search conversations..." readOnly />
+        <Input
+          type="text"
+          placeholder="Search conversations..."
+          value={searchEntry}
+          onChange={(e) => setSearchEntry(e.target.value)}
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -103,8 +136,12 @@ export function ChatSidebar({
             <p>No conversations yet.</p>
             <p>Create one to get started.</p>
           </div>
+        ) : filteredConversations.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            No conversations match your search.
+          </div>
         ) : (
-          conversations.map((conversation, index) => (
+          filteredConversations.map((conversation, index) => (
             <ChatPreviewItem
               key={conversation.id}
               conversation={conversation}
