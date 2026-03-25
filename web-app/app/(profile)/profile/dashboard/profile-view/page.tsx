@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
-import EditBio from "./modals/edit-bio";
-import profiles from "mock/profiles.json";
-import SelectHobbies from "./modals/hobby-select";
-import MajorSelect from "./modals/major-select";
+import EditBio from "../../_components/edit-bio";
+import SelectHobbies from "../../_components/hobby-select";
+import MajorSelect from "../../_components/major-select";
 import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile;

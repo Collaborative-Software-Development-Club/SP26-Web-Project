@@ -207,5 +207,5 @@ export async function setUserProfile(data: UserField){
   .eq("user_id",user.id);
 
   
-  if (error) throw new Error(`Error updating user profile: ${error.message}`);
+  
 }

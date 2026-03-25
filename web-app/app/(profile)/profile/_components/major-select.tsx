@@ -27,7 +27,7 @@ export default function MajorSelect() {
             await setUserProfile(majorData);
             setMode(false);
             router.refresh();
-        } catch (error) {
+        } catch (err) {
             setError("Unexpected error occured");
             setMode(true);
         }

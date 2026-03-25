@@ -3,8 +3,8 @@
 Include ways to be able to edit these fields.
 */
 //
-import ProfilePage from "./profile-page";
-import SettingsPage from "./settings-page";
+import ProfilePage from "./profile-view/page";
+import SettingsPage from "./settings/page";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile;
 };
-export default function ProfileHeader({ profile }: ProfilePageProps) {
+export default function SideBar({ profile }: ProfilePageProps) {
   const [page, setPage] = useState("profile");
 
   return (
@@ -49,8 +49,8 @@ export default function ProfileHeader({ profile }: ProfilePageProps) {
           </Button>
         </div>
       </Card>
-      {page === "profile" && <ProfilePage profile={profile} />}
-      {page === "settings" && <SettingsPage profile={profile} />}
+      {page==="profile" && <ProfilePage profile={profile}/>}
+      {page==="settings" && <SettingsPage profile={profile}/>}
     </div>
   );
 }
