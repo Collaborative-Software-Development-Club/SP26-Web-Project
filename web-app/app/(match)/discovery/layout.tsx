@@ -6,7 +6,7 @@ export default function DiscoveryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col h-full w-full items-center justify-center bg-zinc-50 font-sans dark:bg-black gap-4">
+    <div className="flex flex-col h-full w-full items-center justify-center font-sans dark:bg-black gap-4">
       <DiscoveryNavbar />
       {children}
     </div>

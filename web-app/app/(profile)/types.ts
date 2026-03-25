@@ -4,6 +4,11 @@ export type Preference = {
     value: number;
 }
 
+export type Hobby = {
+    hobby_id: string;
+    name: string;
+}
+
 export type UserProfile = {
     user_id: string;
     is_active: boolean;
@@ -16,7 +21,7 @@ export type UserProfile = {
     year: number;
     created_at: string;
     last_edited_at: string;
-    hobbies: string[];
+    hobbies: Hobby[];
     preferences: Preference[];
 }
 

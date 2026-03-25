@@ -38,7 +38,7 @@ export function Navbar({ user }: { user: User | null }) {
               <Button
                 asChild
                 key={link.href}
-                variant={isActive ? "secondary" : "ghost"}
+                variant={isActive ? "outline" : "ghost"}
               >
                 <Link href={link.href}>{link.label}</Link>
               </Button>

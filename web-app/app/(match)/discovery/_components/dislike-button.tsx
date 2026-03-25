@@ -1,6 +1,7 @@
 "use client";
 
 import { ThumbsDown } from "lucide-react";
+import { motion } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { saveSwipe } from "../_actions";
 import { saveMatchSwipe } from "../_actions";
@@ -35,10 +36,12 @@ export function DislikeButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        handleDislike();
-      }
+      if (e.key !== "ArrowLeft") return;
+      const t = e.target;
+      if (t instanceof HTMLElement && t.closest("textarea, input, select, [contenteditable]"))
+        return;
+      e.preventDefault();
+      handleDislike();
     };
 
     window.addEventListener("keydown", handleKeyPress);
@@ -47,20 +50,26 @@ export function DislikeButton({
 
   const DiscoveryButton = () => {
     return (
-      <button
+      <motion.button
         onClick={handleDislike}
+        whileTap={{ scale: 0.85 }}
+        whileHover={{ scale: 1.1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
         className="text-red-500 hover:bg-red-100 dark:hover:bg-red-800 rounded-full p-3 transition-colors cursor-pointer"
       >
         <ThumbsDown />
-      </button>
+      </motion.button>
     );
   };
 
   const LikedYouButton = () => {
     return (
-      <button
+      <motion.button
         onClick={handleDislike}
         aria-label="Not vibing"
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 400, damping: 24 }}
         className="
       group relative flex items-center justify-center gap-2
       px-6 py-3 rounded-2xl
@@ -75,9 +84,9 @@ export function DislikeButton({
       disabled:opacity-50 disabled:cursor-not-allowed
     "
       >
-        <span>Pass On Vibe</span>
+        <span>Not Vibing</span>
         <ThumbsDown />
-      </button>
+      </motion.button>
     );
   };
   return <>{isDiscovery ? DiscoveryButton() : LikedYouButton()}</>;

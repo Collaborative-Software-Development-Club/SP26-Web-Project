@@ -1,6 +1,7 @@
 "use client";
 
 import { ThumbsUp } from "lucide-react";
+import { motion } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { saveSwipe } from "../_actions";
 import { saveMatchSwipe } from "../_actions";
@@ -18,7 +19,7 @@ export function LikeButton({
 }) {
   const handleLike = useCallback(() => {
     console.log("Like");
-    
+
     if (onClick) {
       onClick(); // Trigger animation first
     } else {
@@ -35,10 +36,15 @@ export function LikeButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        handleLike();
-      }
+      if (e.key !== "ArrowRight") return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        t.closest("textarea, input, select, [contenteditable]")
+      )
+        return;
+      e.preventDefault();
+      handleLike();
     };
 
     window.addEventListener("keydown", handleKeyPress);
@@ -47,20 +53,26 @@ export function LikeButton({
 
   const DiscoveryButton = () => {
     return (
-      <button
+      <motion.button
         onClick={handleLike}
+        whileTap={{ scale: 0.85 }}
+        whileHover={{ scale: 1.1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
         className="text-green-400 hover:bg-green-100 dark:hover:bg-green-100 rounded-full p-3 transition-colors cursor-pointer"
       >
         <ThumbsUp />
-      </button>
+      </motion.button>
     );
   };
 
   const LikedYouButton = () => {
     return (
-      <button
+      <motion.button
         onClick={handleLike}
         aria-label="Accept vibe"
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 400, damping: 24 }}
         className="
       group relative flex items-center justify-center gap-2
       px-6 py-3 rounded-2xl
@@ -77,7 +89,7 @@ export function LikeButton({
       >
         <span>Vibe With Them</span>
         <ThumbsUp />
-      </button>
+      </motion.button>
     );
   };
 
