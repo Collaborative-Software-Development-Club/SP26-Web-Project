@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
@@ -27,7 +29,7 @@ export function ImportanceControl({
             key={v}
             size="xs"
             className="flex-1"
-            variant={value === v ? "default" : "ghost"}
+            variant={value === v ? "default" : "outline"}
             onClick={() => onValueChange(v)}
           >
             {v === 0 ? "Don't care" : "Care"}

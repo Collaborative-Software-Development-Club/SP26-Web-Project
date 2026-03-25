@@ -72,10 +72,10 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
                   <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-4 flex-1 shadow-sm shadow-gray-300">
                     {user.hobbies?.map((hobby) => (
                       <div
-                        key={hobby}
+                        key={hobby.hobby_id}
                         className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700"
                       >
-                        {hobby}
+                        {hobby.name}
                       </div>
                     ))}
                   </div>

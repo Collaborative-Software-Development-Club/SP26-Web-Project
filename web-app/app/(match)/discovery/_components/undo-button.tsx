@@ -20,9 +20,9 @@ export function UndoButton({
 }) {
   const handleUndo = useCallback(() => {
     console.log("Undo");
-    
+
     if (onClick) {
-      onClick(); 
+      onClick();
     } else {
       // Fallback if used elsewhere without animation logic
       handleBefore();
@@ -38,15 +38,21 @@ export function UndoButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
-        e.preventDefault();
-        handleUndo();
-      }
+      if (e.key !== "z" && e.key !== "Z") return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        t.closest("textarea, input, select, [contenteditable]")
+      )
+        return;
+      e.preventDefault();
+      handleUndo();
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleUndo]);
+
   const DiscoveryButton = () => {
     return (
       <button

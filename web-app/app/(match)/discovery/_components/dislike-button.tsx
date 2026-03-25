@@ -36,10 +36,12 @@ export function DislikeButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        handleDislike();
-      }
+      if (e.key !== "ArrowLeft") return;
+      const t = e.target;
+      if (t instanceof HTMLElement && t.closest("textarea, input, select, [contenteditable]"))
+        return;
+      e.preventDefault();
+      handleDislike();
     };
 
     window.addEventListener("keydown", handleKeyPress);

@@ -10,6 +10,10 @@ import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
+// TODO: replace with user context
+import profiles from "@/mock/profiles.json";
+const user = profiles[0];
+
 export function ProfileCard({
   profile,
   handleNext,
@@ -36,7 +40,7 @@ export function ProfileCard({
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
       <AnimatePresence mode="wait" custom={swipeDirection}>
         <motion.div
           key={profile.user_id}
@@ -122,10 +126,10 @@ export function ProfileCard({
                     <div className="flex flex-wrap gap-2">
                       {profile.hobbies.map((hobby) => (
                         <span
-                          key={hobby}
+                          key={hobby.hobby_id}
                           className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium border border-zinc-200 dark:border-zinc-700"
                         >
-                          {hobby}
+                          {hobby.name}
                         </span>
                       ))}
                     </div>
@@ -135,7 +139,11 @@ export function ProfileCard({
                     <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
                       Living Habits
                     </h3>
-                    <ProfilePreferences profile={profile} />
+                    {/* TODO: Replace with actual user preferences */}
+                    <ProfilePreferences
+                      preferences={profile.preferences}
+                      userPreferences={user.preferences}
+                    />
                   </div>
                 </div>
               </div>
