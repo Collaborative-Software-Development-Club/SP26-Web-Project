@@ -14,6 +14,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import profiles from "@/mock/profiles.json";
 const user = profiles[0];
 
+// TODO: replace with profile data
+const PHOTOS = ["selfie", "room1", "room2"] as const;
+
 export function ProfileCard({
   profile,
   handleNext,
@@ -24,6 +27,7 @@ export function ProfileCard({
   handleBefore: () => void;
 }) {
   const [swipeDirection, setSwipeDirection] = useState(0);
+  const [photoIndex, setPhotoIndex] = useState(0);
 
   // Animation Director
   const onAction = (dir: number) => {
@@ -37,10 +41,14 @@ export function ProfileCard({
     }, 10);
   };
 
+  const nextPhoto = () => setPhotoIndex((i) => (i + 1) % PHOTOS.length);
+  const prevPhoto = () =>
+    setPhotoIndex((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
+
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full p-4 md:p-8 flex flex-col items-center">
       <AnimatePresence mode="wait" custom={swipeDirection}>
         <motion.div
           key={profile.user_id}
@@ -58,44 +66,43 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-3/4 max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]"
+          className="w-3/4 max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative"
         >
           <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-linear-to-br from-indigo-200/30 to-purple-200/30 dark:from-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full pointer-events-none" />
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-0 relative z-10 h-full">
             {/* Left Column */}
-            <div className="md:col-span-5 flex flex-col p-5 gap-3 border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-black/20 h-full">
-              <div className="w-full flex-1 min-h-[300px] md:min-h-0 rounded-2xl overflow-hidden relative shadow-inner bg-zinc-200 dark:bg-zinc-800 group">
+            <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-border overflow-hidden">
+              {/* Photo viewer */}
+              <div className="relative aspect-[3/4] w-full bg-muted overflow-hidden">
                 <Image
-                  src="/demo/selfie.png"
-                  alt="User Avatar"
+                  src={`/demo/${PHOTOS[photoIndex]}.png`}
+                  alt="Profile photo"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-opacity duration-300"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-2 h-24 shrink-0">
-                <div className="rounded-xl bg-zinc-200 dark:bg-zinc-800 relative overflow-hidden flex items-center justify-center text-zinc-400">
-                  <Image
-                    src="/demo/room1.png"
-                    alt="Room 1"
-                    fill
-                    sizes="(max-width: 768px) 50vw, 16vw"
-                    className="object-cover"
-                  />
+
+                {/* Click zones for prev / next */}
+                <div className="absolute inset-0 flex">
+                  <div className="flex-1 cursor-pointer" onClick={prevPhoto} />
+                  <div className="flex-1 cursor-pointer" onClick={nextPhoto} />
                 </div>
-                <div className="rounded-xl bg-zinc-200 dark:bg-zinc-800 relative overflow-hidden flex items-center justify-center text-zinc-400">
-                  <Image
-                    src="/demo/room2.png"
-                    alt="Room 2"
-                    fill
-                    sizes="(max-width: 768px) 50vw, 16vw"
-                    className="object-cover"
-                  />
+
+                {/* Dot indicators */}
+                <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-4 pb-3 pt-8 bg-gradient-to-t from-black/30 to-transparent">
+                  {PHOTOS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPhotoIndex(i)}
+                      className={`h-0.5 flex-1 rounded-full transition-colors duration-200 ${
+                        i === photoIndex ? "bg-white" : "bg-white/40"
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
-
             {/* Right Column */}
             <div className="w-full md:col-span-7 flex flex-col h-full overflow-hidden">
               <div className="p-6 flex-1 overflow-y-auto">
