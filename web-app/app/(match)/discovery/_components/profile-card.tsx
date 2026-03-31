@@ -66,11 +66,9 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-3/4 max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative"
+          className="w-3/4 max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
         >
-          <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-linear-to-br from-indigo-200/30 to-purple-200/30 dark:from-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 relative z-10 h-full">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 h-full">
             {/* Left Column */}
             <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-border overflow-hidden">
               {/* Photo viewer */}
@@ -108,17 +106,17 @@ export function ProfileCard({
               <div className="p-6 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                    <h1 className="text-3xl font-serif font-normal text-foreground tracking-tight">
                       {profile.fname} {profile.lname}
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                    <p className="font-serif text-zinc-500 dark:text-zinc-400 font-medium">
                       {profile.major} • Year {profile.year}
                     </p>
                   </div>
                 </div>
 
                 <div className="w-full">
-                  <p className="mt-3 text-zinc-600 dark:text-zinc-300 leading-relaxed text-base">
+                  <p className="mt-3 text-sm italic text-muted-foreground leading-relaxed">
                     &quot;{profile.bio}&quot;
                   </p>
                 </div>
@@ -127,14 +125,14 @@ export function ProfileCard({
 
                 <div className="grid grid-cols-2 gap-y-5 gap-x-4">
                   <div className="col-span-2">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
-                      Hobbies & Interests
+                    <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                      Hobbies & interests
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.hobbies.map((hobby) => (
                         <span
                           key={hobby.hobby_id}
-                          className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium border border-zinc-200 dark:border-zinc-700"
+                          className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs border border-border"
                         >
                           {hobby.name}
                         </span>
@@ -143,8 +141,8 @@ export function ProfileCard({
                   </div>
 
                   <div className="col-span-2">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
-                      Living Habits
+                    <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                      Living habits
                     </h3>
                     {/* TODO: Replace with actual user preferences */}
                     <ProfilePreferences
@@ -156,7 +154,7 @@ export function ProfileCard({
               </div>
 
               {/* Action Buttons - Order: Undo, Dislike, Like, Message */}
-              <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-around items-center gap-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md shrink-0">
+              <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
                 <UndoButton
                   onClick={() => onAction(2)}
                   handleBefore={handleBefore}
