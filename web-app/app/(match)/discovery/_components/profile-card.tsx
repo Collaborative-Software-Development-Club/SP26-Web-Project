@@ -109,7 +109,7 @@ export function ProfileCard({
                     <h1 className="text-3xl font-serif font-normal text-foreground tracking-tight">
                       {profile.fname} {profile.lname}
                     </h1>
-                    <p className="font-serif text-zinc-500 dark:text-zinc-400 font-medium">
+                    <p className="font-serif text-sm text-muted-foreground">
                       {profile.major} • Year {profile.year}
                     </p>
                   </div>
@@ -121,7 +121,7 @@ export function ProfileCard({
                   </p>
                 </div>
 
-                <div className="h-px w-full bg-zinc-100 dark:bg-zinc-800 my-5" />
+                <div className="h-px w-full bg-border my-5" />
 
                 <div className="grid grid-cols-2 gap-y-5 gap-x-4">
                   <div className="col-span-2">
