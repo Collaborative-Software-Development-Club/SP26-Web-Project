@@ -53,35 +53,20 @@ export function UndoButton({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleUndo]);
 
-  const DiscoveryButton = () => {
-    return (
-      <button
-        onClick={handleUndo}
-        className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors cursor-pointer"
-      >
-        <Undo2 className="w-8 h-8" />
-      </button>
-    );
-  };
-
-  const LikedYouButton = () => {
-    return (
-      <button
-        onClick={handleUndo}
-        className="
+  return (
+    <button
+      onClick={handleUndo}
+      className="
             mt-6 flex items-center gap-2
             text-sm text-zinc-500 dark:text-zinc-400
             hover:text-zinc-800 dark:hover:text-white
             transition-colors duration-150
           "
-      >
-        <span>↩</span>
-        <span>
-          Undo — bring back <span className="font-semibold">{lastEntry}</span>
-        </span>
-      </button>
-    );
-  };
-
-  return <>{isDiscovery ? DiscoveryButton() : LikedYouButton()}</>;
+    >
+      <span>↩</span>
+      <span>
+        Undo — bring back <span className="font-semibold">{lastEntry}</span>
+      </span>
+    </button>
+  );
 }

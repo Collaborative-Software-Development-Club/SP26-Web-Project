@@ -4,7 +4,6 @@ import { useState } from "react";
 import { DiscoveryProfile } from "../types";
 import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
-import { UndoButton } from "./undo-button";
 import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
@@ -48,7 +47,7 @@ export function ProfileCard({
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full p-4 md:p-8 flex flex-col items-center">
+    <div className="w-full flex flex-col items-center">
       <AnimatePresence mode="wait" custom={swipeDirection}>
         <motion.div
           key={profile.user_id}
@@ -155,12 +154,6 @@ export function ProfileCard({
 
               {/* Action Buttons - Order: Undo, Dislike, Like, Message */}
               <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
-                <UndoButton
-                  onClick={() => onAction(2)}
-                  handleBefore={handleBefore}
-                  isDiscovery={true}
-                  targetUserId={profile.user_id}
-                />
                 <DislikeButton
                   onClick={() => onAction(-1)}
                   handleNext={handleNext}

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
+import { MessageButton } from "./message-button";
 import { LikedYouProfile } from "../types";
 import Image from "next/image";
 
@@ -24,7 +25,6 @@ export function VibeCheckProfile({
   onAccept: (userId: string) => void;
   onPass: (userId: string) => void;
 }) {
-  const [replyText, setReplyText] = useState("");
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -117,8 +117,7 @@ export function VibeCheckProfile({
                     {profile.fname} {profile.lname}
                   </h1>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {yearLabel[profile.year] ?? `Year ${profile.year}`} ·{" "}
-                    {profile.major}
+                    {profile.major} • Year {profile.year}
                   </p>
                 </div>
 
@@ -170,20 +169,6 @@ export function VibeCheckProfile({
                     &quot;{profile.message}&quot;
                   </div>
                 </div>
-
-                {/* Reply box */}
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-2">
-                    Your reply (optional)
-                  </p>
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder={`Reply to ${profile.fname}...`}
-                    rows={3}
-                    className="w-full resize-none rounded-2xl px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition"
-                  />
-                </div>
               </div>
 
               {/* Action buttons */}
@@ -195,6 +180,12 @@ export function VibeCheckProfile({
                   isDiscovery={false}
                 />
                 <LikeButton
+                  onClick={() => onAction(1)}
+                  handleNext={() => onAction(1)}
+                  targetUserId={profile.user_id}
+                  isDiscovery={false}
+                />
+                <MessageButton
                   onClick={() => onAction(1)}
                   handleNext={() => onAction(1)}
                   targetUserId={profile.user_id}
