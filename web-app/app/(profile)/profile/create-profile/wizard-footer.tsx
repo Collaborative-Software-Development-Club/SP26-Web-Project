@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
-import type { STEPS } from "./helpers";
 
 type WizardFooterProps = {
   step: number;
   stepsLength: number;
   isSubmitting: boolean;
-  prefsLoading: boolean;
   canCreateProfile: boolean;
   onPrevStep: () => void;
   onNextStep: () => void;
@@ -16,7 +14,6 @@ export function WizardFooter({
   step,
   stepsLength,
   isSubmitting,
-  prefsLoading,
   canCreateProfile,
   onPrevStep,
   onNextStep,
@@ -43,7 +40,7 @@ export function WizardFooter({
         <Button
           type="button"
           onClick={onSubmit}
-          disabled={isSubmitting || prefsLoading || !canCreateProfile}
+          disabled={isSubmitting || !canCreateProfile}
         >
           {isSubmitting ? "Creating Profile…" : "Create Profile"}
         </Button>

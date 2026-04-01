@@ -1,5 +1,5 @@
 import type { Preference, UserProfile } from "@/app/(profile)/types";
-import { preferenceQuestion } from "@/lib/constants/preferenceQuestion";
+import { preferenceQuestion } from "@/lib/constants/preference-question";
 
 export const PREFERENCE_ENTRIES = Array.from(preferenceQuestion.entries());
 

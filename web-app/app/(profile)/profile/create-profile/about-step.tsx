@@ -1,6 +1,13 @@
 import type { UserProfile } from "@/app/(profile)/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 type AboutStepProps = {
@@ -47,19 +54,21 @@ export function AboutStep({ profile, isSubmitting, update }: AboutStepProps) {
         <Label htmlFor="gender" className="text-sm font-medium">
           Gender
         </Label>
-        <select
-          id="gender"
-          value={profile.gender}
-          onChange={(e) => update("gender", e.target.value)}
+        <Select
+          value={profile.gender || undefined}
+          onValueChange={(v) => update("gender", v)}
           disabled={isSubmitting}
-          className="mt-1 w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring"
         >
-          <option value="">Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Non-binary">Non-binary</option>
-          <option value="Prefer not to say">Prefer not to say</option>
-        </select>
+          <SelectTrigger id="gender" className="mt-1 w-full max-w-none">
+            <SelectValue placeholder="Select gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Male">Male</SelectItem>
+            <SelectItem value="Female">Female</SelectItem>
+            <SelectItem value="Non-binary">Non-binary</SelectItem>
+            <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
@@ -81,23 +90,22 @@ export function AboutStep({ profile, isSubmitting, update }: AboutStepProps) {
         <Label htmlFor="year" className="text-sm font-medium">
           Year
         </Label>
-        <select
-          id="year"
-          value={profile.year === 0 ? "" : String(profile.year)}
-          onChange={(e) => {
-            const v = e.target.value;
-            update("year", v === "" ? 0 : parseInt(v, 10));
-          }}
+        <Select
+          value={profile.year === 0 ? undefined : String(profile.year)}
+          onValueChange={(v) => update("year", parseInt(v, 10))}
           disabled={isSubmitting}
-          className="mt-1 w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring"
         >
-          <option value="">Select Year</option>
-          <option value="1">Freshman</option>
-          <option value="2">Sophomore</option>
-          <option value="3">Junior</option>
-          <option value="4">Senior</option>
-          <option value="5">Graduate</option>
-        </select>
+          <SelectTrigger id="year" className="mt-1 w-full max-w-none">
+            <SelectValue placeholder="Select year" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">Freshman</SelectItem>
+            <SelectItem value="2">Sophomore</SelectItem>
+            <SelectItem value="3">Junior</SelectItem>
+            <SelectItem value="4">Senior</SelectItem>
+            <SelectItem value="5">Graduate</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
