@@ -129,10 +129,10 @@ export function CreateProfileClient({
   const prefsError = catalogError;
 
   return (
-    <main className="flex flex-col min-h-screen bg-gradient-to-br from-primary/10 via-muted/40 to-background flex items-center justify-center p-4">
+    <div className="h-full bg-gradient-to-br from-primary/10 via-muted/40 to-background flex items-center justify-center p-4">
       <div
         className={cn(
-          "bg-card text-card-foreground border border-border rounded-lg shadow-sm p-8 w-full",
+          "bg-card text-card-foreground border border-border rounded-lg shadow-sm p-8 w-full max-h-[80vh]",
           step === 1
             ? "max-w-2xl"
             : step === 2
@@ -189,6 +189,6 @@ export function CreateProfileClient({
           onSubmit={handleSubmit}
         />
       </div>
-    </main>
+    </div>
   );
 }
