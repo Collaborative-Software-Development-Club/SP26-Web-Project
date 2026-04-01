@@ -93,9 +93,9 @@ export async function signupAction(formData: FormData) {
 }
 
 /**
- * Creates a profile for the signed-in user
+ * Saves a profile for the signed-in user
  */
-export async function createProfileAction(profile: UserProfile) {
+export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

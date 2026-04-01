@@ -1,6 +1,6 @@
 "use client";
 
-import { createProfileAction, getHobbiesAndPreferences } from "@/app/(profile)/_actions";
+import { saveProfileAction, getHobbiesAndPreferences } from "@/app/(profile)/_actions";
 import type { Hobby, HobbyCategoryGroup, UserProfile } from "@/app/(profile)/types";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
