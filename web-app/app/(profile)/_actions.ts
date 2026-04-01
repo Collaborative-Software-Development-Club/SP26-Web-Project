@@ -3,8 +3,12 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserProfiles } from "@/lib/services/profile";
-import type { Preference } from "./types";
+import type {
+  Hobby,
+  HobbyCategoryGroup,
+  Preference,
+  UserProfile,
+} from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -88,110 +92,126 @@ export async function signupAction(formData: FormData) {
   );
 }
 
-export async function createProfileAction(formData: FormData) {
-  const fname = formData.get("fname") as string;
-  const lname = formData.get("lname") as string;
-  const gender = formData.get("gender") as string;
-  const bio = formData.get("bio") as string;
-  const major = formData.get("major") as string;
-  const year = formData.get("year") as string;
-
-  if (!fname || !lname || !gender || !bio || !major || !year) {
-    return { error: "All fields are required" };
-  }
-
+/**
+ * Creates a profile for the signed-in user
+ */
+export async function createProfileAction(profile: UserProfile) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return { error: "Unauthorized" };
   }
 
-  const now = new Date().toISOString();
-  const { error } = await supabase
+  const { error: profileError } = await supabase
     .from("user_profiles")
-    .insert([
+    .upsert([
       {
         user_id: user.id,
         is_active: true,
-        fname,
-        lname,
-        gender,
-        bio,
-        major,
-        year: parseInt(year),
-        avatar_url: "",
-        created_at: now,
-        last_edited_at: now,
+        bio: profile.bio,
+        year: profile.year,
+        major: profile.major,
+        avatar_url: profile.avatar_url,
+        fname: profile.fname,
+        lname: profile.lname,
+        gender: profile.gender,
       },
     ]);
 
-  if (error) {
-    return { error: error.message };
+  if (profileError) {
+    return { error: profileError.message };
   }
 
-  // ensure related records exist in the join tables so the user_id is linked
-  // these tables currently don't have any extra information, just associating
-  // the profile with hobbies/preferences; we'll insert a bare record for now
   const { error: hobbiesError } = await supabase
     .from("user_profile_hobbies")
-    .insert([{ 
+    .upsert(profile.hobbies.map(h => ({
       user_id: user.id,
-      created_at: now
-     }]);
-  const { error: prefsError } = await supabase
-    .from("user_profile_preferences")
-    .insert([{
-      user_id: user.id,
-      created_at: now
-     }]);
+      hobby_id: h.hobby_id,
+    })));
 
-  if (hobbiesError || prefsError) {
-    // non-critical; log or ignore but could return an error if desired
-    console.warn("error creating empty user profile relations", hobbiesError, prefsError);
+  if (hobbiesError) {
+    return { error: hobbiesError.message };
+  }
+
+  const { error: preferencesError } = await supabase
+    .from("user_profile_preferences")
+    .upsert(profile.preferences.map(p => ({
+      user_id: user.id,
+      preference_id: p.preference_id,
+      value: p.value,
+    })));
+
+  if (preferencesError) {
+    return { error: preferencesError.message };
   }
 
   redirect("/profile");
 }
 
-export async function getAllPreferences(): Promise<Preference[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-  .from('user_preferences')
-  .select('*');
 
-  if (error) throw new Error("Error getting all preferences");
-  if (!data) throw new Error("Could not retrieve preferences");
+type UserHobbyRow = {
+  hobby_id: number | string;
+  name: string;
+  category_name?: string;
+};
 
-  return data.map(p => ({
-    preference_id: p.preference_id,
-    name: p.name,
-    value: 0 // default value is 0
-  })) as Preference[];
+/** Group hobbies by category (nested `user_hobby_categories.name` from Supabase). */
+function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
+  const groups = new Map<string, Hobby[]>();
+
+  for (const row of rows) {
+    const category =
+      row.user_hobby_categories?.name?.trim() || "uncategorized";
+    const hobbyId = String(row.hobby_id);
+    const list = groups.get(category) ?? [];
+    list.push({ hobby_id: hobbyId, name: row.name });
+    groups.set(category, list);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([category, hobbies]) => ({ category, hobbies }));
 }
 
-export async function setPreferences(preferences: Preference[]) {
+/** Return all the hobby and preference choices **/
+export async function getHobbiesAndPreferences(): Promise<
+  | { error: string }
+  | { hobbies: HobbyCategoryGroup[]; preferences: Preference[] }
+> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("Unauthorized");
-    }
+  const { data: preferencesData, error: preferencesError } = await supabase
+    .from("user_preferences")
+    .select("*");
 
-  const {error} = await supabase
-  .from("user_profile_preferences")
-  .insert(
-    preferences.map(p => ({
-      user_id: user.id,
-      preference_id: p.preference_id,
-      value: p.value
-    }))
+  if (preferencesError) {
+    return { error: preferencesError.message };
+  }
+
+  const { data: hobbiesData, error: hobbiesError } = await supabase
+  .from("user_hobbies")
+  .select(`
+    hobby_id,
+    name,
+    user_hobby_categories(name)
+  `)
+
+
+  if (hobbiesError) {
+    return { error: hobbiesError.message };
+  }
+
+  const hobbies = groupHobbiesData(
+    (hobbiesData ?? []) as UserHobbyRow[],
   );
 
-  if (error) throw new Error(`Error updating user preferences: ${error.message}`);
-}
-
-
-export async function updateName(first:string,last:string,id:string){
-  //this code will update the username using the database
+  return {
+    hobbies,
+    preferences: (preferencesData ?? []).map((p) => ({
+      preference_id: p.preference_id,
+      name: p.name,
+      value: 0,
+    })),
+  };
 }

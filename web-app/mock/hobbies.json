@@ -1,87 +1,99 @@
-{
-  "fitness_sports": [
-    "gym",
-    "weightlifting",
-    "powerlifting",
-    "bodybuilding",
-    "crossfit",
-    "running",
-    "cycling",
-    "swimming",
-    "yoga",
-    "pilates",
-    "boxing",
-    "brazilian jiu jitsu",
-    "taekwondo",
-    "lacrosse",
-    "basketball",
-    "soccer",
-    "football",
-    "baseball",
-    "volleyball",
-    "tennis",
-    "pickleball",
-    "golf",
-    "rock climbing",
-    "hiking",
-    "skiing",
-    "snowboarding",
-    "skateboarding",
-    "surfing"
-  ],
-  "creative_artistic": [
-    "drawing",
-    "painting",
-    "graphic design",
-    "photography",
-    "filmmaking",
-    "music",
-    "djing",
-    "guitar",
-    "piano",
-    "singing",
-    "songwriting",
-    "creative writing",
-    "poetry",
-    "journaling",
-    "fashion",
-    "knitting"
-  ],
-  "food": [
-    "cooking",
-    "baking",
-    "coffee",
-    "tea",
-    "wine",
-    "beer"
-  ],
-    "nightlife_social_energy": [
-    "bars",
-    "clubbing",
-    "house parties",
-    "concerts",
-    "karaoke"
-  ],
-  "social_lifestyle": [
-    "traveling",
-    "road trips",
-    "camping",
-    "volunteering",
-    "animal fostering",
-    "faith groups",
-    "meditation",
-    "content creation"
-  ],
-  "entertainment": [
-    "video games",
-    "board games",
-    "reading",
-    "movies",
-    "anime",
-    "tv",
-    "streaming",
-    "youtube",
-    "podcasts",
-    "stand up comedy"
-  ]
-}
+[
+  {
+    "category": "fitness", 
+    "hobbies": [
+      {"hobby_id": 1, "name": "gym"},
+      {"hobby_id": 2, "name": "weightlifting"},
+      {"hobby_id": 3, "name": "powerlifting"},
+      {"hobby_id": 4, "name": "bodybuilding"},
+      {"hobby_id": 5, "name": "crossfit"},
+      {"hobby_id": 6, "name": "running"},
+      {"hobby_id": 7, "name": "cycling"},
+      {"hobby_id": 8, "name": "swimming"},
+      {"hobby_id": 9, "name": "yoga"},
+      {"hobby_id": 10, "name": "pilates"},
+      {"hobby_id": 11, "name": "boxing"},
+      {"hobby_id": 12, "name": "brazilian jiu jitsu"},
+      {"hobby_id": 13, "name": "taekwondo"},
+      {"hobby_id": 14, "name": "lacrosse"},
+      {"hobby_id": 15, "name": "basketball"},
+      {"hobby_id": 16, "name": "soccer"},
+      {"hobby_id": 17, "name": "football"},
+      {"hobby_id": 18, "name": "baseball"},
+      {"hobby_id": 19, "name": "volleyball"},
+      {"hobby_id": 20, "name": "tennis"},
+      {"hobby_id": 21, "name": "pickleball"},
+      {"hobby_id": 22, "name": "golf"},
+      {"hobby_id": 23, "name": "rock climbing"},
+      {"hobby_id": 24, "name": "hiking"},
+      {"hobby_id": 25, "name": "skiing"},
+      {"hobby_id": 26, "name": "snowboarding"},
+      {"hobby_id": 27, "name": "skateboarding"},
+      {"hobby_id": 28, "name": "surfing"}
+  ]},
+  {
+    "category": "Creative", 
+    "hobbies": [
+      {"hobby_id": 53, "name": "drawing"},
+      {"hobby_id": 54, "name": "painting"},
+      {"hobby_id": 55, "name": "graphic design"},
+      {"hobby_id": 56, "name": "photography"},
+      {"hobby_id": 57, "name": "filmmaking"},
+      {"hobby_id": 58, "name": "music"},
+      {"hobby_id": 59, "name": "djing"},
+      {"hobby_id": 60, "name": "guitar"},
+      {"hobby_id": 61, "name": "piano"},
+      {"hobby_id": 62, "name": "singing"},
+      {"hobby_id": 63, "name": "songwriting"},
+      {"hobby_id": 64, "name": "creative writing"},
+      {"hobby_id": 65, "name": "poetry"},
+      {"hobby_id": 66, "name": "journaling"},
+      {"hobby_id": 67, "name": "fashion"},
+      {"hobby_id": 68, "name": "knitting"}
+  ]},
+  {
+    "category": "food", 
+    "hobbies": [
+      {"hobby_id": 69, "name": "cooking"},
+      {"hobby_id": 70, "name": "baking"},
+      {"hobby_id": 71, "name": "coffee"},
+      {"hobby_id": 72, "name": "tea"},
+      {"hobby_id": 73, "name": "wine"},
+      {"hobby_id": 74, "name": "beer"}
+  ]},
+  {
+    "category": "social", 
+    "hobbies": [
+      {"hobby_id": 75, "name": "bars"},
+      {"hobby_id": 76, "name": "clubbing"},
+      {"hobby_id": 77, "name": "house parties"},
+      {"hobby_id": 78, "name": "concerts"},
+      {"hobby_id": 79, "name": "karaoke"}
+  ]},
+  {
+    "category": "lifestyle", 
+    "hobbies": [
+      {"hobby_id": 80, "name": "traveling"},
+      {"hobby_id": 81, "name": "road trips"},
+      {"hobby_id": 82, "name": "camping"},
+      {"hobby_id": 83, "name": "volunteering"},
+      {"hobby_id": 84, "name": "animal fostering"},
+      {"hobby_id": 85, "name": "faith groups"},
+      {"hobby_id": 86, "name": "meditation"},
+      {"hobby_id": 87, "name": "content creation"}
+  ]},
+  {
+    "category": "entertainment", 
+    "hobbies": [
+      {"hobby_id": 88, "name": "video games"},
+      {"hobby_id": 89, "name": "board games"},
+      {"hobby_id": 90, "name": "reading"},
+      {"hobby_id": 91, "name": "movies"},
+      {"hobby_id": 92, "name": "anime"},
+      {"hobby_id": 93, "name": "tv"},
+      {"hobby_id": 94, "name": "streaming"},
+      {"hobby_id": 95, "name": "youtube"},
+      {"hobby_id": 96, "name": "podcasts"},
+      {"hobby_id": 97, "name": "stand up comedy"}
+  ]}
+]
