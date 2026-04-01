@@ -83,9 +83,16 @@ export function MessageButton({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <div className="flex items-center justify-center h-13 w-13 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer ">
-          <MessageSquareText />
-        </div>
+        {isDiscovery ? (
+          <div className="flex items-center justify-center h-13 w-13 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors cursor-pointer">
+            <MessageSquareText />
+          </div>
+        ) : (
+          <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-transparent text-foreground text-sm font-medium border-2 border-border hover:bg-muted transition-colors cursor-pointer">
+            <MessageSquareText className="w-4 h-4" />
+            Respond
+          </button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
@@ -109,7 +116,7 @@ export function MessageButton({
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit" onClick={handleLikeAndSend}>
-              Like and Send
+              {isDiscovery ? "Like and Send" : "Respond"}
             </Button>
           </div>
         </DialogFooter>
