@@ -150,19 +150,31 @@ export async function saveProfileAction(profile: UserProfile) {
 }
 
 
+/** Supabase may return one object or an array for embedded FK rows. */
+type EmbeddedCategoryName = { name: string };
+
 type UserHobbyRow = {
   hobby_id: number | string;
   name: string;
-  category_name?: string;
+  user_hobby_categories?: EmbeddedCategoryName | EmbeddedCategoryName[] | null;
 };
+
+function categoryNameFromEmbed(
+  embed: EmbeddedCategoryName | EmbeddedCategoryName[] | null | undefined,
+): string {
+  if (embed == null) return "uncategorized";
+  if (Array.isArray(embed)) {
+    return embed[0]?.name?.trim() || "uncategorized";
+  }
+  return embed.name?.trim() || "uncategorized";
+}
 
 /** Group hobbies by category (nested `user_hobby_categories.name` from Supabase). */
 function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
   const groups = new Map<string, Hobby[]>();
 
   for (const row of rows) {
-    const category =
-      row.user_hobby_categories?.name?.trim() || "uncategorized";
+    const category = categoryNameFromEmbed(row.user_hobby_categories);
     const hobbyId = String(row.hobby_id);
     const list = groups.get(category) ?? [];
     list.push({ hobby_id: hobbyId, name: row.name });
@@ -202,9 +214,7 @@ export async function getHobbiesAndPreferences(): Promise<
     return { error: hobbiesError.message };
   }
 
-  const hobbies = groupHobbiesData(
-    (hobbiesData ?? []) as UserHobbyRow[],
-  );
+  const hobbies = groupHobbiesData((hobbiesData ?? []) as UserHobbyRow[]);
 
   return {
     hobbies,

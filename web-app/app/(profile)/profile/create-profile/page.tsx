@@ -149,7 +149,7 @@ export default function CreateProfilePage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await createProfileAction(profile);
+      const result = await saveProfileAction(profile);
       if (result?.error) setError(result.error);
     } catch {
       setError("An unexpected error occurred");
