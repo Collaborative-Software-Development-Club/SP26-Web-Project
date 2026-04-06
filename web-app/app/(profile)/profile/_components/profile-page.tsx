@@ -105,9 +105,9 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
 
                 <div className="flex flex-wrap gap-3">
                   {user.hobbies?.length ? (
-                    user.hobbies.map((hobby) => (
+                    user.hobbies.map((hobby, index) => (
                       <div
-                        key={hobby.hobby_id}
+                        key={`${hobby.hobby_id ?? "hobby"}-${index}`}
                         className="rounded-full border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-medium text-pink-700"
                       >
                         {hobby.name}
@@ -132,10 +132,10 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  {images.map((image) => (
+                  {images.map((image, index) => (
                     <img
                       src={image}
-                      key={image}
+                      key={`${image}-${index}`}
                       alt="Profile gallery"
                       className="aspect-square w-full rounded-2xl border border-gray-200 object-cover"
                     />
