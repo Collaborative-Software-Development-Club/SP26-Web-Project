@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfiles } from "@/lib/services/profile";
 import type { Preference } from "./types";
+import type { UserProfile } from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -192,6 +193,23 @@ export async function setPreferences(preferences: Preference[]) {
 }
 
 
-export async function updateName(first:string,last:string,id:string){
-  //this code will update the username using the database
+export async function updateProfile(profile:UserProfile){
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+    }
+
+  const {error} = await supabase
+  .from("user_profiles")
+  .update(
+    {
+      fname:profile.fname,
+      lname:profile.lname,
+      bio:profile.bio,
+      
+    }
+  ).eq("user_id",profile.user_id);
+
+  if (error) throw new Error(`Error updating user profile: ${error.message}`);
 }
