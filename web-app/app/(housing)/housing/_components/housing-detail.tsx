@@ -1,7 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Star } from "lucide-react";
+import {
+  assertCanFavoriteHousing,
+  getSavedHousing,
+  saveHousingListing,
+  unsaveHousingListing,
+} from "../_actions";
 
 type Listing = {
   id: string;
@@ -55,18 +63,86 @@ type Listing = {
   gas_included: boolean;
 };
 
-export function HousingDetail({ listing }: { listing: Listing }) {
+export function HousingDetail({
+  listing,
+  userId,
+}: {
+  listing: Listing;
+  userId: string | null;
+}) {
   const [selectedImage, setSelectedImage] = useState(0);
   const images: string[] = [];
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    let cancelled = false;
+    startTransition(async () => {
+      try {
+        const saved = await getSavedHousing(userId);
+        if (cancelled) return;
+        const savedSet = new Set((saved ?? []).map(String));
+        setIsFavorite(savedSet.has(String(listing.id)));
+      } catch {
+        if (!cancelled) setIsFavorite(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, listing.id, startTransition]);
+
+  async function toggleFavorite() {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+
+    await assertCanFavoriteHousing();
+    const wasFavorite = isFavorite;
+    setIsFavorite((v) => !v);
+
+    try {
+      if (wasFavorite) await unsaveHousingListing(String(listing.id));
+      else await saveHousingListing(String(listing.id));
+    } catch (e) {
+      setIsFavorite(wasFavorite);
+      console.error(
+        "Failed to persist housing favorite toggle",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+
+  const effectiveIsFavorite = userId ? isFavorite : false;
 
   return (
     <div className="flex min-h-screen bg-background font-sans">
 
       {/* Main content */}
       <main className="flex-1 p-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">
-          {listing.address}
-        </h1>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold text-foreground">{listing.address}</h1>
+          <button
+            type="button"
+            aria-label={effectiveIsFavorite ? "Unfavorite listing" : "Favorite listing"}
+            onClick={toggleFavorite}
+            disabled={isPending}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-background text-foreground shadow-sm ring-1 ring-border transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+          >
+            <Star
+              className={
+                effectiveIsFavorite
+                  ? "h-5 w-5 fill-yellow-400 text-yellow-400"
+                  : "h-5 w-5"
+              }
+            />
+          </button>
+        </div>
 
         {/* Listing Information */}
         <Card className="mb-6">
