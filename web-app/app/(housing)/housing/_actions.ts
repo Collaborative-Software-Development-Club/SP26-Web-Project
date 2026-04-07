@@ -34,34 +34,58 @@ export async function assertCanFavoriteHousing() {
   return { userId: user.id };
 }
 
-export async function getSavedHousing(userId: string) {
+export type SavedHousingRow = {
+  housing_id: string | null;
+  address: string;
+  listing_url: string | null;
+};
+
+export async function getSavedHousing(userId: string): Promise<SavedHousingRow[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .rpc("get_saved_housing", { saved_user_id: userId }); // matches the function param
+  const { data, error } = await supabase.rpc("get_saved_housing", {
+    saved_user_id: userId,
+  });
 
   if (error) throw new Error(error.message);
 
-  // The function returns JSON, usually an array of housing_ids
-  return data as string[]; 
+  const raw = data as unknown;
+  if (raw == null) return [];
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw) as SavedHousingRow[];
+    } catch {
+      return [];
+    }
+  }
+  return raw as SavedHousingRow[];
 }
 
 export async function saveHousingListing(housingId: string) {
   const supabase = await createClient();
   const user = await requireAuth();
 
-  // Use insert so this works even if the DB doesn't yet have the composite unique
-  // constraint required for `onConflict: "user_id,housing_id"`.
-  const { error } = await supabase.from("user_saves_housing").insert({
-    user_id: user.id,
-    housing_id: housingId,
-  });
+  // Capture a snapshot of the listing so the saved row can still render even if
+  // the housing record is later deleted (housing_id becomes NULL via FK).
+  const { data: listing, error: listingError } = await supabase
+    .from("housing_property_records")
+    .select("address,listing_url")
+    .eq("id", housingId)
+    .single();
 
-  // If you later add a unique constraint, inserts for existing rows will fail with
-  // a duplicate key error; treat that as success (already saved).
+  if (listingError) throw new Error(listingError.message);
+
+  const { error } = await supabase.from("user_saves_housing").upsert(
+    {
+      user_id: user.id,
+      housing_id: housingId,
+      address: listing.address,
+      listing_url: listing.listing_url ?? null,
+    },
+    { onConflict: "user_id,address" },
+  );
+
   if (error) {
-    const code = (error as { code?: string }).code;
-    if (code === "23505") return { ok: true as const };
     throw new Error(
       JSON.stringify(
         {

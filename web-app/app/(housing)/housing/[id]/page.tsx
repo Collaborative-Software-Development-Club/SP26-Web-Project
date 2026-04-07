@@ -14,5 +14,7 @@ export default async function HousingDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <HousingDetail listing={listing} userId={user?.id ?? null} />;
+  return (
+    <HousingDetail key={listing.id} listing={listing} userId={user?.id ?? null} />
+  );
 }

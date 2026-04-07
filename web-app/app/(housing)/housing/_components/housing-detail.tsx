@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- listing images use arbitrary external URLs */
+
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +12,12 @@ import {
   saveHousingListing,
   unsaveHousingListing,
 } from "../_actions";
+import { parseMainImageUrls } from "../main-image-urls";
 
 type Listing = {
   id: string;
   address: string;
+  main_image_url?: unknown;
   listing_url: string;
   monthly_rent: string;
   move_in_date: string;
@@ -71,7 +75,7 @@ export function HousingDetail({
   userId: string | null;
 }) {
   const [selectedImage, setSelectedImage] = useState(0);
-  const images: string[] = [];
+  const images = parseMainImageUrls(listing.main_image_url);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -84,7 +88,11 @@ export function HousingDetail({
       try {
         const saved = await getSavedHousing(userId);
         if (cancelled) return;
-        const savedSet = new Set((saved ?? []).map(String));
+        const savedSet = new Set(
+          (saved ?? [])
+            .filter((r) => r.housing_id != null)
+            .map((r) => String(r.housing_id)),
+        );
         setIsFavorite(savedSet.has(String(listing.id)));
       } catch {
         if (!cancelled) setIsFavorite(false);

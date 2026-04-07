@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { House, HouseCard } from "./house-card";
+import { HouseCard } from "./house-card";
 import { mockSavedListings } from "./mock-saved-listings";
 import { assertCanFavoriteHousing } from "../_actions";
 

@@ -1,7 +1,10 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- listing images use arbitrary external URLs */
+
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
+import { parseMainImageUrls } from "../main-image-urls";
 
 export interface House {
   id: string;
@@ -13,6 +16,8 @@ export interface House {
   sector: string;
   city?: string;
   move_in_date?: string;
+  /** JSONB from Supabase; also accepts a string[] after normalization elsewhere */
+  main_image_url?: unknown;
 }
 
 function parsePriceNumber(rent: string): number | null {
@@ -42,10 +47,21 @@ export function HouseCard({
     perPerson = `${formatCurrency(base / house.bedrooms)}/mo per person`;
   }
 
+  const imageUrls = parseMainImageUrls(house.main_image_url);
+  const coverSrc = imageUrls[0] ?? null;
+
   return (
     <article className="bg-card rounded-lg shadow-sm overflow-hidden">
-      <div className="relative h-44 bg-muted flex items-center justify-center">
-        <span className="text-muted-foreground text-sm">No image available</span>
+      <div className="relative h-44 bg-muted flex items-center justify-center overflow-hidden">
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <span className="text-muted-foreground text-sm">No image available</span>
+        )}
 
         <button
           type="button"

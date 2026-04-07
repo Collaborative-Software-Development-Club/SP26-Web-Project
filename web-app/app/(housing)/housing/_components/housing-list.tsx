@@ -27,12 +27,10 @@ import { filterHouses, type HousingFilters } from "../housing-utils";
 
 export function HousingList({
   initialListings,
-  total,
   pageSize = 9,
   userId,
 }: {
   initialListings: House[];
-  total: number;
   pageSize?: number;
   userId: string | null;
 }) {
@@ -101,7 +99,13 @@ export function HousingList({
       try {
         const saved = await getSavedHousing(userId);
         if (cancelled) return;
-        setFavoriteIds(new Set((saved ?? []).map(String)));
+        setFavoriteIds(
+          new Set(
+            (saved ?? [])
+              .filter((r) => r.housing_id != null)
+              .map((r) => String(r.housing_id)),
+          ),
+        );
       } catch {
         // If the RPC fails (e.g., not deployed yet), we just render as "not saved".
         if (!cancelled) setFavoriteIds(new Set());
