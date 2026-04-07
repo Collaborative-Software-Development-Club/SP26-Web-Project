@@ -1,5 +1,9 @@
-import { getHobbiesAndPreferences } from "@/app/(profile)/_actions";
-import type { HobbyCategoryGroup, Preference } from "@/app/(profile)/types";
+import { getMajorsHobbiesPreferences } from "@/app/(profile)/_actions";
+import type {
+  HobbyCategoryGroup,
+  Major,
+  Preference,
+} from "@/app/(profile)/types";
 import { CreateProfileClient } from "./create-profile-client";
 import {
   PREFERENCE_ENTRIES,
@@ -7,9 +11,10 @@ import {
 } from "./helpers";
 
 export default async function CreateProfilePage() {
-  const result = await getHobbiesAndPreferences();
+  const result = await getMajorsHobbiesPreferences();
 
-  let hobbiesCatalog: HobbyCategoryGroup[] = [];
+  let initialMajors: Major[] = [];
+  let initialHobbiesCatalog: HobbyCategoryGroup[] = [];
   let initialPreferences: Preference[] = [];
   let catalogError: string | null = null;
 
@@ -21,10 +26,11 @@ export default async function CreateProfilePage() {
       value: 0,
     }));
   } else {
-    hobbiesCatalog = result.hobbies;
+    initialHobbiesCatalog = result.hobbiesData;
+    initialMajors = result.majorData;
     initialPreferences = PREFERENCE_ENTRIES.map(([keyword], i) => {
       const apiPref = matchPreferenceForKeyword(
-        result.preferences,
+        result.preferencesData,
         keyword,
         i,
       );
@@ -37,7 +43,8 @@ export default async function CreateProfilePage() {
 
   return (
     <CreateProfileClient
-      initialHobbiesCatalog={hobbiesCatalog}
+      initialMajors={initialMajors}
+      initialHobbiesCatalog={initialHobbiesCatalog}
       initialPreferences={initialPreferences}
       catalogError={catalogError}
     />

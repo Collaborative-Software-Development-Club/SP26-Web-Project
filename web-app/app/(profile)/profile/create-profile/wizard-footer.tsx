@@ -1,15 +1,5 @@
 import { Button } from "@/components/ui/button";
 
-type WizardFooterProps = {
-  step: number;
-  stepsLength: number;
-  isSubmitting: boolean;
-  canCreateProfile: boolean;
-  onPrevStep: () => void;
-  onNextStep: () => void;
-  onSubmit: () => void;
-};
-
 export function WizardFooter({
   step,
   stepsLength,
@@ -18,7 +8,15 @@ export function WizardFooter({
   onPrevStep,
   onNextStep,
   onSubmit,
-}: WizardFooterProps) {
+}: {
+  step: number;
+  stepsLength: number;
+  isSubmitting: boolean;
+  canCreateProfile: boolean;
+  onPrevStep: () => void;
+  onNextStep: () => void;
+  onSubmit: () => void;
+}) {
   const isLastStep = step >= stepsLength - 1;
 
   return (

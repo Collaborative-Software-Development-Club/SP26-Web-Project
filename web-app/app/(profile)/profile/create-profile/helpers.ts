@@ -3,6 +3,10 @@ import { preferenceQuestion } from "@/lib/constants/preference-question";
 
 export const PREFERENCE_ENTRIES = Array.from(preferenceQuestion.entries());
 
+export const MAX_MAJORS = 4;
+
+export const MAX_HOBBIES = 5;
+
 export const STEPS = [
   { title: "About you", description: "Basic info and bio" },
   { title: "Hobbies", description: "What do you enjoy?" },
@@ -18,7 +22,7 @@ export function emptyProfile(): UserProfile {
     gender: "",
     avatar_url: "",
     bio: "",
-    major: "",
+    majors: [],
     year: 0,
     created_at: "",
     last_edited_at: "",
@@ -32,9 +36,19 @@ export function validateAboutStep(p: UserProfile): string | null {
     return "Please enter your first and last name.";
   }
   if (!p.gender) return "Please select a gender.";
-  if (!p.major?.trim()) return "Please enter your major.";
+  if (!p.majors?.length) return "Please choose at least one major.";
+  if (p.majors.length > MAX_MAJORS) {
+    return `You can choose at most ${MAX_MAJORS} majors.`;
+  }
   if (!p.year || p.year < 1 || p.year > 5) return "Please select your year.";
   if (!p.bio?.trim()) return "Please write a short bio.";
+  return null;
+}
+
+export function validateHobbiesStep(p: UserProfile): string | null {
+  if (p.hobbies.length > MAX_HOBBIES) {
+    return `You can choose at most ${MAX_HOBBIES} hobbies.`;
+  }
   return null;
 }
 

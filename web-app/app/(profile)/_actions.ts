@@ -1,11 +1,11 @@
 "use server";
-//Checking if this triggers the CodeOwner review
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type {
   Hobby,
   HobbyCategoryGroup,
+  Major,
   Preference,
   UserProfile,
 } from "./types";
@@ -111,7 +111,6 @@ export async function saveProfileAction(profile: UserProfile) {
         is_active: true,
         bio: profile.bio,
         year: profile.year,
-        major: profile.major,
         avatar_url: profile.avatar_url,
         fname: profile.fname,
         lname: profile.lname,
@@ -120,7 +119,18 @@ export async function saveProfileAction(profile: UserProfile) {
     ]);
 
   if (profileError) {
-    return { error: profileError.message };
+    return { error: "Failed to save profile: " + profileError.message };
+  }
+
+  const { error: majorsError } = await supabase
+    .from("user_profile_majors")
+    .upsert(profile.majors.map(m => ({
+      user_id: user.id,
+      major_id: m.major_id,
+    })), { onConflict: "user_id, major_id" });
+
+  if (majorsError) {
+    return { error: "Failed to save majors: " + majorsError.message };
   }
 
   const { error: hobbiesError } = await supabase
@@ -128,10 +138,10 @@ export async function saveProfileAction(profile: UserProfile) {
     .upsert(profile.hobbies.map(h => ({
       user_id: user.id,
       hobby_id: h.hobby_id,
-    })));
+    })), { onConflict: "user_id, hobby_id" });
 
   if (hobbiesError) {
-    return { error: hobbiesError.message };
+    return { error: "Failed to save hobbies: " + hobbiesError.message };
   }
 
   const { error: preferencesError } = await supabase
@@ -140,13 +150,13 @@ export async function saveProfileAction(profile: UserProfile) {
       user_id: user.id,
       preference_id: p.preference_id,
       value: p.value,
-    })));
+    })), { onConflict: "user_id, preference_id" });
 
   if (preferencesError) {
-    return { error: preferencesError.message };
+    return { error: "Failed to save preferences: " + preferencesError.message };
   }
 
-  redirect("/profile");
+  return { ok: true };
 }
 
 
@@ -186,12 +196,21 @@ function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
     .map(([category, hobbies]) => ({ category, hobbies }));
 }
 
-/** Return all the hobby and preference choices **/
-export async function getHobbiesAndPreferences(): Promise<
+/** Return all the major, hobby and preference choices **/
+export async function getMajorsHobbiesPreferences(): Promise<
   | { error: string }
-  | { hobbies: HobbyCategoryGroup[]; preferences: Preference[] }
+  | { majorData: Major[]; hobbiesData: HobbyCategoryGroup[]; preferencesData: Preference[] }
 > {
   const supabase = await createClient();
+
+  const { data: majorsData, error: majorsError } = await supabase
+    .from("user_majors")
+    .select("major_id, name")
+    .order("name", { ascending: true });
+
+  if (majorsError) {
+    return { error: majorsError.message };
+  }
 
   const { data: preferencesData, error: preferencesError } = await supabase
     .from("user_preferences")
@@ -215,10 +234,11 @@ export async function getHobbiesAndPreferences(): Promise<
   }
 
   const hobbies = groupHobbiesData((hobbiesData ?? []) as UserHobbyRow[]);
-
+  
   return {
-    hobbies,
-    preferences: (preferencesData ?? []).map((p) => ({
+    majorData: majorsData,
+    hobbiesData: hobbies,
+    preferencesData: (preferencesData ?? []).map((p) => ({
       preference_id: p.preference_id,
       name: p.name,
       value: 0,

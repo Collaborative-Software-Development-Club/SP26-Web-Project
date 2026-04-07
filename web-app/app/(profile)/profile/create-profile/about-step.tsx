@@ -1,4 +1,4 @@
-import type { UserProfile } from "@/app/(profile)/types";
+import type { Major, UserProfile } from "@/app/(profile)/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,14 +9,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { MajorsSelectField } from "./majors-select-field";
 
-type AboutStepProps = {
+export function AboutStep({
+  profile,
+  majorsCatalog,
+  isSubmitting,
+  update,
+  toggleMajor,
+}: {
   profile: UserProfile;
+  majorsCatalog: Major[];
   isSubmitting: boolean;
-  update: <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => void;
-};
-
-export function AboutStep({ profile, isSubmitting, update }: AboutStepProps) {
+  update: <K extends keyof UserProfile>(
+    key: K,
+    value: UserProfile[K],
+  ) => void;
+  toggleMajor: (major: Major) => void;
+}) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -63,28 +73,20 @@ export function AboutStep({ profile, isSubmitting, update }: AboutStepProps) {
             <SelectValue placeholder="Select gender" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Male">Male</SelectItem>
-            <SelectItem value="Female">Female</SelectItem>
-            <SelectItem value="Non-binary">Non-binary</SelectItem>
-            <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+            <SelectItem value="male">Male</SelectItem>
+            <SelectItem value="female">Female</SelectItem>
+            <SelectItem value="non-binary">Non-binary</SelectItem>
+            <SelectItem value="n/a">Prefer not to say</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div>
-        <Label htmlFor="major" className="text-sm font-medium">
-          Major
-        </Label>
-        <Input
-          id="major"
-          type="text"
-          placeholder="Computer Science"
-          value={profile.major}
-          onChange={(e) => update("major", e.target.value)}
-          disabled={isSubmitting}
-          className="mt-1"
-        />
-      </div>
+      <MajorsSelectField
+        selectedMajors={profile.majors}
+        catalog={majorsCatalog}
+        disabled={isSubmitting}
+        toggleMajor={toggleMajor}
+      />
 
       <div>
         <Label htmlFor="year" className="text-sm font-medium">
