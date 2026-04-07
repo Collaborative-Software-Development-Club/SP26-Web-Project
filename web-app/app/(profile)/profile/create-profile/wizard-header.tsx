@@ -1,14 +1,9 @@
 import { cn } from "@/lib/utils";
 import { STEPS } from "./helpers";
 
-type WizardHeaderProps = {
-  step: number;
-  steps: typeof STEPS;
-};
-
-export function WizardHeader({ step, steps }: WizardHeaderProps) {
+export function WizardHeader({ step, steps }: { step: number; steps: typeof STEPS }) {
   return (
-    <div className="mb-6">
+    <div className="mt-6">
       <p className="text-sm font-medium text-primary">
         Step {step + 1} of {steps.length}
       </p>

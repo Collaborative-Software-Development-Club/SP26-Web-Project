@@ -7,17 +7,6 @@ import {
   valueForOptionIndex,
 } from "./helpers";
 
-type PreferencesStepProps = {
-  profile: UserProfile;
-  prefsLoading: boolean;
-  prefsError: string | null;
-  preferenceQuestionIndex: number;
-  isSubmitting: boolean;
-  updatePreference: (preference_id: string, value: number) => void;
-  onPrevQuestion: () => void;
-  onNextQuestion: () => void;
-};
-
 export function PreferencesStep({
   profile,
   prefsLoading,
@@ -27,10 +16,19 @@ export function PreferencesStep({
   updatePreference,
   onPrevQuestion,
   onNextQuestion,
-}: PreferencesStepProps) {
+}: {
+  profile: UserProfile;
+  prefsLoading: boolean;
+  prefsError: string | null;
+  preferenceQuestionIndex: number;
+  isSubmitting: boolean;
+  updatePreference: (preference_id: string, value: number) => void;
+  onPrevQuestion: () => void;
+  onNextQuestion: () => void;
+}) {
   if (prefsLoading) {
     return (
-      <p className="text-sm text-muted-foreground">Loading preferences…</p>
+      <p className="text-sm text-muted-foreground">Loading questions…</p>
     );
   }
 
@@ -45,7 +43,7 @@ export function PreferencesStep({
   if (profile.preferences.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No preference options available. You can continue.
+        No questions available. You can continue.
       </p>
     );
   }

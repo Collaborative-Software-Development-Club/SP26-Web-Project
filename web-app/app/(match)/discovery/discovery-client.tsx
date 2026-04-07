@@ -45,27 +45,32 @@ export function DiscoveryClient({
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center gap-2">
-      <Filter discoveryFilter={discoveryFilters} />
-      {profiles.length === 0 ? (
-        <NoResultsReturned />
-      ) : reachedEnd ? (
-        <NoMoreResults handleBefore={handleBefore} profile={selectedProfile} />
-      ) : (
-        <ProfileCard
-          profile={selectedProfile}
-          handleNext={handleNext}
-          handleBefore={handleBefore}
-        />
-      )}
-      {history.length > 0 && (
-        <UndoButton
-          handleBefore={handleBefore}
-          targetUserId={history[history.length - 1].user_id}
-          isDiscovery={true}
-          lastEntry={history[history.length - 1].fname}
-        />
-      )}
+    <div className="flex min-h-0 flex-1 flex-col gap-12">
+      <div className="flex shrink-0 justify-center px-4 pt-4">
+        <Filter discoveryFilter={discoveryFilters} />
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col items-center gap-6 px-4 pb-8">
+        {profiles.length === 0 ? (
+          <NoResultsReturned />
+        ) : reachedEnd ? (
+          <NoMoreResults handleBefore={handleBefore} profile={selectedProfile} />
+        ) : (
+          <ProfileCard
+            profile={selectedProfile}
+            handleNext={handleNext}
+            handleBefore={handleBefore}
+          />
+        )}
+        {history.length > 0 && (
+          <UndoButton
+            handleBefore={handleBefore}
+            targetUserId={history[history.length - 1].user_id}
+            isDiscovery={true}
+            lastEntry={history[history.length - 1].fname}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -94,11 +99,11 @@ function NoMoreResults({
   profile: DiscoveryProfile;
 }) {
   return (
-    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
-      <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[560px] flex flex-col center-items text-center">
+    <div className="w-full dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+      <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[400px] flex flex-col center-items text-center">
         <span className="text-5xl">✦</span>
         <h2 className="px-16 pt-16 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          You're all caught up!
+          You&apos;re all caught up!
         </h2>
         <p className="px-12 pt-8 text-zinc-400 dark:text-zinc-100">
           Try adjusting your filters to discover more matches!

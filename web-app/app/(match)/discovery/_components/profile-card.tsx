@@ -109,7 +109,7 @@ export function ProfileCard({
                       {profile.fname} {profile.lname}
                     </h1>
                     <p className="font-serif text-sm text-muted-foreground">
-                      {profile.major} • Year {profile.year}
+                      {profile.majors.map((major) => major.name).join(" | ")} • Year {profile.year}
                     </p>
                   </div>
                 </div>

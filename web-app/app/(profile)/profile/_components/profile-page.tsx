@@ -48,12 +48,14 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
                   <h3 className="text-base font-semibold text-gray-800">
-                    Major
+                    Majors
                   </h3>
                 </div>
                 <div className="flex items-center">
                   <p className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700 flex-1 shadow-sm shadow-gray-300">
-                    {user.major}
+                    {user.majors.length > 0
+                      ? user.majors.map((m) => m.name).join(", ")
+                      : "—"}
                   </p>
                   <MajorSelect />
                 </div>

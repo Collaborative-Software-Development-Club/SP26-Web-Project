@@ -1,15 +1,5 @@
 import { Button } from "@/components/ui/button";
 
-type WizardFooterProps = {
-  step: number;
-  stepsLength: number;
-  isSubmitting: boolean;
-  canCreateProfile: boolean;
-  onPrevStep: () => void;
-  onNextStep: () => void;
-  onSubmit: () => void;
-};
-
 export function WizardFooter({
   step,
   stepsLength,
@@ -18,11 +8,19 @@ export function WizardFooter({
   onPrevStep,
   onNextStep,
   onSubmit,
-}: WizardFooterProps) {
+}: {
+  step: number;
+  stepsLength: number;
+  isSubmitting: boolean;
+  canCreateProfile: boolean;
+  onPrevStep: () => void;
+  onNextStep: () => void;
+  onSubmit: () => void;
+}) {
   const isLastStep = step >= stepsLength - 1;
 
   return (
-    <div className="flex items-center justify-between gap-3 mt-8 pt-4 border-t border-border">
+    <div className="flex w-full items-center justify-between gap-3 mb-6">
       <Button
         type="button"
         variant="outline"
