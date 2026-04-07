@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Star } from "lucide-react";
 import { House, HouseCard } from "./house-card";
 import {
   assertCanFavoriteHousing,
@@ -47,6 +48,7 @@ export function HousingList({
     location: "",
     distance: "",
   });
+  const [savedOnly, setSavedOnly] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -73,7 +75,10 @@ export function HousingList({
 
   function applyFilters() {
     startTransition(() => {
-      const next = filterHouses(allListings, filters);
+      let next = filterHouses(allListings, filters);
+      if (savedOnly) {
+        next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
+      }
       setFilteredListings(next);
       setPage(1);
       setIsDialogOpen(false);
@@ -82,6 +87,7 @@ export function HousingList({
 
   function clearFilters() {
     setFilters({ minRent: "", maxRent: "", startDate: "", semester: "Any", location: "", distance: "" });
+    setSavedOnly(false);
     setFilteredListings(allListings);
     setPage(1);
   }
@@ -106,6 +112,17 @@ export function HousingList({
       cancelled = true;
     };
   }, [userId, startTransition]);
+
+  // Keep "Saved only" results in sync as the favorites set changes.
+  useEffect(() => {
+    if (!savedOnly) return;
+    startTransition(() => {
+      let next = filterHouses(allListings, filters);
+      next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
+      setFilteredListings(next);
+      setPage(1);
+    });
+  }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
 
   async function toggleFavorite(id: string) {
     if (!userId) {
@@ -168,6 +185,22 @@ export function HousingList({
             </DialogHeader>
 
             <div className="grid gap-4 py-2">
+              <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground">Saved only Listings</span>
+                </div>
+
+                <button
+                  type="button"
+                  aria-pressed={savedOnly}
+                  aria-label={savedOnly ? "Disable saved-only filter" : "Enable saved-only filter"}
+                  onClick={() => setSavedOnly((v) => !v)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-background text-foreground shadow-sm ring-1 ring-border transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Star className={savedOnly ? "h-5 w-5 fill-yellow-400 text-yellow-400" : "h-5 w-5"} />
+                </button>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <Label className="flex flex-col gap-1">
                   Min rent
