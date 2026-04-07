@@ -9,6 +9,12 @@ export type Hobby = {
     name: string;
 }
 
+
+export type HobbyCategoryGroup = {
+    category: string;
+    hobbies: Hobby[];
+};
+
 export type UserProfile = {
     user_id: string;
     is_active: boolean;

@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { updateName } from "@/app/(profile)/_actions";
 
 export default function EditName({
   fname,
@@ -19,7 +18,6 @@ export default function EditName({
   const [last, setLast] = useState(lname);
   const [editMode, setMode] = useState(false);
   function handleSubmit() {
-    updateName(first, last, id);
     setMode(false);
   }
 

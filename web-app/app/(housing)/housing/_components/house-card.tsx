@@ -11,6 +11,8 @@ export interface House {
   full_bathrooms: number;
   half_bathrooms: number;
   sector: string;
+  city?: string;
+  move_in_date?: string;
 }
 
 function parsePriceNumber(rent: string): number | null {
@@ -66,6 +68,13 @@ export function HouseCard({
           <span className="whitespace-nowrap">{totalBaths} Bath</span>
           <span className="whitespace-nowrap capitalize">{house.sector} Campus</span>
         </div>
+
+        {(house.city || house.move_in_date) && (
+          <div className="mt-2 text-sm text-muted-foreground">
+            {house.city && <div>{house.city}</div>}
+            {house.move_in_date && <div>Move-in: {house.move_in_date}</div>}
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">

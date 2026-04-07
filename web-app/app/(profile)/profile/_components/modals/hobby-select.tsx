@@ -1,11 +1,11 @@
 "use client";
-import hobbies from "@/mock/hobbies.json";
+import hobbiesData from "@/mock/hobbies.json";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { updateName } from "@/app/(profile)/_actions";
+
 export default function SelectHobbies() {
   const [editMode, setMode] = useState(false);
   function handleSubmit() {
@@ -35,24 +35,24 @@ export default function SelectHobbies() {
 
               <Card className="max-h-[55vh] overflow-auto rounded-lg border p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {Object.entries(hobbies).map(([category, list]) => (
-                    <section key={category} className="space-y-2">
-                      <h2 className="text-sm font-semibold text-muted-foreground">
-                        {category}
+                  {hobbiesData.map((section) => (
+                    <section key={section.category} className="space-y-2">
+                      <h2 className="text-sm font-semibold text-muted-foreground capitalize">
+                        {section.category}
                       </h2>
 
                       <div className="space-y-2">
-                        {list.map((hobby: string) => (
+                        {section.hobbies.map((h) => (
                           <Label
-                            key={hobby}
-                            className="flex items-center gap-3 text-sm"
+                            key={h.hobby_id}
+                            className="flex items-center gap-3 text-sm capitalize"
                           >
                             <Input
                               type="checkbox"
                               className="h-4 w-4"
-                              value={hobby}
+                              value={h.name}
                             />
-                            {hobby}
+                            {h.name}
                           </Label>
                         ))}
                       </div>
