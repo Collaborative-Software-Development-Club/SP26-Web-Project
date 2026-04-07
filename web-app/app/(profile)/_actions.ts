@@ -127,7 +127,7 @@ export async function saveProfileAction(profile: UserProfile) {
     .upsert(profile.majors.map(m => ({
       user_id: user.id,
       major_id: m.major_id,
-    })), { onConflict: "user_id, major_id" });
+    })), { onConflict: "user_id,major_id" });
 
   if (majorsError) {
     return { error: "Failed to save majors: " + majorsError.message };
@@ -138,7 +138,7 @@ export async function saveProfileAction(profile: UserProfile) {
     .upsert(profile.hobbies.map(h => ({
       user_id: user.id,
       hobby_id: h.hobby_id,
-    })), { onConflict: "user_id, hobby_id" });
+    })), { onConflict: "user_id,hobby_id" });
 
   if (hobbiesError) {
     return { error: "Failed to save hobbies: " + hobbiesError.message };
@@ -150,7 +150,7 @@ export async function saveProfileAction(profile: UserProfile) {
       user_id: user.id,
       preference_id: p.preference_id,
       value: p.value,
-    })), { onConflict: "user_id, preference_id" });
+    })), { onConflict: "user_id,preference_id" });
 
   if (preferencesError) {
     return { error: "Failed to save preferences: " + preferencesError.message };

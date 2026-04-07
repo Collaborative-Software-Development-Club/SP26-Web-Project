@@ -20,11 +20,6 @@ const getPreferenceIcon = (key: string) => {
   }
 };
 
-function getPreferenceQuestionConfig(name: string) {
-  const normalized = name.toLowerCase().trim();
-  return preferenceQuestion.get(normalized);
-}
-
 
 function labelForPreferenceValue(value: number, options: string[]): string {
   if (options.length === 2) {
@@ -41,7 +36,7 @@ function labelForPreferenceValue(value: number, options: string[]): string {
 }
 
 function getPreferenceDisplayLabel(pref: Preference): string {
-  const config = getPreferenceQuestionConfig(pref.name);
+  const config = preferenceQuestion.get(pref.name);
   if (!config) return String(pref.value);
   return labelForPreferenceValue(pref.value, config.options);
 }
