@@ -1,16 +1,44 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { House, HouseCard } from "./house-card";
-import { getHousingListings } from "../_actions";
+import { assertCanFavoriteHousing, getHousingListings } from "../_actions";
 
-export function HousingList({ initialListings, total, pageSize = 9 }: { initialListings: House[]; total: number; pageSize?: number }) {
+export function HousingList({
+  initialListings,
+  total,
+  pageSize = 9,
+  userId,
+}: {
+  initialListings: House[];
+  total: number;
+  pageSize?: number;
+  userId: string | null;
+}) {
   const [listings, setListings] = useState<House[]>(initialListings);
   const [page, setPage] = useState(1);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  async function toggleFavorite(id: string) {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+
+    await assertCanFavoriteHousing();
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function go(n: number) {
     const target = Math.min(Math.max(1, n), totalPages);
@@ -27,7 +55,7 @@ export function HousingList({ initialListings, total, pageSize = 9 }: { initialL
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {listings.map((h) => (
-          <HouseCard key={h.id} house={h} />
+          <HouseCard key={h.id} house={h} isFavorite={favoriteIds.has(h.id)} onToggleFavorite={toggleFavorite} />
         ))}
       </div>
 

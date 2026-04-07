@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/auth";
 
 export async function getHousingListings(page: number, pageSize: number) {
   const supabase = await createClient();
@@ -26,4 +27,9 @@ export async function getHousingListing(id: string) {
 
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function assertCanFavoriteHousing() {
+  const user = await requireAuth();
+  return { userId: user.id };
 }

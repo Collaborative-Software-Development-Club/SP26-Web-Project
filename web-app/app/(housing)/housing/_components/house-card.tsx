@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 
 export interface House {
   id: string;
@@ -23,7 +24,15 @@ function formatCurrency(n: number): string {
   return "$" + Math.round(n).toLocaleString();
 }
 
-export function HouseCard({ house }: { house: House }) {
+export function HouseCard({
+  house,
+  isFavorite = false,
+  onToggleFavorite,
+}: {
+  house: House;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: House["id"]) => void;
+}) {
   const base = parsePriceNumber(house.monthly_rent);
   const totalBaths = (house.full_bathrooms ?? 0) + (house.half_bathrooms ?? 0) * 0.5;
   let perPerson: string | null = null;
@@ -33,8 +42,17 @@ export function HouseCard({ house }: { house: House }) {
 
   return (
     <article className="bg-card rounded-lg shadow-sm overflow-hidden">
-      <div className="h-44 bg-muted flex items-center justify-center">
+      <div className="relative h-44 bg-muted flex items-center justify-center">
         <span className="text-muted-foreground text-sm">No image available</span>
+
+        <button
+          type="button"
+          aria-label={isFavorite ? "Unfavorite listing" : "Favorite listing"}
+          onClick={() => onToggleFavorite?.(house.id)}
+          className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-background/80 text-foreground shadow-sm ring-1 ring-border backdrop-blur transition hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Star className={isFavorite ? "h-4 w-4 fill-yellow-400 text-yellow-400" : "h-4 w-4"} />
+        </button>
       </div>
       <div className="p-4">
         <h2 className="text-lg font-medium text-card-foreground">{house.address}</h2>
@@ -54,7 +72,13 @@ export function HouseCard({ house }: { house: House }) {
             <Button asChild variant="default" size="sm">
               <a href={`/housing/${house.id}`}>View</a>
             </Button>
-            <Button variant="outline" size="sm">Save</Button>
+            <Button
+              variant={isFavorite ? "default" : "outline"}
+              size="sm"
+              onClick={() => onToggleFavorite?.(house.id)}
+            >
+              {isFavorite ? "Saved" : "Save"}
+            </Button>
           </div>
         </div>
       </div>
