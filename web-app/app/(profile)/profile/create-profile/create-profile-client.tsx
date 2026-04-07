@@ -8,6 +8,12 @@ import type {
   Preference,
   UserProfile,
 } from "@/app/(profile)/types";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -36,6 +42,7 @@ export function CreateProfileClient({
   initialPreferences: Preference[];
   catalogError: string | null;
 }) {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<UserProfile>(() => ({
     ...emptyProfile(),
@@ -162,10 +169,10 @@ export function CreateProfileClient({
   const prefsError = catalogError;
 
   return (
-    <div className="h-full bg-gradient-to-br from-primary/10 via-muted/40 to-background flex items-center justify-center p-4">
-      <div
+    <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 via-muted/40 to-background p-4">
+      <Card
         className={cn(
-          "bg-card text-card-foreground border border-border rounded-lg shadow-sm p-8 w-full max-h-[80vh]",
+          "flex w-full max-h-[80vh] flex-col gap-0 overflow-hidden py-0 shadow-sm",
           step === 1
             ? "max-w-2xl"
             : step === 2
@@ -173,57 +180,63 @@ export function CreateProfileClient({
               : "max-w-md",
         )}
       >
-        <WizardHeader step={step} steps={STEPS} />
+        <CardHeader className="shrink-0 border-b pb-6">
+          <WizardHeader step={step} steps={STEPS} />
+        </CardHeader>
 
-        {error && (
-          <div className="rounded-md border border-destructive/30 bg-destructive/10 text-destructive px-4 py-3 mb-4 text-sm">
-            {error}
-          </div>
-        )}
+        <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-6">
+          {error && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
 
-        {step === 0 && (
-          <AboutStep
-            profile={profile}
-            majorsCatalog={initialMajors}
+          {step === 0 && (
+            <AboutStep
+              profile={profile}
+              majorsCatalog={initialMajors}
+              isSubmitting={isSubmitting}
+              update={update}
+              toggleMajor={toggleMajor}
+            />
+          )}
+
+          {step === 1 && (
+            <HobbiesStep
+              profile={profile}
+              toggleHobby={toggleHobby}
+              removeHobby={removeHobby}
+              isHobbySelected={isHobbySelected}
+              hobbies={initialHobbiesCatalog}
+            />
+          )}
+
+          {step === 2 && (
+            <PreferencesStep
+              profile={profile}
+              prefsLoading={false}
+              prefsError={prefsError}
+              preferenceQuestionIndex={preferenceQuestionIndex}
+              isSubmitting={isSubmitting}
+              updatePreference={updatePreference}
+              onPrevQuestion={goPrevPreferenceQuestion}
+              onNextQuestion={goNextPreferenceQuestion}
+            />
+          )}
+        </CardContent>
+
+        <CardFooter className="shrink-0 border-t pt-6">
+          <WizardFooter
+            step={step}
+            stepsLength={STEPS.length}
             isSubmitting={isSubmitting}
-            update={update}
-            toggleMajor={toggleMajor}
+            canCreateProfile={allPreferencesAnswered}
+            onPrevStep={goPrevStep}
+            onNextStep={goNextStep}
+            onSubmit={handleSubmit}
           />
-        )}
-
-        {step === 1 && (
-          <HobbiesStep
-            profile={profile}
-            toggleHobby={toggleHobby}
-            removeHobby={removeHobby}
-            isHobbySelected={isHobbySelected}
-            hobbies={initialHobbiesCatalog}
-          />
-        )}
-
-        {step === 2 && (
-          <PreferencesStep
-            profile={profile}
-            prefsLoading={false}
-            prefsError={prefsError}
-            preferenceQuestionIndex={preferenceQuestionIndex}
-            isSubmitting={isSubmitting}
-            updatePreference={updatePreference}
-            onPrevQuestion={goPrevPreferenceQuestion}
-            onNextQuestion={goNextPreferenceQuestion}
-          />
-        )}
-
-        <WizardFooter
-          step={step}
-          stepsLength={STEPS.length}
-          isSubmitting={isSubmitting}
-          canCreateProfile={allPreferencesAnswered}
-          onPrevStep={goPrevStep}
-          onNextStep={goNextStep}
-          onSubmit={handleSubmit}
-        />
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

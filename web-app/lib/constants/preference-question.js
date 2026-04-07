@@ -81,11 +81,11 @@ export const preferenceQuestion = new Map([
     {
       question: "How much time do you spend on schoolwork?",
       options: [
-        "Less than 1 hour",
-        "1-2 hours",
-        "2-3 hours",
-        "3-4 hours",
-        "4-5 hours",
+        "~1 hour",
+        "1~2 hours",
+        "2~3 hours",
+        "3~4 hours",
+        "4+ hours",
       ],
     },
   ],
@@ -94,11 +94,11 @@ export const preferenceQuestion = new Map([
     {
       question: "How often do you come and go during the day?",
       options: [
-        "Less than 1 time",
-        "1-2 times",
-        "2-3 times",
-        "3-4 times",
-        "4-5 times",
+        "~1 time",
+        "1~2 times",
+        "2~3 times",
+        "3~4 times",
+        "4+ times",
       ],
     },
   ],
@@ -107,11 +107,11 @@ export const preferenceQuestion = new Map([
     {
       question: "How many hours of sleep do you get per night?",
       options: [
-        "Less than 6 hours",
-        "6-7 hours",
-        "7-8 hours",
-        "8-9 hours",
-        "More than 9 hours",
+        "< 6 hours",
+        "6~7 hours",
+        "7~8 hours",
+        "8~9 hours",
+        "9+ hours",
       ],
     },
   ],
@@ -119,7 +119,7 @@ export const preferenceQuestion = new Map([
     "bedtime",
     {
       question: "How early do you go to bed?",
-      options: ["8-10pm", "10-12pm", "12-2am", "2-4am", "After 4am"],
+      options: ["8~10pm", "10~12pm", "12~2am", "2~4am", "After 4am"],
     },
   ],
 ]);

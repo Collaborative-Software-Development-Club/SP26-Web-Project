@@ -10,7 +10,7 @@ export const MAX_HOBBIES = 5;
 export const STEPS = [
   { title: "About you", description: "Basic info and bio" },
   { title: "Hobbies", description: "What do you enjoy?" },
-  { title: "Preferences", description: "Living habits" },
+  { title: "Questionnaires", description: "Your living habits" },
 ] as const;
 
 export function emptyProfile(): UserProfile {

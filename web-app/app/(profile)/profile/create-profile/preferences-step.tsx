@@ -28,7 +28,7 @@ export function PreferencesStep({
 }) {
   if (prefsLoading) {
     return (
-      <p className="text-sm text-muted-foreground">Loading preferences…</p>
+      <p className="text-sm text-muted-foreground">Loading questions…</p>
     );
   }
 
@@ -43,7 +43,7 @@ export function PreferencesStep({
   if (profile.preferences.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No preference options available. You can continue.
+        No questions available. You can continue.
       </p>
     );
   }
