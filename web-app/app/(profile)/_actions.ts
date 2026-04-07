@@ -156,7 +156,7 @@ export async function saveProfileAction(profile: UserProfile) {
     return { error: "Failed to save preferences: " + preferencesError.message };
   }
 
-  return { ok: true };
+  return { error: null };
 }
 
 
