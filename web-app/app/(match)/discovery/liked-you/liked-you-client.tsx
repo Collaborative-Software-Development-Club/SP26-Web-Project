@@ -85,11 +85,11 @@ export function LikedYouClient({
   return (
     <div className="flex flex-col items-center w-full px-4">
       {/* Header */}
-      <div className="w-full max-w-lg mb-8 text-center space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+      <div className="w-full max-w-4xl mb-4 text-center space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Vibe Check
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+        <p className="text-muted-foreground text-sm">
           {queue.length} {queue.length === 1 ? "person" : "people"} waiting ·{" "}
           {accepted.length} matched
         </p>
@@ -97,7 +97,7 @@ export function LikedYouClient({
 
       {/* Main card area */}
       {current ? (
-        <div className="w-full max-w-lg">
+        <div className="w-full flex flex-col items-center justify-center">
           <VibeCheckProfile
             profile={current}
             onAccept={handleAccept}

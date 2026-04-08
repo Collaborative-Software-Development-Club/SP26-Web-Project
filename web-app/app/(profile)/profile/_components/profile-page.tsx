@@ -3,10 +3,8 @@ import EditBio from "./modals/edit-bio";
 import SelectHobbies from "./modals/hobby-select";
 import MajorSelect from "./modals/major-select";
 import type { UserProfile } from "@/app/(profile)/types";
-type ProfilePageProps = {
-  profile: UserProfile;
-};
-export default function ProfilePage({ profile }: ProfilePageProps) {
+
+export default function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
   const images = ["demo/room1.png", "demo/room2.png", "add-img.webp"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
