@@ -182,21 +182,36 @@ export async function getConversationsForDisplay(
   const conversations = await chatService.getConversations(userId);
   const previews: ConversationPreview[] = await Promise.all(
     conversations.map(async (conv) => {
+      const isGroup = conv.other_member_ids.length > 1;
       const { data: members } = await supabase
         .from("user_profiles")
-        .select("fname, lname")
-        .eq("user_id", conv.other_member_ids);
-      const name = members
-        ? members.map((m) => `${m.fname} ${m.lname}`).join(", ")
-        : "Unknown";
+        .select("user_id, fname, lname")
+        .in("user_id", conv.other_member_ids);
+      const memberById = new Map(
+        (members ?? []).map((member) => [member.user_id, member]),
+      );
+      const orderedMemberNames = conv.other_member_ids
+        .map((memberId) => {
+          const member = memberById.get(memberId);
+          const fullName = `${member?.fname ?? ""} ${member?.lname ?? ""}`.trim();
+          return fullName || memberId;
+        })
+        .filter(Boolean);
+      const name =
+        orderedMemberNames.length > 0
+          ? orderedMemberNames.join(", ")
+          : isGroup
+            ? "Group chat"
+            : "Unknown user";
       return {
         id: conv.id,
-        name: name,
+        name,
         lastMessage: conv.last_message ?? "No messages yet",
         timestamp: conv.last_message_at
           ? formatTimestamp(conv.last_message_at)
           : "",
         unread: false,
+        isGroup,
       };
     }),
   );
@@ -208,8 +223,18 @@ export async function createConversation(
   memberUserIds: string[],
 ): Promise<{ conversation_id: string }> {
   const supabase = await createClient();
+  const uniqueUserIds = [...new Set([leaderUserId, ...memberUserIds])].sort();
+  const isGroup = uniqueUserIds.length > 2;
 
-  const isGroup = memberUserIds.length > 1;
+  const existingConversationId = await findConversationByExactMembers(
+    supabase,
+    uniqueUserIds,
+    isGroup,
+  );
+  if (existingConversationId) {
+    return { conversation_id: existingConversationId };
+  }
+
   const { data: conversation, error: convError } = await supabase
     .from("chat_conversations")
     .insert({ is_group: isGroup })
@@ -220,8 +245,6 @@ export async function createConversation(
     throw new Error(`Failed to create conversation: ${convError.message}`);
   }
 
-  const allUserIds = [leaderUserId, ...memberUserIds];
-  const uniqueUserIds = [...new Set(allUserIds)];
   const now = new Date().toISOString();
 
   const { error: membersError } = await supabase
@@ -242,6 +265,93 @@ export async function createConversation(
   }
 
   return { conversation_id: conversation.conversation_id };
+}
+
+async function findConversationByExactMembers(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  memberUserIds: string[],
+  isGroup: boolean,
+): Promise<string | null> {
+  const { data: matchingMemberships, error: matchingError } = await supabase
+    .from("chat_conversation_members")
+    .select("conversation_id, user_id")
+    .in("user_id", memberUserIds);
+
+  if (matchingError) {
+    throw new Error(
+      `Failed to check existing conversations: ${matchingError.message}`,
+    );
+  }
+
+  const candidateMap = new Map<string, Set<string>>();
+  for (const membership of matchingMemberships ?? []) {
+    const currentSet =
+      candidateMap.get(membership.conversation_id) ?? new Set<string>();
+    currentSet.add(membership.user_id);
+    candidateMap.set(membership.conversation_id, currentSet);
+  }
+
+  const candidateConversationIds = [...candidateMap.entries()]
+    .filter(([, members]) => members.size === memberUserIds.length)
+    .map(([conversationId]) => conversationId);
+
+  if (candidateConversationIds.length === 0) {
+    return null;
+  }
+
+  const { data: candidateConversations, error: candidateConversationsError } =
+    await supabase
+      .from("chat_conversations")
+      .select("conversation_id")
+      .in("conversation_id", candidateConversationIds)
+      .eq("is_group", isGroup);
+
+  if (candidateConversationsError) {
+    throw new Error(
+      `Failed to check existing conversations: ${candidateConversationsError.message}`,
+    );
+  }
+
+  const filteredCandidateIds = (candidateConversations ?? []).map(
+    (conversation) => conversation.conversation_id,
+  );
+
+  if (filteredCandidateIds.length === 0) {
+    return null;
+  }
+
+  const { data: candidateMemberships, error: candidateMembershipsError } =
+    await supabase
+      .from("chat_conversation_members")
+      .select("conversation_id, user_id")
+      .in("conversation_id", filteredCandidateIds);
+
+  if (candidateMembershipsError) {
+    throw new Error(
+      `Failed to check existing conversations: ${candidateMembershipsError.message}`,
+    );
+  }
+
+  const targetSet = new Set(memberUserIds);
+  const candidateMembershipMap = new Map<string, Set<string>>();
+  for (const membership of candidateMemberships ?? []) {
+    const currentSet =
+      candidateMembershipMap.get(membership.conversation_id) ??
+      new Set<string>();
+    currentSet.add(membership.user_id);
+    candidateMembershipMap.set(membership.conversation_id, currentSet);
+  }
+
+  for (const [conversationId, members] of candidateMembershipMap.entries()) {
+    if (
+      members.size === targetSet.size &&
+      [...targetSet].every((memberId) => members.has(memberId))
+    ) {
+      return conversationId;
+    }
+  }
+
+  return null;
 }
 
 export async function createConversationWithCurrentUser(
