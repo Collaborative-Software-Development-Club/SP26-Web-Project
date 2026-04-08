@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent,SelectTrigger,SelectValue, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { updateProfile } from "../../_actions";
 import type { UserProfile } from "@/app/(profile)/types";
 type ProfilePageProps = {
   profile: UserProfile
@@ -16,27 +15,6 @@ type ProfilePageProps = {
 export default function SettingsPage({profile}: ProfilePageProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [formData, setFormData] = useState<UserProfile>(profile);
-  const [err,setErr] = useState<string|null>(null);
-
-  const handleChange = (field:string,value:string) => {
-    setFormData({
-      ...formData,
-      [field]:value
-    })
-  }
-  const handleSubmitProfile = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErr(null);
-    try {
-      await updateProfile(formData);
-    } catch (error) {
-      setErr("An unexpected error occurred");
-    }
-  }
-
-  const handleSubmitAuth = async (e: React.SubmitEvent<HTMLFormElement>) => {
-
-  }
 
 
   return (
@@ -54,6 +32,7 @@ export default function SettingsPage({profile}: ProfilePageProps) {
         </div>
 
         {/* Account info */}
+        {/*
         <Card className="w-full max-w-4xl rounded-2xl shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Edit Profile</CardTitle>
@@ -93,7 +72,7 @@ export default function SettingsPage({profile}: ProfilePageProps) {
             <div className="space-y-2">
               <Label>Major</Label>
               <Select
-                value={formData.major}
+                value={formData.majors?.map((m)=>m.name).join(" | ")}
                 onValueChange={(value) => handleChange("major", value)}
               >
                 <SelectTrigger className="w-full shadow-md">
@@ -124,7 +103,7 @@ export default function SettingsPage({profile}: ProfilePageProps) {
               <Label>Hobbies</Label>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2 bg-gray-100 rounded-md">
-                {Object.entries(hobbies).map(([category, list]) => (
+                {/*Object.entries(hobbies).map(([category, list]) => (
                   <div key={category} className="space-y-3">
                     <h2 className="text-sm font-semibold text-muted-foreground">
                       {category}
@@ -143,10 +122,10 @@ export default function SettingsPage({profile}: ProfilePageProps) {
                           />
                           {hobby}
                         </Label>
-                      ))}
+                      )}
                     </div>
                   </div>
-                ))}
+                ))
               </div>
             </div>
 
@@ -158,6 +137,7 @@ export default function SettingsPage({profile}: ProfilePageProps) {
           </form>
         </CardContent>
       </Card>
+      */}
 
       {/*Email*/}
       <Card className="border p-6 shadow-sm">

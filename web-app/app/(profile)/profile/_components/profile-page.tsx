@@ -29,7 +29,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                     {user.fname + " " + user.lname}
                   </h1>
                   <p className="mt-1 text-sm text-gray-500">
-                    {year[user.year - 1]} year • {user.major}
+                    {year[user.year - 1]} year • {user.majors?.map((m)=>m.name).join(" | ")}
                   </p>
                 </div>
 
@@ -64,7 +64,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                       Major
                     </p>
                     <p className="mt-2 text-base font-medium text-gray-800">
-                      {user.major}
+                      {user.majors?.map((m)=>m.name).join(" | ")}
                     </p>
                   </div>
 
@@ -163,7 +163,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                   <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
                     <span className="text-sm text-gray-500">Major</span>
                     <span className="text-right text-sm font-medium text-gray-800">
-                      {user.major}
+                      {user.majors?.map((m)=>m.name).join(" | ")}
                     </span>
                   </div>
 
