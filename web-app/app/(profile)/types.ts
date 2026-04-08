@@ -9,6 +9,17 @@ export type Hobby = {
     name: string;
 }
 
+
+export type HobbyCategoryGroup = {
+    category: string;
+    hobbies: Hobby[];
+};
+
+export type Major = {
+    major_id: string;
+    name: string;
+}
+
 export type UserProfile = {
     user_id: string;
     is_active: boolean;
@@ -17,7 +28,7 @@ export type UserProfile = {
     gender: string;
     avatar_url: string;
     bio: string;
-    major: string;
+    majors: Major[];
     year: number;
     created_at: string;
     last_edited_at: string;

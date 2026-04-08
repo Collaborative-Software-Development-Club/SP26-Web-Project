@@ -4,10 +4,8 @@ import profiles from "mock/profiles.json";
 import SelectHobbies from "./modals/hobby-select";
 import MajorSelect from "./modals/major-select";
 import type { UserProfile } from "@/app/(profile)/types";
-type ProfilePageProps = {
-  profile: UserProfile;
-};
-export default function ProfilePage({ profile }: ProfilePageProps) {
+
+export default function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
   const images = ["demo/room1.png", "demo/room2.png", "add-img.webp"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
@@ -50,12 +48,14 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
                   <h3 className="text-base font-semibold text-gray-800">
-                    Major
+                    Majors
                   </h3>
                 </div>
                 <div className="flex items-center">
                   <p className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700 flex-1 shadow-sm shadow-gray-300">
-                    {user.major}
+                    {user.majors.length > 0
+                      ? user.majors.map((m) => m.name).join(", ")
+                      : "—"}
                   </p>
                   <MajorSelect />
                 </div>
@@ -70,9 +70,9 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
                 </div>
                 <div className="flex items-center">
                   <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-4 flex-1 shadow-sm shadow-gray-300">
-                    {user.hobbies?.map((hobby) => (
+                    {user.hobbies?.map((hobby, index) => (
                       <div
-                        key={hobby.hobby_id}
+                        key={`${hobby.hobby_id ?? "hobby"}-${index}`}
                         className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700"
                       >
                         {hobby.name}
@@ -106,10 +106,10 @@ export default function ProfilePage({ profile }: ProfilePageProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
-              {images.map((image) => (
+              {images.map((image, index) => (
                 <img
                   src={image}
-                  key={image}
+                  key={`${image}-${index}`}
                   className="aspect-square w-full rounded-xl border border-gray-200 object-cover"
                 />
               ))}
