@@ -65,13 +65,12 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-3/4 max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
+          className="w-full h-[80dvh] md:w-3/4 md:h-auto md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
         >
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 h-full">
-            {/* Left Column */}
-            <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-border overflow-hidden">
-              {/* Photo viewer */}
-              <div className="relative aspect-[3/4] w-full bg-muted overflow-hidden">
+          <div className="flex flex-col md:grid md:grid-cols-12 h-full">
+            {/* Photo column */}
+            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[40vh] md:h-auto">
+              <div className="relative w-full bg-muted overflow-hidden h-full md:aspect-[3/4]">
                 <Image
                   src={`/demo/${PHOTOS[photoIndex]}.png`}
                   alt="Profile photo"
@@ -100,29 +99,29 @@ export function ProfileCard({
                 </div>
               </div>
             </div>
-            {/* Right Column */}
-            <div className="w-full md:col-span-7 flex flex-col h-full overflow-hidden">
-              <div className="p-6 flex-1 overflow-y-auto">
+
+            {/* Info column */}
+            <div className="flex flex-col flex-1 md:col-span-7 overflow-hidden">
+              <div className="p-4 md:p-6 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h1 className="text-3xl font-serif font-normal text-foreground tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-serif font-normal text-foreground tracking-tight">
                       {profile.fname} {profile.lname}
                     </h1>
                     <p className="font-serif text-sm text-muted-foreground">
-                      {profile.majors.map((major) => major.name).join(" | ")} • Year {profile.year}
+                      {profile.majors.map((m) => m.name).join(" | ")} • Year{" "}
+                      {profile.year}
                     </p>
                   </div>
                 </div>
 
-                <div className="w-full">
-                  <p className="mt-3 text-sm italic text-muted-foreground leading-relaxed">
-                    &quot;{profile.bio}&quot;
-                  </p>
-                </div>
+                <p className="mt-3 text-sm italic text-muted-foreground leading-relaxed">
+                  &quot;{profile.bio}&quot;
+                </p>
 
-                <div className="h-px w-full bg-border my-5" />
+                <div className="h-px w-full bg-border my-4 md:my-5" />
 
-                <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                <div className="grid grid-cols-2 gap-y-4 md:gap-y-5 gap-x-4">
                   <div className="col-span-2">
                     <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
                       Hobbies & interests
@@ -152,7 +151,7 @@ export function ProfileCard({
                 </div>
               </div>
 
-              {/* Action Buttons - Order: Undo, Dislike, Like, Message */}
+              {/* Action Buttons - Order: Dislike, Like, Message */}
               <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
                 <DislikeButton
                   onClick={() => onAction(-1)}

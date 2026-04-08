@@ -54,7 +54,10 @@ export function DiscoveryClient({
         {profiles.length === 0 ? (
           <NoResultsReturned />
         ) : reachedEnd ? (
-          <NoMoreResults handleBefore={handleBefore} profile={selectedProfile} />
+          <NoMoreResults
+            handleBefore={handleBefore}
+            profile={selectedProfile}
+          />
         ) : (
           <ProfileCard
             profile={selectedProfile}
