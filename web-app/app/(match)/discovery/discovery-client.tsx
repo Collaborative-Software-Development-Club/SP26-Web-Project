@@ -45,12 +45,8 @@ export function DiscoveryClient({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-12">
-      <div className="flex shrink-0 justify-center px-4 pt-4">
-        <Filter discoveryFilter={discoveryFilters} />
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col items-center gap-6 px-4 pb-8">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col items-center px-4 pb-8">
         {profiles.length === 0 ? (
           <NoResultsReturned />
         ) : reachedEnd ? (
@@ -65,14 +61,22 @@ export function DiscoveryClient({
             handleBefore={handleBefore}
           />
         )}
-        {history.length > 0 && (
-          <UndoButton
-            handleBefore={handleBefore}
-            targetUserId={history[history.length - 1].user_id}
-            isDiscovery={true}
-            lastEntry={history[history.length - 1].fname}
-          />
-        )}
+        <div className="w-full max-w-4xl grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
+          <div />
+          <div className="justify-self-center">
+            {history.length > 0 && (
+              <UndoButton
+                handleBefore={handleBefore}
+                targetUserId={history[history.length - 1].user_id}
+                isDiscovery={true}
+                lastEntry={history[history.length - 1].fname}
+              />
+            )}
+          </div>
+          <div className="justify-self-end">
+            <Filter discoveryFilter={discoveryFilters} />
+          </div>
+        </div>
       </div>
     </div>
   );
