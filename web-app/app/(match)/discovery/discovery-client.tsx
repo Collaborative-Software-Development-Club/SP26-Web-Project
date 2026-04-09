@@ -45,8 +45,18 @@ export function DiscoveryClient({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col items-center px-4 pb-8">
+    <div className="flex flex-col items-center w-full px-4">
+      {/* Header */}
+      <div className="hidden md:block items-center w-full max-w-4xl mb-4 text-center space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
+          Discovery
+        </h1>
+        <p className="text-muted-foreground xl:text-sm md:text-xs">
+          Find potential roommates based on your preferences
+        </p>
+      </div>
+
+      <div className="w-full flex flex-col items-center justify-center">
         {profiles.length === 0 ? (
           <NoResultsReturned />
         ) : reachedEnd ? (
@@ -61,7 +71,7 @@ export function DiscoveryClient({
             handleBefore={handleBefore}
           />
         )}
-        <div className="w-full max-w-4xl grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
+        <div className="w-full max-w-4xl items-start grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
           <div />
           <div className="justify-self-center">
             {history.length > 0 && (
