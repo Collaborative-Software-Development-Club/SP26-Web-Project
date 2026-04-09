@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DiscoveryProfile } from "../types";
 import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
@@ -27,6 +27,7 @@ export function ProfileCard({
 }) {
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Animation Director
   const onAction = (dir: number) => {
@@ -43,6 +44,18 @@ export function ProfileCard({
   const nextPhoto = () => setPhotoIndex((i) => (i + 1) % PHOTOS.length);
   const prevPhoto = () =>
     setPhotoIndex((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
+
+  const openLightbox = () => setLightboxOpen(true);
+  const closeLightbox = () => setLightboxOpen(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxOpen]);
 
   if (!profile) return <div>Loading...</div>;
 
@@ -69,7 +82,7 @@ export function ProfileCard({
         >
           <div className="flex flex-col md:grid md:grid-cols-12 h-full">
             {/* Photo column */}
-            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[40vh] md:h-auto">
+            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[30vh] md:h-auto">
               <div className="relative w-full bg-muted overflow-hidden h-full md:aspect-[3/4]">
                 <Image
                   src={`/demo/${PHOTOS[photoIndex]}.png`}
@@ -79,10 +92,44 @@ export function ProfileCard({
                   className="object-cover transition-opacity duration-300"
                 />
 
-                {/* Click zones for prev / next */}
+                {/* Click zones: prev | open lightbox | next */}
                 <div className="absolute inset-0 flex">
-                  <div className="flex-1 cursor-pointer" onClick={prevPhoto} />
-                  <div className="flex-1 cursor-pointer" onClick={nextPhoto} />
+                  <button
+                    className="group relative flex-1"
+                    onClick={prevPhoto}
+                    aria-label="Previous photo"
+                  >
+                    <span
+                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{
+                        background:
+                          "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                      }}
+                    />
+                  </button>
+
+                  <button
+                    className="relative flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLightbox();
+                    }}
+                    aria-label="Open full photo"
+                  />
+
+                  <button
+                    className="group relative flex-1"
+                    onClick={nextPhoto}
+                    aria-label="Next photo"
+                  >
+                    <span
+                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{
+                        background:
+                          "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                      }}
+                    />
+                  </button>
                 </div>
 
                 {/* Dot indicators */}
@@ -176,6 +223,35 @@ export function ProfileCard({
           </div>
         </motion.div>
       </AnimatePresence>
+      {/* Lightbox Modal */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-w-[95vw] max-h-[95vh]">
+            <button
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/40 p-2 text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeLightbox();
+              }}
+              aria-label="Close full photo"
+            >
+              ✕
+            </button>
+            <Image
+              src={`/demo/${PHOTOS[photoIndex]}.png`}
+              alt="Full photo"
+              width={1200}
+              height={900}
+              className="object-contain max-h-[95vh]"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
