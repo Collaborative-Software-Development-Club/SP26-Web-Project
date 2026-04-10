@@ -5,10 +5,12 @@ Include ways to be able to edit these fields.
 //
 import ProfilePage from "./profile-page";
 import SettingsPage from "./settings-page";
+import PreferencesPage from "./living-habits-page";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/app/(profile)/types";
+import LivingHabitsPage from "./living-habits-page";
 //type Page = "profile" | "bio" | "settings";
 type ProfilePageProps = {
   profile: UserProfile;
@@ -37,6 +39,18 @@ export default function ProfileHeader({ profile }: ProfilePageProps) {
             Profile
           </Button>
 
+
+          <Button
+            onClick={() => setPage("living-habits")}
+            className={`w-full justify-start rounded-lg px-3 py-2 text-sm shadow-none ${
+              page === "living-habits"
+                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                : "bg-transparent text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Living Habits
+          </Button>
+
           <Button
             onClick={() => setPage("settings")}
             className={`w-full justify-start rounded-lg px-3 py-2 text-sm shadow-none ${
@@ -47,9 +61,11 @@ export default function ProfileHeader({ profile }: ProfilePageProps) {
           >
             Settings
           </Button>
+
         </div>
       </Card>
       {page === "profile" && <ProfilePage profile={profile} />}
+      {page === "living-habits" && <LivingHabitsPage profile={profile} />}
       {page === "settings" && <SettingsPage profile={profile} />}
     </div>
   );
