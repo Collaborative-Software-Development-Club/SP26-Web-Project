@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -97,68 +98,112 @@ export async function signupAction(formData: FormData) {
  */
 export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return { error: "Unauthorized" };
   }
 
-  const { error: profileError } = await supabase
-    .from("user_profiles")
-    .upsert([
-      {
-        user_id: user.id,
-        is_active: true,
-        bio: profile.bio,
-        year: profile.year,
-        avatar_url: profile.avatar_url,
-        fname: profile.fname,
-        lname: profile.lname,
-        gender: profile.gender,
-      },
-    ]);
+  const { error: profileError } = await supabase.from("user_profiles").upsert([
+    {
+      user_id: user.id,
+      is_active: true,
+      bio: profile.bio,
+      year: profile.year,
+      avatar_url: profile.avatar_url,
+      fname: profile.fname,
+      lname: profile.lname,
+      gender: profile.gender,
+    },
+  ]);
 
   if (profileError) {
     return { error: "Failed to save profile: " + profileError.message };
   }
 
-  const { error: majorsError } = await supabase
+  const { error: clearMajorsError } = await supabase
     .from("user_profile_majors")
-    .upsert(profile.majors.map(m => ({
-      user_id: user.id,
-      major_id: m.major_id,
-    })), { onConflict: "user_id,major_id" });
+    .delete()
+    .eq("user_id", user.id);
+
+  if (clearMajorsError) {
+    return {
+      error: "Failed to update majors: " + clearMajorsError.message,
+    };
+  }
+
+  const { error: majorsError } =
+    profile.majors.length > 0
+      ? await supabase.from("user_profile_majors").insert(
+          profile.majors.map((m) => ({
+            user_id: user.id,
+            major_id: m.major_id,
+          })),
+        )
+      : { error: null };
 
   if (majorsError) {
     return { error: "Failed to save majors: " + majorsError.message };
   }
 
-  const { error: hobbiesError } = await supabase
+  const { error: clearHobbiesError } = await supabase
     .from("user_profile_hobbies")
-    .upsert(profile.hobbies.map(h => ({
-      user_id: user.id,
-      hobby_id: h.hobby_id,
-    })), { onConflict: "user_id,hobby_id" });
+    .delete()
+    .eq("user_id", user.id);
+
+  if (clearHobbiesError) {
+    return {
+      error: "Failed to update hobbies: " + clearHobbiesError.message,
+    };
+  }
+
+  const { error: hobbiesError } =
+    profile.hobbies.length > 0
+      ? await supabase.from("user_profile_hobbies").insert(
+          profile.hobbies.map((h) => ({
+            user_id: user.id,
+            hobby_id: h.hobby_id,
+          })),
+        )
+      : { error: null };
 
   if (hobbiesError) {
     return { error: "Failed to save hobbies: " + hobbiesError.message };
   }
 
-  const { error: preferencesError } = await supabase
+  const { error: clearPreferencesError } = await supabase
     .from("user_profile_preferences")
-    .upsert(profile.preferences.map(p => ({
-      user_id: user.id,
-      preference_id: p.preference_id,
-      value: p.value,
-    })), { onConflict: "user_id,preference_id" });
+    .delete()
+    .eq("user_id", user.id);
+
+  if (clearPreferencesError) {
+    return {
+      error: "Failed to update preferences: " + clearPreferencesError.message,
+    };
+  }
+
+  const { error: preferencesError } =
+    profile.preferences.length > 0
+      ? await supabase.from("user_profile_preferences").insert(
+          profile.preferences.map((p) => ({
+            user_id: user.id,
+            preference_id: p.preference_id,
+            value: p.value,
+          })),
+        )
+      : { error: null };
 
   if (preferencesError) {
     return { error: "Failed to save preferences: " + preferencesError.message };
   }
 
+  revalidatePath("/profile");
+  revalidatePath("/profile/create-profile");
+
   return { error: null };
 }
-
 
 /** Supabase may return one object or an array for embedded FK rows. */
 type EmbeddedCategoryName = { name: string };
@@ -199,7 +244,11 @@ function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
 /** Return all the major, hobby and preference choices **/
 export async function getMajorsHobbiesPreferences(): Promise<
   | { error: string }
-  | { majorData: Major[]; hobbiesData: HobbyCategoryGroup[]; preferencesData: Preference[] }
+  | {
+      majorData: Major[];
+      hobbiesData: HobbyCategoryGroup[];
+      preferencesData: Preference[];
+    }
 > {
   const supabase = await createClient();
 
@@ -220,21 +269,20 @@ export async function getMajorsHobbiesPreferences(): Promise<
     return { error: preferencesError.message };
   }
 
-  const { data: hobbiesData, error: hobbiesError } = await supabase
-  .from("user_hobbies")
-  .select(`
+  const { data: hobbiesData, error: hobbiesError } = await supabase.from(
+    "user_hobbies",
+  ).select(`
     hobby_id,
     name,
     user_hobby_categories(name)
-  `)
-
+  `);
 
   if (hobbiesError) {
     return { error: hobbiesError.message };
   }
 
   const hobbies = groupHobbiesData((hobbiesData ?? []) as UserHobbyRow[]);
-  
+
   return {
     majorData: majorsData,
     hobbiesData: hobbies,
@@ -246,22 +294,9 @@ export async function getMajorsHobbiesPreferences(): Promise<
   };
 }
 
-export async function updateProfile(profile:UserProfile){
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("Unauthorized");
-    }
-
-  const {error} = await supabase
-  .from("user_profiles")
-  .update(
-    {
-      fname:profile.fname,
-      lname:profile.lname,
-      bio:profile.bio,
-    }
-  ).eq("user_id",profile.user_id);
-
-  if (error) throw new Error(`Error updating user profile: ${error.message}`);
+export async function updateProfile(profile: UserProfile) {
+  const result = await saveProfileAction(profile);
+  if (result.error) {
+    throw new Error(result.error);
+  }
 }
