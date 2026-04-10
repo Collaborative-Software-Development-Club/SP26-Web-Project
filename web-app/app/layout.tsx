@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import type { UserProfile } from "@/app/(profile)/types";
 import { createClient } from "@/lib/supabase/server";
-import { Navbar } from "./navbar";
-import { data } from "framer-motion/client";
+import { getUserProfiles } from "@/lib/services/profile";
 import UserProvider from "@/contexts/UserProvider";
-import { User } from "lucide-react";
+import { Navbar } from "./navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +22,6 @@ export const metadata: Metadata = {
   description: "Find your perfect roommate at OSU",
 };
 
-// app/layout.tsx
 export default async function RootLayout({
   children,
 }: {
@@ -33,34 +32,32 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  let profile = null;
+  let profile: UserProfile | null = null;
 
   if (user) {
-    const { data } = await supabase
-    .from("user_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-    profile = data;
+    const rows = await getUserProfiles([user.id]);
+    const p = rows[0];
+    if (p) {
+      profile = {
+        ...p,
+        majors: p.majors ?? [],
+      };
+    }
   }
-
-  console.log("User in RootLayout:", user);
-  console.log("Profile in RootLayout:", profile);
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <UserProvider user={user} profile={profile}>
-        <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
-          <Navbar user={user} />
-          <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            {children}
-          </main>
-        </div>
-      </UserProvider>
+        <UserProvider user={user} profile={profile}>
+          <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
+            <Navbar user={user} />
+            <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+              {children}
+            </main>
+          </div>
+        </UserProvider>
       </body>
     </html>
   );

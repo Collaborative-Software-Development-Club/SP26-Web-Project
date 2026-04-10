@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import { createContext, useContext } from 'react';
+/**
+ * Populated once per request from `app/layout.tsx` (server) and passed into
+ * `UserProvider`. To see updated data after a profile save, navigate (e.g.
+ * `router.push("/profile")`) or call `router.refresh()` so the root layout
+ * re-fetches and this provider receives new props.
+ */
+import type { UserProfile } from "@/app/(profile)/types";
+import type { User } from "@supabase/supabase-js";
+import { createContext, useContext } from "react";
 
-type UserContextType = {
-  user: any;
-  profile: any;
+export type UserContextType = {
+  user: User | null;
+  profile: UserProfile | null;
 };
 
 export const UserContext = createContext<UserContextType>({
@@ -12,12 +20,13 @@ export const UserContext = createContext<UserContextType>({
   profile: null,
 });
 
-export function UseAuth() {
-  const {user} = useContext(UserContext);
+/** Supabase auth user from context (or null if signed out). */
+export function useAuthUser(): User | null {
+  const { user } = useContext(UserContext);
   return user;
 }
 
-export function useUser() {
-  const {user, profile} = useContext(UserContext);
-  return {user, profile};
+/** `{ user, profile }` from context — profile is the aggregated view row or null. */
+export function useUser(): UserContextType {
+  return useContext(UserContext);
 }
