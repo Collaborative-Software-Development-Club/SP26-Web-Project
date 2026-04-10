@@ -6,15 +6,22 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useChatRealtime } from "./realtime-provider";
 import { sendChatMessage } from "../_actions";
 import { ChatMessage } from "../../types";
+import type { SenderMetaEntry } from "../_sender-meta";
 
 export function ChatClient({
   serverMessages,
   userId,
   conversationId,
+  conversationTitle,
+  isGroupConversation,
+  senderMeta,
 }: {
   serverMessages: ChatMessage[];
   userId: string;
   conversationId: string;
+  conversationTitle: string;
+  isGroupConversation: boolean;
+  senderMeta: Record<string, SenderMetaEntry>;
 }) {
   const [inputValue, setInputValue] = useState("");
   const { realtimeMessages } = useChatRealtime();
@@ -24,38 +31,90 @@ export function ChatClient({
   const liveMessages = realtimeMessages.filter(
     (m) => m.conversation_id === conversationId && !serverIds.has(m.message_id),
   );
-  const allMessages = useMemo(
-    () => [...serverMessages, ...liveMessages],
-    [serverMessages, liveMessages],
-  );
+
+  const sortedMessages = useMemo(() => {
+    const base = [...serverMessages, ...liveMessages];
+    return base.sort((a, b) => {
+      const t = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (t !== 0) return t;
+      return a.message_id.localeCompare(b.message_id);
+    });
+  }, [serverMessages, liveMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [allMessages]);
+  }, [sortedMessages]);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (inputValue.trim()) {
-      await sendChatMessage(conversationId, inputValue);
-      setInputValue("");
-    }
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    await sendChatMessage(conversationId, trimmed);
+    setInputValue("");
   };
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
+      <div className="border-b px-6 py-4">
+        <h1 className="text-lg font-semibold">{conversationTitle}</h1>
+      </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {allMessages.map((msg) => (
-          <div
-            key={msg.message_id}
-            className={`flex mb-3 ${msg.sender_id === userId ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`rounded-2xl px-4 py-2 max-w-md ${msg.sender_id === userId ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-            >
-              {msg.content}
+        {sortedMessages.map((msg, i) => {
+          const isSelf = msg.sender_id === userId;
+          const isRunStart =
+            i === 0 || sortedMessages[i - 1].sender_id !== msg.sender_id;
+          const isRunEnd =
+            i === sortedMessages.length - 1 ||
+            sortedMessages[i + 1].sender_id !== msg.sender_id;
+
+          if (!isGroupConversation || isSelf) {
+            return (
+              <div
+                key={msg.message_id}
+                className={`flex mb-3 ${isSelf ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`rounded-2xl px-4 py-2 max-w-md ${isSelf ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            );
+          }
+
+          const meta = senderMeta[msg.sender_id];
+          const displayName = meta?.displayName ?? "Unknown";
+          const initials =
+            meta?.initials ??
+            (msg.sender_id.length >= 2
+              ? msg.sender_id.slice(0, 2).toUpperCase()
+              : "?");
+
+          return (
+            <div key={msg.message_id} className="mb-3">
+              {isRunStart && (
+                <div className="text-xs text-foreground/70 mb-1 ml-14 text-left">
+                  {displayName}
+                </div>
+              )}
+              <div className="flex gap-2 items-end">
+                <div className="w-8 shrink-0 flex justify-center pb-1">
+                  {isRunEnd ? (
+                    <div
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-[10px] font-semibold text-muted-foreground"
+                      aria-hidden
+                    >
+                      {initials}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="rounded-2xl px-4 py-2 max-w-md bg-muted text-muted-foreground">
+                  {msg.content}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">

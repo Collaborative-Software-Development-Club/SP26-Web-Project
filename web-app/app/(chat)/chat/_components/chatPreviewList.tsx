@@ -17,26 +17,22 @@ const AVATAR_COLORS = [
 ];
 
 function nameMatchesSearch(name: string, searchEntry: string) {
-  const search = searchEntry.toLowerCase().trim();
-  if (!search) return true;
-  if (search.length > name.trim().length) return false;
+  const searchTokens = searchEntry
+    .toLowerCase()
+    .trim()
+    .split(/[,\s]+/)
+    .filter(Boolean);
+  if (searchTokens.length === 0) return true;
 
-  let matches = true;
-  const searchArr = search.split(" ");
-  searchArr.forEach((searchTerm) => {
-    if (
-      !name
-        .toLowerCase()
-        .trim()
-        .split(/\s+/)
-        .some((part) => part.startsWith(searchTerm)) &&
-      !name.toLowerCase().startsWith(searchEntry.toLowerCase())
-    ) {
-      matches = false;
-    }
-  });
+  const nameTokens = name
+    .toLowerCase()
+    .trim()
+    .split(/[,\s]+/)
+    .filter(Boolean);
 
-  return matches;
+  return searchTokens.every((token) =>
+    nameTokens.some((namePart) => namePart.startsWith(token)),
+  );
 }
 
 function getInitials(name: string) {
@@ -70,7 +66,11 @@ function ChatPreviewItem({
           AVATAR_COLORS[colorIndex % AVATAR_COLORS.length],
         )}
       >
-        {getInitials(conversation.name)}
+        {conversation.isGroup ? (
+          <span className="text-[11px] font-semibold leading-none">GC</span>
+        ) : (
+          getInitials(conversation.name)
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
