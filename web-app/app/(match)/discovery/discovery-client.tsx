@@ -46,14 +46,27 @@ export function DiscoveryClient({
 
   return (
     <div className="flex flex-col items-center w-full px-4">
-      {/* Header */}
-      <div className="hidden md:block items-center w-full max-w-4xl mb-4 text-center space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
-          Discovery
-        </h1>
-        <p className="text-muted-foreground xl:text-sm md:text-xs">
-          Find potential roommates based on your preferences
-        </p>
+      {/* Mobile: filter absolute position by navbar */}
+      <div className="md:hidden absolute right-8 top-28 z-30">
+        <div className="w-[220px]">
+          <Filter discoveryFilter={discoveryFilters} />
+        </div>
+      </div>
+      {/* Big Screen Header */}
+      <div className="hidden md:block w-full max-w-4xl mb-4 relative">
+        <div className="absolute right-0 top-0">
+          <Filter discoveryFilter={discoveryFilters} />
+        </div>
+
+        {/* Title */}
+        <div className="flex flex-col items-center">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
+            Discovery
+          </h1>
+          <p className="text-muted-foreground xl:text-sm md:text-xs">
+            Find potential roommates based on your preferences
+          </p>
+        </div>
       </div>
 
       <div className="w-full flex flex-col items-center justify-center">
@@ -83,9 +96,7 @@ export function DiscoveryClient({
               />
             )}
           </div>
-          <div className="justify-self-end">
-            <Filter discoveryFilter={discoveryFilters} />
-          </div>
+          <div />
         </div>
       </div>
     </div>
