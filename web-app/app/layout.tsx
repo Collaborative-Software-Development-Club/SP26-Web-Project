@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminStatus } from "@/lib/auth";
 import { Navbar } from "./navbar";
 
 const geistSans = Geist({
@@ -29,6 +30,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isAdmin = await getAdminStatus(user);
 
   return (
     <html lang="en">
@@ -36,7 +38,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
-          <Navbar user={user} />
+          <Navbar user={user} isAdmin={isAdmin} />
           <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             {children}
           </main>

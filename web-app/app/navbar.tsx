@@ -15,7 +15,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function Navbar({ user }: { user: User | null }) {
+
+
+export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?: boolean;}) {
   const isSignedIn = user !== null;
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
