@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
-import EditBio from "./modals/edit-bio";
-import SelectHobbies from "./modals/hobby-select";
-import MajorSelect from "./modals/major-select";
 import type { UserProfile } from "@/app/(profile)/types";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
@@ -29,17 +29,18 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                     {user.fname + " " + user.lname}
                   </h1>
                   <p className="mt-1 text-sm text-gray-500">
-                    {year[user.year - 1]} year • {user.majors?.map((m)=>m.name).join(" | ")}
+                    {year[user.year - 1]} year •{" "}
+                    {user.majors?.map((m) => m.name).join(" | ")}
                   </p>
                 </div>
 
                 <div className="mt-4 flex gap-2 md:mt-0">
-                  <span className="rounded-full bg-pink-100 px-4 py-2 text-sm font-medium text-pink-700">
-                    Profile
-                  </span>
-                  <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700">
+                  <Badge className="bg-pink-100 text-pink-700">
                     Public View
-                  </span>
+                  </Badge>
+                  <Button asChild variant="outline" className="rounded-full">
+                    <Link href="/profile/create-profile">Edit Profile</Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -52,7 +53,9 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               {/* About */}
               <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div className="mb-5">
-                  <h2 className="text-2xl font-semibold text-gray-900">About Me</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    About Me
+                  </h2>
                   <p className="mt-1 text-sm text-gray-500">
                     A quick look at who {user.fname} is.
                   </p>
@@ -64,7 +67,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                       Major
                     </p>
                     <p className="mt-2 text-base font-medium text-gray-800">
-                      {user.majors?.map((m)=>m.name).join(" | ")}
+                      {user.majors?.map((m) => m.name).join(" | ")}
                     </p>
                   </div>
 
@@ -95,7 +98,9 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               {/* Interests */}
               <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">Interests</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Interests
+                  </h2>
                   <p className="mt-1 text-sm text-gray-500">
                     Things {user.fname} is into.
                   </p>
@@ -112,7 +117,9 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-gray-500">No hobbies added yet.</p>
+                    <p className="text-sm text-gray-500">
+                      No hobbies added yet.
+                    </p>
                   )}
                 </div>
               </Card>
@@ -123,7 +130,9 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               {/* Gallery */}
               <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">Photos</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Photos
+                  </h2>
                   <p className="mt-1 text-sm text-gray-500">
                     More of {user.fname}’s vibe.
                   </p>
@@ -143,7 +152,9 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
 
               {/* Quick summary card */}
               <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-900">Quick Snapshot</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Quick Snapshot
+                </h2>
 
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
@@ -163,12 +174,13 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                   <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
                     <span className="text-sm text-gray-500">Major</span>
                     <span className="text-right text-sm font-medium text-gray-800">
-                      {user.majors?.map((m)=>m.name).join(" | ")}
+                      {user.majors?.map((m) => m.name).join(" | ")}
                     </span>
                   </div>
 
                   <div className="rounded-2xl bg-pink-50 px-4 py-4 text-sm text-pink-700">
-                    This is a public-facing profile preview, not an edit page.
+                    Want to make changes? Use Edit Profile to reopen the setup
+                    flow with your current answers.
                   </div>
                 </div>
               </Card>

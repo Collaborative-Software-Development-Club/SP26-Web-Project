@@ -35,20 +35,26 @@ export function CreateProfileClient({
   initialMajors,
   initialHobbiesCatalog,
   initialPreferences,
+  initialProfile,
   catalogError,
 }: {
   initialMajors: Major[];
   initialHobbiesCatalog: HobbyCategoryGroup[];
   initialPreferences: Preference[];
+  initialProfile: UserProfile | null;
   catalogError: string | null;
 }) {
   const router = useRouter();
+  const isEditMode = initialProfile !== null;
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<UserProfile>(() => ({
-    ...emptyProfile(),
-    preferences: initialPreferences,
-    majors: [],
-  }));
+  const [profile, setProfile] = useState<UserProfile>(
+    () =>
+      initialProfile ?? {
+        ...emptyProfile(),
+        preferences: initialPreferences,
+        majors: [],
+      },
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preferenceQuestionIndex, setPreferenceQuestionIndex] = useState(0);
@@ -107,8 +113,7 @@ export function CreateProfileClient({
 
   const totalPrefQuestions = profile.preferences.length;
   const allPreferencesAnswered =
-    totalPrefQuestions === 0 ||
-    profile.preferences.every((p) => p.value > 0);
+    totalPrefQuestions === 0 || profile.preferences.every((p) => p.value > 0);
 
   const goPrevStep = () => {
     setError(null);
@@ -141,9 +146,7 @@ export function CreateProfileClient({
   };
 
   const goNextPreferenceQuestion = () => {
-    setPreferenceQuestionIndex((i) =>
-      Math.min(totalPrefQuestions - 1, i + 1),
-    );
+    setPreferenceQuestionIndex((i) => Math.min(totalPrefQuestions - 1, i + 1));
   };
 
   const handleSubmit = async () => {
@@ -155,7 +158,7 @@ export function CreateProfileClient({
         setError(result.error);
         return;
       }
-      router.push("/profile");
+      router.replace("/profile");
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -173,11 +176,7 @@ export function CreateProfileClient({
       <Card
         className={cn(
           "flex w-full max-h-[80vh] flex-col gap-0 overflow-hidden py-0 shadow-sm",
-          step === 1
-            ? "max-w-2xl"
-            : step === 2
-              ? "max-w-lg"
-              : "max-w-md",
+          step === 1 ? "max-w-2xl" : step === 2 ? "max-w-lg" : "max-w-md",
         )}
       >
         <CardHeader className="shrink-0 border-b pb-6">
@@ -189,6 +188,12 @@ export function CreateProfileClient({
             <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {error}
             </div>
+          )}
+
+          {isEditMode && (
+            <p className="text-sm text-muted-foreground">
+              Update your profile details and save when you&apos;re done.
+            </p>
           )}
 
           {step === 0 && (
@@ -231,6 +236,10 @@ export function CreateProfileClient({
             stepsLength={STEPS.length}
             isSubmitting={isSubmitting}
             canCreateProfile={allPreferencesAnswered}
+            submitLabel={isEditMode ? "Save Changes" : "Create Profile"}
+            submittingLabel={
+              isEditMode ? "Saving Changes…" : "Creating Profile…"
+            }
             onPrevStep={goPrevStep}
             onNextStep={goNextStep}
             onSubmit={handleSubmit}
