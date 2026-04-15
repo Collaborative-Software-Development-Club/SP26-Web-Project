@@ -134,13 +134,17 @@ export function CreateProfileClient({
       return;
     }
     if (step === 1) {
+      const msg = validateHobbiesStep(profile);
+      if (msg) {
+        setError(msg);
+        return;
+      }
       setStep(2);
       return;
     }
     if (step === 2) {
-      const msg = validateHobbiesStep(profile);
-      if (msg) {
-        setError(msg);
+      if (!allPreferencesAnswered) {
+        setError("Please answer all preference questions.");
         return;
       }
       setStep(3);
@@ -182,7 +186,7 @@ export function CreateProfileClient({
       <Card
         className={cn(
           "flex w-full max-h-[80vh] flex-col gap-0 overflow-hidden py-0 shadow-sm",
-          step === 2 ? "max-w-2xl" : step === 3 ? "max-w-lg" : "max-w-md",
+          step === 1 ? "max-w-2xl" : step === 2 ? "max-w-lg" : "max-w-md",
         )}
       >
         <CardHeader className="shrink-0 border-b pb-6">
@@ -213,16 +217,6 @@ export function CreateProfileClient({
           )}
 
           {step === 1 && (
-            <ProfilePictureStep
-              profile={profile}
-              isEditMode={isEditMode}
-              isSubmitting={isSubmitting}
-              update={update}
-              onUploadingChange={setIsUploadingAvatar}
-            />
-          )}
-
-          {step === 2 && (
             <HobbiesStep
               profile={profile}
               toggleHobby={toggleHobby}
@@ -232,7 +226,7 @@ export function CreateProfileClient({
             />
           )}
 
-          {step === 3 && (
+          {step === 2 && (
             <PreferencesStep
               profile={profile}
               prefsLoading={false}
@@ -242,6 +236,16 @@ export function CreateProfileClient({
               updatePreference={updatePreference}
               onPrevQuestion={goPrevPreferenceQuestion}
               onNextQuestion={goNextPreferenceQuestion}
+            />
+          )}
+
+          {step === 3 && (
+            <ProfilePictureStep
+              profile={profile}
+              isEditMode={isEditMode}
+              isSubmitting={isSubmitting}
+              update={update}
+              onUploadingChange={setIsUploadingAvatar}
             />
           )}
         </CardContent>

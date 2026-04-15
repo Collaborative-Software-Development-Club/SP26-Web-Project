@@ -14,7 +14,6 @@ const MAX_BYTES = 20 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
-  "image/gif",
   "image/webp",
 ]);
 
@@ -24,8 +23,6 @@ function extensionForPfpMime(mime: string): string {
       return "jpg";
     case "image/png":
       return "png";
-    case "image/gif":
-      return "gif";
     case "image/webp":
       return "webp";
     default:
