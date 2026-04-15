@@ -5,7 +5,7 @@ CREATE TABLE housing_property_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   modified_date TIMESTAMPTZ,
 
-  address TEXT,
+  address TEXT NOT NULL,
   listing_url TEXT,
   osu_id TEXT,
   monthly_rent TEXT,

@@ -18,7 +18,6 @@ import { Star } from "lucide-react";
 import { House, HouseCard } from "./house-card";
 import {
   assertCanFavoriteHousing,
-  getHousingListings,
   getSavedHousing,
   saveHousingListing,
   unsaveHousingListing,
@@ -34,7 +33,7 @@ export function HousingList({
   pageSize?: number;
   userId: string | null;
 }) {
-  const [allListings, setAllListings] = useState<House[]>(initialListings);
+  const [allListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
@@ -50,19 +49,6 @@ export function HousingList({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-
-  useEffect(() => {
-    startTransition(async () => {
-      try {
-        const { listings } = await getHousingListings(1, 1000);
-        const houses = (listings as House[]) ?? [];
-        setAllListings(houses);
-        setFilteredListings(houses);
-      } catch (error) {
-        console.error("Failed to load housing listings", error);
-      }
-    });
-  }, []);
 
   const displayedListings = useMemo(() => {
     const start = (page - 1) * pageSize;

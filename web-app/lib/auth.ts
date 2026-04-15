@@ -25,9 +25,10 @@ export async function getAdminStatus(user: User | null): Promise<boolean> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("housing_admin")
-    .select("*")
+    .select("isAdmin")
     .eq("user_id", user.id)
     .maybeSingle();
+
   if (error) {
     console.error(error);
     return false;

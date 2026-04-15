@@ -2,9 +2,12 @@ import { HousingDetailPageContent } from "../_components/server/housing-detail-p
 
 export default async function HousingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ admin?: string }>;
 }) {
   const { id } = await params;
-  return <HousingDetailPageContent id={id} isAdmin={false} />;
+  const { admin } = await searchParams;
+  return <HousingDetailPageContent id={id} isAdmin={admin === "1"} />;
 }

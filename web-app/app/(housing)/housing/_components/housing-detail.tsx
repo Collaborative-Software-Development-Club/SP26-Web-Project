@@ -25,10 +25,12 @@ export function HousingDetail({
   listing,
   userId,
   initialIsFavorite,
+  isAdmin = false,
 }: {
   listing: HousingListing;
   userId: string | null;
   initialIsFavorite: boolean;
+  isAdmin?: boolean;
 }) {
   const hasAmenityValue = (value?: string | null) => {
     if (!value) return false;
@@ -141,11 +143,13 @@ export function HousingDetail({
         <main className="relative min-w-0 w-full max-w-5xl justify-self-start border-border p-8 max-lg:border-b">
           <div className="mb-6 flex items-center justify-between gap-3">
             <h1 className="text-3xl font-bold text-foreground">{listing.address}</h1>
-            <HousingDetailFavoriteStar
-              housingId={listing.id}
-              userId={userId}
-              initialIsFavorite={initialIsFavorite}
-            />
+            {!isAdmin && (
+              <HousingDetailFavoriteStar
+                housingId={listing.id}
+                userId={userId}
+                initialIsFavorite={initialIsFavorite}
+              />
+            )}
           </div>
 
           {/* Photo gallery */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { House } from "@/app/(housing)/housing/_components/house-card";
 import { AdminHouseCard } from "./admin-house-card";
-import { getHousingListings } from "@/app/(housing)/housing/_actions";
 import { filterHouses, type HousingFilters } from "@/app/(housing)/housing/housing-utils";
 
 export function AdminHousingList({
@@ -25,7 +24,7 @@ export function AdminHousingList({
   initialListings: House[];
   pageSize?: number;
 }) {
-  const [allListings, setAllListings] = useState<House[]>(initialListings);
+  const [allListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<HousingFilters>({
@@ -38,19 +37,6 @@ export function AdminHousingList({
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    startTransition(async () => {
-      try {
-        const { listings } = await getHousingListings(1, 1000);
-        const houses = (listings as House[]) ?? [];
-        setAllListings(houses);
-        setFilteredListings(houses);
-      } catch (error) {
-        console.error("Failed to load admin housing listings", error);
-      }
-    });
-  }, [startTransition]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * pageSize;

@@ -9,7 +9,6 @@ export async function HousingDetailPageContent({
   id: string;
   isAdmin?: boolean;
 }) {
-  void isAdmin;
   const listing = await getHousingListing(id);
   const supabase = await createClient();
   const {
@@ -17,7 +16,7 @@ export async function HousingDetailPageContent({
   } = await supabase.auth.getUser();
 
   let initialIsFavorite = false;
-  if (user?.id) {
+  if (user?.id && !isAdmin) {
     const savedRows = await getSavedHousing(user.id);
     initialIsFavorite = (savedRows ?? []).some(
       (row) => String(row.housing_id) === String(id),
@@ -28,8 +27,9 @@ export async function HousingDetailPageContent({
     <div className="flex min-h-0 flex-1 flex-col">
       <HousingDetail
         listing={listing}
-        userId={user?.id ?? null}
+        userId={isAdmin ? null : user?.id ?? null}
         initialIsFavorite={initialIsFavorite}
+        isAdmin={isAdmin}
       />
     </div>
   );

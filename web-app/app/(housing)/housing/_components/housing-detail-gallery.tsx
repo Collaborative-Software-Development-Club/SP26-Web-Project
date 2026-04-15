@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- listing images use arbitrary external URLs */
+
 import { useState } from "react";
 
 export function HousingDetailGallery({

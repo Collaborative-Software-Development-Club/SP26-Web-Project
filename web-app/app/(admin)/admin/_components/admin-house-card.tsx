@@ -88,7 +88,7 @@ export function AdminHouseCard({ house }: { house: House }) {
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">
             <Button asChild variant="default" size="sm">
-              <a href={`/housing/${house.id}`}>View</a>
+              <a href={`/housing/${house.id}?admin=1`}>View</a>
             </Button>
             <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
               <DialogTrigger asChild>
