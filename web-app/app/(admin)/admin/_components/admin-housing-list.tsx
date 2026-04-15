@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,29 +13,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star } from "lucide-react";
-import { House, HouseCard } from "./house-card";
-import {
-  assertCanFavoriteHousing,
-  getSavedHousing,
-  saveHousingListing,
-  unsaveHousingListing,
-} from "../_actions";
-import { filterHouses, type HousingFilters } from "../housing-utils";
+import { House } from "@/app/(housing)/housing/_components/house-card";
+import { AdminHouseCard } from "./admin-house-card";
+import { filterHouses, type HousingFilters } from "@/app/(housing)/housing/housing-utils";
 
-export function HousingList({
+export function AdminHousingList({
   initialListings,
   pageSize = 9,
-  userId,
 }: {
   initialListings: House[];
   pageSize?: number;
-  userId: string | null;
 }) {
   const [allListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
   const [page, setPage] = useState(1);
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
   const [filters, setFilters] = useState<HousingFilters>({
     minRent: "",
     maxRent: "",
@@ -45,12 +35,10 @@ export function HousingList({
     location: "",
     distance: "",
   });
-  const [savedOnly, setSavedOnly] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
-  const displayedListings = useMemo(() => {
+  const paginated = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filteredListings.slice(start, start + pageSize);
   }, [filteredListings, page, pageSize]);
@@ -67,10 +55,7 @@ export function HousingList({
 
   function applyFilters() {
     startTransition(() => {
-      let next = filterHouses(allListings, filters);
-      if (savedOnly) {
-        next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
-      }
+      const next = filterHouses(allListings, filters);
       setFilteredListings(next);
       setPage(1);
       setIsDialogOpen(false);
@@ -78,87 +63,21 @@ export function HousingList({
   }
 
   function clearFilters() {
-    setFilters({ minRent: "", maxRent: "", startDate: "", semester: "Any", location: "", distance: "" });
-    setSavedOnly(false);
+    setFilters({
+      minRent: "",
+      maxRent: "",
+      startDate: "",
+      semester: "Any",
+      location: "",
+      distance: "",
+    });
     setFilteredListings(allListings);
     setPage(1);
   }
 
-  // Build a fast set, for fast lookup, to store the saved-housing JSON returned by Supabase.
-  useEffect(() => {
-    if (!userId) return;
-
-    let cancelled = false;
-    startTransition(async () => {
-      try {
-        const saved = await getSavedHousing(userId);
-        if (cancelled) return;
-        setFavoriteIds(
-          new Set(
-            (saved ?? [])
-              .filter((r) => r.housing_id != null)
-              .map((r) => String(r.housing_id)),
-          ),
-        );
-      } catch {
-        // If the RPC fails (e.g., not deployed yet), we just render as "not saved".
-        if (!cancelled) setFavoriteIds(new Set());
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, startTransition]);
-
-  // Keep "Saved only" results in sync as the favorites set changes.
-  useEffect(() => {
-    if (!savedOnly) return;
-    startTransition(() => {
-      let next = filterHouses(allListings, filters);
-      next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
-      setFilteredListings(next);
-      setPage(1);
-    });
-  }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
-
-  async function toggleFavorite(id: string) {
-    if (!userId) {
-      router.push("/login");
-      return;
-    }
-
-    await assertCanFavoriteHousing();
-    const wasFavorite = favoriteIds.has(id);
-    setFavoriteIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
-    try {
-      if (wasFavorite) await unsaveHousingListing(id);
-      else await saveHousingListing(id);
-    } catch (e) {
-      // Roll back optimistic update if persistence fails.
-      setFavoriteIds((prev) => {
-        const next = new Set(prev);
-        if (wasFavorite) next.add(id);
-        else next.delete(id);
-        return next;
-      });
-      console.error(
-        "Failed to persist housing favorite toggle",
-        e instanceof Error ? e.message : e,
-      );
-    }
-  }
-
   function go(n: number) {
     const target = Math.min(Math.max(1, n), totalPages);
-    if (target === page) return;
-    setPage(target);
+    if (target !== page) setPage(target);
   }
 
   return (
@@ -181,29 +100,15 @@ export function HousingList({
             </DialogHeader>
 
             <div className="grid gap-4 py-2">
-              <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground">Saved only Listings</span>
-                </div>
-
-                <button
-                  type="button"
-                  aria-pressed={savedOnly}
-                  aria-label={savedOnly ? "Disable saved-only filter" : "Enable saved-only filter"}
-                  onClick={() => setSavedOnly((v) => !v)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-background text-foreground shadow-sm ring-1 ring-border transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Star className={savedOnly ? "h-5 w-5 fill-yellow-400 text-yellow-400" : "h-5 w-5"} />
-                </button>
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <Label className="flex flex-col gap-1">
                   Min rent
                   <Input
                     type="number"
                     value={filters.minRent}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, minRent: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, minRent: e.target.value }))
+                    }
                   />
                 </Label>
                 <Label className="flex flex-col gap-1">
@@ -211,7 +116,9 @@ export function HousingList({
                   <Input
                     type="number"
                     value={filters.maxRent}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, maxRent: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, maxRent: e.target.value }))
+                    }
                   />
                 </Label>
               </div>
@@ -222,14 +129,18 @@ export function HousingList({
                   <Input
                     type="date"
                     value={filters.startDate}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, startDate: e.target.value }))
+                    }
                   />
                 </Label>
                 <Label className="flex flex-col gap-1">
                   Semester
                   <select
                     value={filters.semester}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, semester: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, semester: e.target.value }))
+                    }
                     className="px-3 py-2 rounded-md border border-input bg-background text-sm"
                   >
                     <option value="Any">Any</option>
@@ -245,7 +156,9 @@ export function HousingList({
                   Location
                   <Input
                     value={filters.location}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, location: e.target.value }))
+                    }
                     placeholder="City or address"
                   />
                 </Label>
@@ -254,36 +167,43 @@ export function HousingList({
                   <Input
                     type="number"
                     value={filters.distance}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, distance: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, distance: e.target.value }))
+                    }
                   />
                 </Label>
               </div>
             </div>
 
             <DialogFooter>
-              <Button variant="ghost" onClick={clearFilters}>Clear</Button>
-              <Button onClick={applyFilters} disabled={isPending}>Apply</Button>
+              <Button variant="ghost" onClick={clearFilters}>
+                Clear
+              </Button>
+              <Button onClick={applyFilters} disabled={isPending}>
+                Apply
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedListings.map((h) => (
-          <HouseCard
-            key={h.id}
-            house={h}
-            isFavorite={userId ? favoriteIds.has(h.id) : false}
-            onToggleFavorite={toggleFavorite}
-          />
+        {paginated.map((h) => (
+          <AdminHouseCard key={h.id} house={h} />
         ))}
       </div>
 
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-center gap-3">
-          <Button onClick={() => go(page - 1)} disabled={page === 1 || isPending} variant="outline" size="sm">
+          <Button
+            onClick={() => go(page - 1)}
+            disabled={page === 1 || isPending}
+            variant="outline"
+            size="sm"
+          >
             Prev
           </Button>
+
           <div className="flex items-center gap-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1)
               .filter((n) => n >= page - 3 && n <= page + 3)
@@ -299,6 +219,7 @@ export function HousingList({
                 </Button>
               ))}
           </div>
+
           <Button
             onClick={() => go(page + 1)}
             disabled={page === totalPages || isPending}
