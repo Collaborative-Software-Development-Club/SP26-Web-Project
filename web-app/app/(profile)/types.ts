@@ -26,7 +26,7 @@ export type UserProfile = {
     fname: string;
     lname: string;
     gender: string;
-    avatar_url: string;
+    avatar_url: string | null;
     bio: string;
     majors: Major[];
     year: number;
@@ -34,4 +34,5 @@ export type UserProfile = {
     last_edited_at: string;
     hobbies: Hobby[];
     preferences: Preference[];
+    isAdmin?: boolean;
 }

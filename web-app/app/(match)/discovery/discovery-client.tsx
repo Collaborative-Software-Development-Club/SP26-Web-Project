@@ -13,20 +13,20 @@ export function DiscoveryClient({
   initialProfiles: DiscoveryProfile[];
   discoveryFilters: DiscoveryFilter;
 }) {
-  const [profiles, setProfiles] = useState<DiscoveryProfile[]>(initialProfiles);
-  const [selectedProfile, setSelectedProfile] = useState<DiscoveryProfile>(
-    profiles[0],
-  );
+  const [selectedProfile, setSelectedProfile] = useState<
+    DiscoveryProfile | undefined
+  >(initialProfiles[0]);
   const [history, setHistory] = useState<DiscoveryProfile[]>([]);
   const [reachedEnd, setReachedEnd] = useState(false);
 
   const handleNext = () => {
-    const currentIndex = profiles.findIndex(
+    if (!selectedProfile) return;
+    const currentIndex = initialProfiles.findIndex(
       (p) => p.user_id === selectedProfile.user_id,
     );
     setHistory((h) => [...h, selectedProfile]);
-    if (currentIndex < profiles.length - 1) {
-      setSelectedProfile(profiles[currentIndex + 1]);
+    if (currentIndex < initialProfiles.length - 1) {
+      setSelectedProfile(initialProfiles[currentIndex + 1]);
     } else {
       setReachedEnd(true);
     }
@@ -45,31 +45,62 @@ export function DiscoveryClient({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-12">
-      <div className="flex shrink-0 justify-center px-4 pt-4">
-        <Filter discoveryFilter={discoveryFilters} />
+    <div className="flex flex-col items-center w-full px-4">
+      {/* Mobile: filter absolute position by navbar */}
+      <div className="md:hidden absolute right-6 top-22 z-30">
+        <div className="w-[220px]">
+          <Filter discoveryFilter={discoveryFilters} />
+        </div>
+      </div>
+      {/* Big Screen Header */}
+      <div className="hidden md:block w-full max-w-4xl mb-4 relative">
+        <div className="absolute right-0 top-0">
+          <Filter discoveryFilter={discoveryFilters} />
+        </div>
+
+        {/* Title */}
+        <div className="flex flex-col items-center">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
+            Discovery
+          </h1>
+          <p className="text-muted-foreground xl:text-sm md:text-xs">
+            Find potential roommates based on your preferences
+          </p>
+        </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center gap-6 px-4 pb-8">
-        {profiles.length === 0 ? (
+      <div className="w-full flex flex-col items-center justify-center">
+        {initialProfiles.length === 0 ? (
           <NoResultsReturned />
         ) : reachedEnd ? (
-          <NoMoreResults handleBefore={handleBefore} profile={selectedProfile} />
-        ) : (
+          selectedProfile ? (
+            <NoMoreResults
+              handleBefore={handleBefore}
+              profile={selectedProfile}
+            />
+          ) : null
+        ) : selectedProfile ? (
           <ProfileCard
             profile={selectedProfile}
+            isDiscovery={true}
             handleNext={handleNext}
             handleBefore={handleBefore}
           />
-        )}
-        {history.length > 0 && (
-          <UndoButton
-            handleBefore={handleBefore}
-            targetUserId={history[history.length - 1].user_id}
-            isDiscovery={true}
-            lastEntry={history[history.length - 1].fname}
-          />
-        )}
+        ) : null}
+        <div className="w-full max-w-4xl items-start grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
+          <div />
+          <div className="justify-self-center">
+            {history.length > 0 && (
+              <UndoButton
+                handleBefore={handleBefore}
+                targetUserId={history[history.length - 1].user_id}
+                isDiscovery={true}
+                lastEntry={history[history.length - 1].fname}
+              />
+            )}
+          </div>
+          <div />
+        </div>
       </div>
     </div>
   );

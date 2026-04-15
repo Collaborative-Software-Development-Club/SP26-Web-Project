@@ -18,7 +18,6 @@ import { Star } from "lucide-react";
 import { House, HouseCard } from "./house-card";
 import {
   assertCanFavoriteHousing,
-  getHousingListings,
   getSavedHousing,
   saveHousingListing,
   unsaveHousingListing,
@@ -34,7 +33,7 @@ export function HousingList({
   pageSize?: number;
   userId: string | null;
 }) {
-  const [allListings, setAllListings] = useState<House[]>(initialListings);
+  const [allListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
@@ -51,25 +50,20 @@ export function HousingList({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  useEffect(() => {
-    startTransition(async () => {
-      try {
-        const { listings } = await getHousingListings(1, 1000);
-        const houses = (listings as House[]) ?? [];
-        setAllListings(houses);
-        setFilteredListings(houses);
-      } catch (error) {
-        console.error("Failed to load housing listings", error);
-      }
-    });
-  }, []);
-
   const displayedListings = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filteredListings.slice(start, start + pageSize);
   }, [filteredListings, page, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+
+  const listingRangeLabel = useMemo(() => {
+    const total = filteredListings.length;
+    if (total === 0) return "Showing 0 of 0 listings";
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, total);
+    return `Showing ${start}–${end} of ${total} listings`;
+  }, [filteredListings.length, page, pageSize]);
 
   function applyFilters() {
     startTransition(() => {
@@ -170,9 +164,7 @@ export function HousingList({
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-muted-foreground">
-          Showing {filteredListings.length} of {allListings.length} listings
-        </span>
+        <span className="text-sm text-muted-foreground">{listingRangeLabel}</span>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>

@@ -9,13 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent,SelectTrigger,SelectValue, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { UserProfile } from "@/app/(profile)/types";
-type ProfilePageProps = {
-  profile: UserProfile
-}
-export default function SettingsPage({profile}: ProfilePageProps) {
+
+export function SettingsPage({profile}: {profile: UserProfile}) {
   const [darkMode, setDarkMode] = useState(false);
   const [formData, setFormData] = useState<UserProfile>(profile);
-
 
   return (
     <div className="h-full w-full overflow-auto bg-zinc-50 p-8 dark:bg-black">
@@ -30,114 +27,6 @@ export default function SettingsPage({profile}: ProfilePageProps) {
             Manage your account and preferences
           </p>
         </div>
-
-        {/* Account info */}
-        {/*
-        <Card className="w-full max-w-4xl rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Edit Profile</CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <form onSubmit={(e)=>handleSubmitProfile(e)} className="space-y-6">
-            {err && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                {err}
-              </div>
-            )}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={formData.fname}
-                  onChange={(e) => handleChange("fname", e.target.value)}
-                  placeholder="Enter your first name"
-                  className="shadow-md"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lname}
-                  onChange={(e) => handleChange("lname", e.target.value)}
-                  placeholder="Enter your last name"
-                  className="shadow-md"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Major</Label>
-              <Select
-                value={formData.majors?.map((m)=>m.name).join(" | ")}
-                onValueChange={(value) => handleChange("major", value)}
-              >
-                <SelectTrigger className="w-full shadow-md">
-                  <SelectValue placeholder="Select your major" />
-                </SelectTrigger>
-                <SelectContent>
-                  {majors.Majors.map((major) => (
-                    <SelectItem key={major} value={major}>
-                      {major}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => handleChange("bio", e.target.value)}
-                placeholder="Write a little about yourself..."
-                className="shadow-md"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <Label>Hobbies</Label>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2 bg-gray-100 rounded-md">
-                {/*Object.entries(hobbies).map(([category, list]) => (
-                  <div key={category} className="space-y-3">
-                    <h2 className="text-sm font-semibold text-muted-foreground">
-                      {category}
-                    </h2>
-
-                    <div className="grid grid-cols-2 gap-2 border-2 rounded-md p-2 border-gray-300 shadow-md bg-white">
-                      {list.map((hobby: string) => (
-                        <Label
-                          key={hobby}
-                          className="flex items-center gap-2 text-sm cursor-pointer"
-                        >
-                          <Input
-                            type="checkbox"
-                            className="h-4 w-4"
-                            value={hobby}
-                          />
-                          {hobby}
-                        </Label>
-                      )}
-                    </div>
-                  </div>
-                ))
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" className="px-6">
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-      */}
 
       {/*Email*/}
       <Card className="border p-6 shadow-sm">

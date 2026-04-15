@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import type { UserProfile } from "@/app/(profile)/types";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminStatus } from "@/lib/auth";
 import { getUserProfiles } from "@/lib/services/profile";
 import UserProvider from "@/contexts/UserProvider";
 import { Navbar } from "./navbar";
@@ -31,6 +32,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isAdmin = await getAdminStatus(user);
 
   let profile: UserProfile | null = null;
 
@@ -52,7 +54,7 @@ export default async function RootLayout({
       >
         <UserProvider user={user} profile={profile}>
           <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
-            <Navbar user={user} />
+            <Navbar user={user} isAdmin={isAdmin} />
             <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               {children}
             </main>

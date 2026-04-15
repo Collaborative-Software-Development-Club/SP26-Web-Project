@@ -1,20 +1,13 @@
-import { getHousingListing } from "../_actions";
-import { HousingDetail } from "../_components/housing-detail";
-import { createClient } from "@/lib/supabase/server";
+import { HousingDetailPageContent } from "../_components/server/housing-detail-page-content";
 
 export default async function HousingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ admin?: string }>;
 }) {
   const { id } = await params;
-  const listing = await getHousingListing(id);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return (
-    <HousingDetail key={listing.id} listing={listing} userId={user?.id ?? null} />
-  );
+  const { admin } = await searchParams;
+  return <HousingDetailPageContent id={id} isAdmin={admin === "1"} />;
 }

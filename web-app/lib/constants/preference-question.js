@@ -19,14 +19,14 @@ export const preferenceQuestion = new Map([
   [
     "guests",
     {
-      question: "How often do you want guests over?",
+      question: "How often do you have your own guests over?",
       options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
     },
   ],
   [
     "overnight guests",
     {
-      question: "How often do you want guests to spend the night?",
+      question: "How often are you comfortable with others bringing guests?",
       options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
     },
   ],
@@ -37,7 +37,7 @@ export const preferenceQuestion = new Map([
       options: [
         "Very messy",
         "Messy",
-        "Somewhat messy",
+        "Somewhat tidy",
         "Tidy",
         "Very tidy",
       ],
@@ -50,7 +50,7 @@ export const preferenceQuestion = new Map([
       options: [
         "Very quiet",
         "Quiet",
-        "Somewhat quiet",
+        "Somewhat noisy",
         "Noisy",
         "Very noisy",
       ],
@@ -63,7 +63,7 @@ export const preferenceQuestion = new Map([
       options: [
         "Very uncomfortable",
         "Uncomfortable",
-        "Somewhat uncomfortable",
+        "Somewhat comfortable",
         "Comfortable",
         "Very comfortable",
       ],
@@ -73,7 +73,7 @@ export const preferenceQuestion = new Map([
     "alcohol consumption",
     {
       question: "How often do you drink alcohol?",
-      options: ["Never", "Rarely", "Sometimes", "Often", "Daily"],
+      options: ["Less than once a week", "Once or twice a week", "Several days a week", "Every weekend", "Every day"],
     },
   ],
   [
