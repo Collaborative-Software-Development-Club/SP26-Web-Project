@@ -207,17 +207,20 @@ export async function saveProfileAction(profile: UserProfile) {
     return { error: "Failed to save filters: " + filterError.message };
   }
 
-  const { error: preferenceFilterError } = await supabase
-    .from("discovery_roommate_preferences")
-    .upsert(
-    profile.preferences.map((p) => ({
-      user_id: user.id,
-      preference_id: p.preference_id,
-      importance: 3,
-    })),
-    { onConflict: "user_id,preference_id", ignoreDuplicates: true }
-  )
-
+  const { error: preferenceFilterError } =
+    profile.preferences.length > 0
+      ? await supabase
+          .from("discovery_roommate_preferences")
+          .upsert(
+            profile.preferences.map((p) => ({
+              user_id: user.id,
+              preference_id: p.preference_id,
+              importance: 3,
+            })),
+            { onConflict: "user_id,preference_id", ignoreDuplicates: true },
+          )
+      : { error: null };
+      
   if (preferenceFilterError) {  
     return { error: "Failed to save preferences: " + preferenceFilterError.message };
   }

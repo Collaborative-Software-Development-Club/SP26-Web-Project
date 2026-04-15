@@ -19,7 +19,7 @@ const iconClass = "h-4 w-4 shrink-0";
 
 export function getPreferenceIcon(key: string) {
   switch (key.trim().toLowerCase()) {
-    case "smoking":
+    case "smoker":
       return <Cigarette className={iconClass} />;
     case "pets":
       return <Cat className={iconClass} />;

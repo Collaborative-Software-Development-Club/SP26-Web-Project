@@ -12,7 +12,7 @@ import {
 const CARD_SHADOW =
   "shadow-[0_2px_4px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.3)]";
 
-export default function ProfilePage({ profile }: { profile: UserProfile }) {
+export function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
   const photoImages = ["/demo/room1.png", "/demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
@@ -60,7 +60,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               />
             </div>
             <div className="mb-6 min-w-0 flex-1 lg:mb-10 xl:mb-12">
-              <h1 className="wrap-break-word text-2xl font-serif font-normal leading-tight tracking-tight text-foreground sm:text-2xl md:text-3xl">
+              <h1 className="break-words text-2xl font-serif font-normal leading-tight tracking-tight text-foreground sm:text-2xl md:text-3xl">
                 {user.fname} {user.lname}
               </h1>
               <p className="mt-1 font-serif text-sm text-muted-foreground md:text-base">

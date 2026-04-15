@@ -14,13 +14,8 @@ export default async function DiscoveryPage() {
   const profiles = use_API ? c_discoveryProfiles : discoveryProfiles;
   const filters = use_API ? c_discoveryFilter : discoveryFilter;
 
-  // Remount client when server data changes after router.refresh() (e.g. filter save).
   const discoveryClientKey = JSON.stringify({
-    filter: filters,
-    profiles: profiles.map((p) => ({
-      user_id: p.user_id,
-      match_score: p.match_score,
-    })),
+    filter: filters
   });
 
   return (

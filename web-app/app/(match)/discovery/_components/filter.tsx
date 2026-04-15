@@ -72,11 +72,17 @@ export function Filter({
   };
 
   const handleSave = async () => {
-    if (await saveDiscoveryFilter(tempDiscoveryFilter)) {
+    try {
+      if (await saveDiscoveryFilter(tempDiscoveryFilter)) {
+        setOpen(false);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+    }
       setOpen(false);
       router.refresh();
-    }
-  };
+    };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

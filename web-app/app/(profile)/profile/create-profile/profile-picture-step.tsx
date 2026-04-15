@@ -75,7 +75,7 @@ export function ProfilePictureStep({
     if (!file) return;
 
     if (!ALLOWED_TYPES.has(file.type)) {
-      setLocalError("Please choose a JPEG, PNG, GIF, or WebP image.");
+      setLocalError("Please choose a JPEG, PNG, or WebP image.");
       return;
     }
 
@@ -122,12 +122,7 @@ export function ProfilePictureStep({
 
     if (uploadError) {
       setUploading(false);
-      const hint =
-        uploadError.message.includes("row-level security") ||
-        uploadError.message.includes("RLS")
-          ? " Ask an admin to apply storage policies for the pfp bucket (see web-app/supabase/pfp-storage-policies.sql)."
-          : "";
-      setLocalError("Failed to upload profile picture: " + uploadError.message + hint);
+      setLocalError("Failed to upload profile picture: " + uploadError.message);
       return;
     }
 
@@ -191,7 +186,7 @@ export function ProfilePictureStep({
 
     const { error } = await supabase
       .from("user_profiles")
-      .update({ avatar_url: "" })
+      .update({ avatar_url: null })
       .eq("user_id", user.id);
 
     if (error) {
@@ -200,7 +195,7 @@ export function ProfilePictureStep({
       return;
     }
 
-    update("avatar_url", "");
+    update("avatar_url", null);
     setUploading(false);
     router.refresh();
   };
@@ -280,7 +275,7 @@ export function ProfilePictureStep({
             <div className="relative size-full overflow-hidden rounded-full border-2 border-muted-foreground/20 bg-muted/30">
               <Image
                 src={savedUrl}
-                alt=""
+                alt={`${profile.fname} ${profile.lname}`}
                 fill
                 className="object-cover"
                 unoptimized

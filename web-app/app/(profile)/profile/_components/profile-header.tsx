@@ -1,7 +1,7 @@
 "use client";
 
-import ProfilePage from "./profile-page";
-import SettingsPage from "./settings-page";
+import { ProfilePage } from "./profile-page";
+import { SettingsPage } from "./settings-page";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ type ProfilePageProps = {
   profile: UserProfile;
 };
 
-export default function ProfileHeader({ profile }: ProfilePageProps) {
+export function ProfileHeader({ profile }: ProfilePageProps) {
   const [page, setPage] = useState("profile");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
