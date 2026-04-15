@@ -1,190 +1,131 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import type { UserProfile } from "@/app/(profile)/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
-  const images = ["demo/room1.png", "demo/room2.png", "add-img.webp"];
+  const photoImages = ["demo/room1.png", "demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
   return (
     <>
-      <Card className="h-full w-full overflow-auto rounded-none border-none bg-linear-to-b from-pink-50 via-white to-white p-6 shadow-none md:p-8">
-        <div className="mx-auto flex max-w-5xl flex-col gap-6">
-          {/* Profile hero */}
-          <Card className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-            <div className="h-32 w-full bg-linear-to-r from-pink-200 via-rose-100 to-orange-100" />
+      <Card className="h-full w-full overflow-auto rounded-none border-none bg-linear-to-b from-pink-50 via-white to-white p-3 shadow-none sm:p-5 md:p-6 lg:p-8 pb-0">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:gap-5 lg:gap-6">
+          {/* Profile hero — full design at lg+; scales down on smaller screens */}
+          <Card className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
+            <div className="flex flex-wrap items-center justify-end gap-2 px-3 sm:gap-3 sm:px-5 sm:pt-4 md:px-6 lg:gap-4">
+              <Badge className="bg-pink-100 text-xs text-pink-700 sm:text-sm">
+                Public View
+              </Badge>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="rounded-full text-xs sm:text-sm"
+              >
+                <Link href="/profile/create-profile">Edit Profile</Link>
+              </Button>
+            </div>
 
-            <div className="relative px-6 pb-6">
-              <img
-                src={user.avatar_url ?? "demo/selfie.png"}
-                alt={`${user.fname} ${user.lname}`}
-                className="absolute -top-14 h-28 w-28 rounded-full border-4 border-white object-cover shadow-md"
-              />
-
-              <div className="pt-20 md:flex md:items-end md:justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                    {user.fname + " " + user.lname}
-                  </h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {year[user.year - 1]} year •{" "}
-                    {user.majors?.map((m) => m.name).join(" | ")}
-                  </p>
-                </div>
-
-                <div className="mt-4 flex gap-2 md:mt-0">
-                  <Badge className="bg-pink-100 text-pink-700">
-                    Public View
-                  </Badge>
-                  <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/profile/create-profile">Edit Profile</Link>
-                  </Button>
-                </div>
+            <div className="flex flex-row items-center gap-3 px-3 pt-1 sm:gap-4 sm:px-5 md:gap-6 md:px-6 lg:gap-8">
+              <div
+                className="relative -mt-6 size-20 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md sm:-mt-8 sm:size-24 sm:border-[3px] md:-mt-10 md:size-28 md:border-[3px] lg:-mt-12 lg:size-32 lg:border-4 xl:-mt-16 xl:size-36"
+              >
+                <Image
+                  src={user.avatar_url ?? "demo/selfie.png"}
+                  alt={`${user.fname} ${user.lname}`}
+                  fill
+                  sizes="128px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <div className="min-w-0 flex-1 mb-6 lg:mb-10 xl:mb-12">
+                <h1 className="break-words text-lg font-bold leading-tight tracking-tight text-gray-900 sm:text-xl md:text-2xl lg:text-3xl">
+                  {user.fname + " " + user.lname}
+                </h1>
+                <p className="mt-0.5 text-xs text-gray-500 sm:mt-1 sm:text-sm md:text-base">
+                  {year[user.year - 1]} year •{" "}
+                  {user.majors?.map((m) => m.name).join(" | ")}
+                </p>
               </div>
             </div>
           </Card>
 
-          {/* Main profile content */}
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            {/* Left/main section */}
-            <div className="xl:col-span-2 space-y-6">
-              {/* About */}
-              <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-5">
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    About Me
+          {/* Bio + hobbies: stacked on mobile, two columns md+ */}
+          <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:items-stretch lg:gap-6">
+              <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
+                <CardHeader>
+                  <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
+                    Bio
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    A quick look at who {user.fname} is.
+                  <p className="text-xs text-gray-500 sm:text-sm">
+                    A little about {user.fname}.
                   </p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                      Major
-                    </p>
-                    <p className="mt-2 text-base font-medium text-gray-800">
-                      {user.majors?.map((m) => m.name).join(" | ")}
+                </CardHeader>
+                <CardContent className="flex-1 px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6">
+                  <div className="h-full rounded-xl bg-gray-50 p-3 sm:rounded-2xl sm:p-4 md:p-5">
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-gray-700 sm:text-sm sm:leading-7">
+                      {user.bio || `${user.fname} hasn’t added a bio yet.`}
                     </p>
                   </div>
-
-                  <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                      School Year
-                    </p>
-                    <p className="mt-2 text-base font-medium text-gray-800">
-                      {year[user.year - 1]} year
-                    </p>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              {/* Bio */}
-              <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">Bio</h2>
-                </div>
-
-                <div className="rounded-2xl bg-gray-50 p-5">
-                  <p className="whitespace-pre-line text-sm leading-7 text-gray-700">
-                    {user.bio || `${user.fname} hasn’t added a bio yet.`}
-                  </p>
-                </div>
-              </Card>
-
-              {/* Interests */}
-              <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Interests
+              <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
+                <CardHeader>
+                  <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
+                    Hobbies
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                     Things {user.fname} is into.
                   </p>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2 sm:gap-3">
                   {user.hobbies?.length ? (
                     user.hobbies.map((hobby, index) => (
                       <div
                         key={`${hobby.hobby_id ?? "hobby"}-${index}`}
-                        className="rounded-full border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-medium text-pink-700"
+                        className="capitalize rounded-full border border-pink-200 bg-pink-50 px-3 py-1.5 text-xs font-medium text-pink-700 sm:px-4 sm:py-2 sm:text-sm"
                       >
                         {hobby.name}
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs text-gray-500 sm:text-sm">
                       No hobbies added yet.
                     </p>
                   )}
-                </div>
+                </CardContent>
               </Card>
             </div>
 
-            {/* Right/sidebar section */}
-            <div className="space-y-6">
-              {/* Gallery */}
-              <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Photos
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    More of {user.fname}’s vibe.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {images.map((image, index) => (
-                    <img
-                      src={image}
-                      key={`${image}-${index}`}
-                      alt="Profile gallery"
-                      className="aspect-square w-full rounded-2xl border border-gray-200 object-cover"
-                    />
-                  ))}
-                </div>
-              </Card>
-
-              {/* Quick summary card */}
-              <Card className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Quick Snapshot
+            {/* Photos — fewer columns on narrow screens */}
+            <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
+              <CardHeader>
+                <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
+                  Lifestyle Photos
                 </h2>
-
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
-                    <span className="text-sm text-gray-500">Name</span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {user.fname + " " + user.lname}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
-                    <span className="text-sm text-gray-500">Year</span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {year[user.year - 1]}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
-                    <span className="text-sm text-gray-500">Major</span>
-                    <span className="text-right text-sm font-medium text-gray-800">
-                      {user.majors?.map((m) => m.name).join(" | ")}
-                    </span>
-                  </div>
-
-                  <div className="rounded-2xl bg-pink-50 px-4 py-4 text-sm text-pink-700">
-                    Want to make changes? Use Edit Profile to reopen the setup
-                    flow with your current answers.
-                  </div>
-                </div>
-              </Card>
-            </div>
+                <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                  More of {user.fname}’s vibe.  
+                </p>
+              </CardHeader>
+              <CardContent>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                {photoImages.map((image, index) => (
+                  <img
+                    src={image}
+                    key={`${image}-${index}`}
+                    alt="Profile gallery"
+                    className="aspect-square w-full rounded-xl border border-gray-200 object-cover sm:rounded-2xl"
+                  />
+                ))}
+              </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </Card>
