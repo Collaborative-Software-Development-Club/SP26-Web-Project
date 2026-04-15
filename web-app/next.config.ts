@@ -12,18 +12,27 @@ function supabaseImageHostname(): string | undefined {
 
 const supabaseHost = supabaseImageHostname();
 
-const nextConfig: NextConfig = {
-  ...(supabaseHost && {
-    images: {
-      remotePatterns: [
+const supabaseStoragePatterns = [
+  {
+    protocol: "https" as const,
+    hostname: "*.supabase.co",
+    pathname: "/storage/v1/object/public/**",
+  },
+  ...(supabaseHost
+    ? [
         {
-          protocol: "https",
+          protocol: "https" as const,
           hostname: supabaseHost,
           pathname: "/storage/v1/object/public/**",
         },
-      ],
-    },
-  }),
+      ]
+    : []),
+];
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: supabaseStoragePatterns,
+  },
 };
 
 export default nextConfig;
