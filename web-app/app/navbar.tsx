@@ -152,7 +152,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                   );
                 })}
               </nav>
-              <div className="mt-auto flex flex-col gap-2 border-t pt-4">
+              <div className="mt-auto flex flex-col gap-2 border-t pt-10 pb-4">
                 {isSignedIn ? (
                 <form action={signOut} className="mt-auto">
                   <Button type="submit" className="w-full" variant="secondary">
@@ -166,7 +166,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                         Login
                       </Link>
                     </Button>
-                    <Button asChild className="w-full">
+                    <Button asChild className="w-full ">
                       <Link href="/signup" onClick={() => setMobileOpen(false)}>
                         Sign Up
                       </Link>
