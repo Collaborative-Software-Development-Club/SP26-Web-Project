@@ -4,16 +4,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import {
+  getPreferenceDisplayLabel,
+  getPreferenceIcon,
+} from "@/app/(profile)/profile/_components/preference-display";
 
 export default function ProfilePage({ profile }: { profile: UserProfile }) {
   const user = profile;
   const photoImages = ["demo/room1.png", "demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
+
+  console.log(profile)
   return (
     <>
       <Card className="h-full w-full overflow-auto rounded-none border-none bg-linear-to-b from-pink-50 via-white to-white p-3 shadow-none sm:p-5 md:p-6 lg:p-8 pb-0">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:gap-5 lg:gap-6">
-          {/* Profile hero — full design at lg+; scales down on smaller screens */}
+          {/* Profile hero */}
           <Card className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
             <div className="flex flex-wrap items-center justify-end gap-2 px-3 sm:gap-3 sm:px-5 sm:pt-4 md:px-6 lg:gap-4">
               <Badge className="bg-pink-100 text-xs text-pink-700 sm:text-sm">
@@ -29,7 +35,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               </Button>
             </div>
 
-            <div className="flex flex-row items-center gap-3 px-3 pt-1 sm:gap-4 sm:px-5 md:gap-6 md:px-6 lg:gap-8">
+            <div className="flex flex-row items-center gap-3 px-3 pt-1 sm:gap-4 sm:px-5 md:gap-6 md:px-6 lg:gap-8 xl:gap-10">
               <div
                 className="relative -mt-6 size-20 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md sm:-mt-8 sm:size-24 sm:border-[3px] md:-mt-10 md:size-28 md:border-[3px] lg:-mt-12 lg:size-32 lg:border-4 xl:-mt-16 xl:size-36"
               >
@@ -54,7 +60,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
             </div>
           </Card>
 
-          {/* Bio + hobbies: stacked on mobile, two columns md+ */}
+          {/* Bio + hobbies */}
           <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6">
             <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:items-stretch lg:gap-6">
               <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
@@ -103,7 +109,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               </Card>
             </div>
 
-            {/* Photos — fewer columns on narrow screens */}
+            {/* Photos */}
             <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
               <CardHeader>
                 <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
@@ -124,6 +130,45 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
                   />
                 ))}
               </div>
+              </CardContent>
+            </Card>
+
+            <Card className=" rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
+              <CardHeader>
+                <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
+                  Living Habits
+                </h2>
+                <p className="text-xs text-gray-500 sm:text-sm">
+                  How {user.fname} likes to live and share space.
+                </p>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6">
+                {user.preferences?.length ? (
+                  <div className="grid grid-cols-1 gap-2 sm:gap-3 lg:grid-cols-2 lg:gap-4">
+                    {user.preferences.map((pref) => (
+                      <div
+                        key={pref.preference_id}
+                        className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/80 px-3 py-3 sm:items-center sm:gap-4 sm:px-4 sm:py-3.5"
+                      >
+                        <div className="mt-0.5 shrink-0 text-gray-500 sm:mt-0">
+                          {getPreferenceIcon(pref.name)}
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                          <span className="text-xs font-medium capitalize text-gray-800 sm:text-sm">
+                            {pref.name}
+                          </span>
+                          <span className="text-xs capitalize text-pink-700 sm:text-right sm:text-sm">
+                            {getPreferenceDisplayLabel(pref)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500 sm:rounded-2xl sm:p-4 sm:text-sm">
+                    No living habit preferences added yet.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
