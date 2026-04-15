@@ -199,6 +199,14 @@ export async function saveProfileAction(profile: UserProfile) {
     return { error: "Failed to save preferences: " + preferencesError.message };
   }
 
+  const { error: filterError } = await supabase
+    .from("discovery_profile_filters")
+    .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+
+  if (filterError) {
+    return { error: "Failed to save filters: " + filterError.message };
+  }
+
   revalidatePath("/profile");
   revalidatePath("/profile/create-profile");
 
