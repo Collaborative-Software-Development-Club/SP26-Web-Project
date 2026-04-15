@@ -2,6 +2,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
 
+function housingQueryErrorMessage(error: { message: string }, context: string) {
+  const raw = error.message ?? "";
+  if (/fetch failed|Failed to fetch|ECONNREFUSED|ENOTFOUND|ETIMEDOUT/i.test(raw)) {
+    return `${context}: could not reach Supabase (${raw}). Confirm NEXT_PUBLIC_SUPABASE_URL and key in .env.local, that the Supabase project is running, and that your network allows outbound HTTPS.`;
+  }
+  return `${context}: ${raw}`;
+}
+
 export async function getHousingListings(page: number, pageSize: number) {
   const supabase = await createClient();
   const from = (page - 1) * pageSize;
@@ -13,7 +21,9 @@ export async function getHousingListings(page: number, pageSize: number) {
     .order("id", { ascending: true })
     .range(from, to);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(housingQueryErrorMessage(error, "getHousingListings"));
+  }
   return { listings: data, total: count ?? 0 };
 }
 
@@ -25,7 +35,9 @@ export async function getHousingListing(id: string) {
     .eq("id", id)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(housingQueryErrorMessage(error, "getHousingListing"));
+  }
   return data;
 }
 

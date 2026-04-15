@@ -6,5 +6,5 @@ export default async function HousingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <HousingDetailPageContent id={id} />;
+  return <HousingDetailPageContent id={id} isAdmin={false} />;
 }

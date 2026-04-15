@@ -3,8 +3,20 @@
 /* eslint-disable @next/next/no-img-element -- listing images use arbitrary external URLs */
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { House } from "@/app/(housing)/housing/_components/house-card";
 import { parseMainImageUrls } from "@/app/(housing)/housing/main-image-urls";
+import { deleteHousingListing } from "../admin-db";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 function parsePriceNumber(rent: string): number | null {
   const numStr = rent?.replace(/[^0-9.]/g, "");
@@ -19,6 +31,9 @@ function formatCurrency(n: number): string {
 }
 
 export function AdminHouseCard({ house }: { house: House }) {
+  const router = useRouter();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const base = parsePriceNumber(house.monthly_rent);
   const totalBaths = (house.full_bathrooms ?? 0) + (house.half_bathrooms ?? 0) * 0.5;
   let perPerson: string | null = null;
@@ -28,6 +43,21 @@ export function AdminHouseCard({ house }: { house: House }) {
 
   const imageUrls = parseMainImageUrls(house.main_image_url);
   const coverSrc = imageUrls[0] ?? null;
+
+  function onDeleteClick() {
+    startTransition(async () => {
+      try {
+        await deleteHousingListing(house.id);
+        setIsConfirmOpen(false);
+        router.refresh();
+      } catch (error) {
+        console.error(
+          "Failed to delete housing listing",
+          error instanceof Error ? error.message : error,
+        );
+      }
+    });
+  }
 
   return (
     <article className="bg-card rounded-lg shadow-sm overflow-hidden">
@@ -60,7 +90,48 @@ export function AdminHouseCard({ house }: { house: House }) {
             <Button asChild variant="default" size="sm">
               <a href={`/housing/${house.id}`}>View</a>
             </Button>
-            <Button variant="destructive" size="sm">Delete</Button>
+            <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={isPending}>
+                  Delete
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete this listing?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. Please confirm you want to delete
+                    this housing listing.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 rounded-md border border-border bg-muted/30 p-3 text-sm">
+                  <p>
+                    <span className="font-semibold">UUID:</span> {house.id}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Address:</span> {house.address}
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsConfirmOpen(false)}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={onDeleteClick}
+                    disabled={isPending}
+                  >
+                    {isPending ? "Deleting..." : "Confirm Delete"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

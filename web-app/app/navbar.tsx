@@ -32,6 +32,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
         { href: "/chat", label: "Chat" },
         { href: "/housing", label: "Housing" },
         { href: "/profile", label: "My Profile" },
+        ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [
         { href: "/housing", label: "Housing" },

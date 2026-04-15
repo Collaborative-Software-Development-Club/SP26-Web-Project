@@ -71,6 +71,14 @@ export function HousingList({
 
   const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
 
+  const listingRangeLabel = useMemo(() => {
+    const total = filteredListings.length;
+    if (total === 0) return "Showing 0 of 0 listings";
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, total);
+    return `Showing ${start}–${end} of ${total} listings`;
+  }, [filteredListings.length, page, pageSize]);
+
   function applyFilters() {
     startTransition(() => {
       let next = filterHouses(allListings, filters);
@@ -170,9 +178,7 @@ export function HousingList({
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-muted-foreground">
-          Showing {filteredListings.length} of {allListings.length} listings
-        </span>
+        <span className="text-sm text-muted-foreground">{listingRangeLabel}</span>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>

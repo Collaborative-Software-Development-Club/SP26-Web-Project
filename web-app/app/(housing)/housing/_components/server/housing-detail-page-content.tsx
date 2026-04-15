@@ -2,7 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getHousingListing, getSavedHousing } from "../../_actions";
 import { HousingDetail } from "../housing-detail";
 
-export async function HousingDetailPageContent({ id }: { id: string }) {
+export async function HousingDetailPageContent({
+  id,
+  isAdmin = false,
+}: {
+  id: string;
+  isAdmin?: boolean;
+}) {
+  void isAdmin;
   const listing = await getHousingListing(id);
   const supabase = await createClient();
   const {
