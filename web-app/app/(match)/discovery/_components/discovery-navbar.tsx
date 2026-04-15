@@ -13,7 +13,7 @@ export function DiscoveryNavbar() {
       className="mx-auto flex flex-col items-center justify-center w-full max-w-4xl flex-col gap-2 mt-6"
       aria-label="Discovery sections"
     >
-      <div className="flex flex-row items-center justify-center gap-3 font-medium">
+      <div className="flex flex-row items-center justify-center gap-3 lg:font-medium sm:font-sm lg:text-md sm:text-sm">
         <Link
           href="/discovery"
           className={

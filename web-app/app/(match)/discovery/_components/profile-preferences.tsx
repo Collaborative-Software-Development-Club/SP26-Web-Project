@@ -20,7 +20,6 @@ const getPreferenceIcon = (key: string) => {
   }
 };
 
-
 function labelForPreferenceValue(value: number, options: string[]): string {
   if (options.length === 2) {
     for (let i = 0; i < 2; i++) {
@@ -64,7 +63,7 @@ export function ProfilePreferences({
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-2">
         {preferences
           .slice(0, isExpanded ? preferences.length : INITIAL_VISIBLE_PREFS)
           .map((pref) => (
