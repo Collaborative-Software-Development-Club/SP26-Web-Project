@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DiscoveryProfile } from "../types";
+import { DiscoveryProfile, LikedYouProfile } from "../types";
 import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
@@ -16,15 +16,30 @@ const user = profiles[0];
 // TODO: replace with profile data
 const PHOTOS = ["selfie", "room1", "room2"] as const;
 
+//refactored from vibecheck-profile, should be able to 
+//handle both discovery and liked you profiles with 
+//conditional rendering based on props
+type MasterProfileProps = {
+  profile: DiscoveryProfile | LikedYouProfile;
+  isDiscovery?: boolean; // Defaults to true if not provided
+  
+  // Discovery actions
+  handleNext?: () => void;
+  handleBefore?: () => void;
+  
+  // VibeCheck actions
+  onAccept?: (userId: string) => void;
+  onPass?: (userId: string) => void;
+};
+
 export function ProfileCard({
   profile,
+  isDiscovery = true, //set default to discovery mode
   handleNext,
   handleBefore,
-}: {
-  profile: DiscoveryProfile;
-  handleNext: () => void;
-  handleBefore: () => void;
-}) {
+  onAccept,
+  onPass,
+}: MasterProfileProps) {
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -32,11 +47,15 @@ export function ProfileCard({
   const onAction = (dir: number) => {
     setSwipeDirection(dir);
     setTimeout(() => {
-      if (dir === 2) {
-        handleBefore();
+      if (isDiscovery) {
+        //discovery mode actions
+        if (dir === 2 && handleBefore) handleBefore();
+        else if (handleNext) handleNext();
       } else {
-        handleNext();
-      }
+        //vibe check mode actions
+        if (dir === 1 && onAccept) onAccept(profile.user_id);
+        else if (onPass) onPass(profile.user_id);
+        }
     }, 10);
   };
 
@@ -89,7 +108,8 @@ export function ProfileCard({
                 {/* Dot indicators */}
                 <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-4 pb-3 pt-8 bg-gradient-to-t from-black/30 to-transparent">
                   {PHOTOS.map((_, i) => (
-                    <button
+                    <button 
+                      title="View photo"
                       key={i}
                       onClick={() => setPhotoIndex(i)}
                       className={`h-0.5 flex-1 rounded-full transition-colors duration-200 ${
@@ -148,6 +168,20 @@ export function ProfileCard({
                       preferences={profile.preferences}
                       userPreferences={user.preferences}
                     />
+                    {/* NEW: Conditional Message Block */}
+                    {!isDiscovery && 'message' in profile && (
+                      <>
+                        <div className="h-px bg-border my-4" />
+                        <div>
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-2">
+                            Their message to you
+                          </p>
+                          <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm text-foreground italic">
+                            &quot;{profile.message}&quot;
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -156,20 +190,20 @@ export function ProfileCard({
               <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
                 <DislikeButton
                   onClick={() => onAction(-1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => (isDiscovery? handleNext : () => onAction(-1))}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <LikeButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={()=> (isDiscovery? handleNext : () => onAction(1))}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <MessageButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={()=> (isDiscovery? handleNext : () => onAction(1))}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
               </div>
