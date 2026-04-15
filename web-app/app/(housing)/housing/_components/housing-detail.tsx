@@ -125,7 +125,7 @@ export function HousingDetail({ listing }: { listing: HousingListing }) {
   const galleryImages = mainImageUrlsFromRecord(listing.main_image_url);
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col bg-background font-sans">
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-background font-sans [--app-header-height:5.75rem] md:[--app-header-height:6.25rem]">
       {/* Grid on lg keeps the aside centered in its fixed track; main keeps a slight right gap so divider sits a bit left. */}
       <div className="mx-auto grid w-full min-w-0 max-w-screen-2xl grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_24rem]">
         {/* Main content — root layout <main> scrolls */}
