@@ -12,14 +12,21 @@ type ProfilePageProps = {
   profile: UserProfile
 }
 
-function prefsEqual(p1: Preference[], p2: Preference[]) {
+/**
+ * Returns whether or not two lists of Preferences are equal.
+ * @param p1 The first list of preferences
+ * @param p2 The second list of preferences
+ * @returns Whether or not they are equal
+ */
+function prefsEqual(p1: Preference[], p2: Preference[]): boolean {
   return JSON.stringify(p1) === JSON.stringify(p2);
 }
 
 export default function LivingHabitsPage({ profile }: ProfilePageProps) {
   const [formData, setFormData] = useState<UserProfile>(profile);
-  const [formModified, setFormModified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // The preferences as they are in the database, to see if anything has changed.
   const oldPrefs = profile.preferences;
 
   return (
@@ -41,7 +48,6 @@ export default function LivingHabitsPage({ profile }: ProfilePageProps) {
           </p>
         </div>
 
-        {/*Email*/}
         <Card className="border p-6 shadow-sm">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -60,10 +66,11 @@ export default function LivingHabitsPage({ profile }: ProfilePageProps) {
                 return (<div key={`pref-${pref.preference_id}`}>Something went really wrong</div>);
               }
               
+              // One group of options
               return (<div key={`pref-${pref.preference_id}`}>
                 <Label className="mb-2" htmlFor={pref.preference_id}>{entry.question}</Label>
                 <div className="space-y-2 flex flex-col w-75">
-
+                  {/* For every option */}
                   {entry.options.map((opt, i) => {
                     const v = valueForOptionIndex(entry.options, i);
                     const selected = pref.value === v;
@@ -85,9 +92,6 @@ export default function LivingHabitsPage({ profile }: ProfilePageProps) {
                               }
                             })
                           });
-                          // setFormModified(oldPrefs == formData.preferences);
-                          console.log(opt, i, pref);
-                          // console.log(oldPrefs);
                         }}
                         disabled={isSubmitting}
                       >
@@ -103,6 +107,8 @@ export default function LivingHabitsPage({ profile }: ProfilePageProps) {
               <Button className="px-6" disabled={prefsEqual(formData.preferences, oldPrefs)} onClick={() => {
                 console.log(formData.preferences.map(p=>p.value));
                 console.log(oldPrefs.map(p=>p.value));
+                
+                // Set the form data to what the old preferences were.
                 setFormData({
                   ...formData,
                   preferences: oldPrefs.map(p => ({...p})), // bullshit so it mutates and react sees it
@@ -116,19 +122,6 @@ export default function LivingHabitsPage({ profile }: ProfilePageProps) {
               </Button>
             </div>
           </div>
-
-          {/* <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" />
-            </div>
-
-          </div> */}
         </Card>
 
       </div>
