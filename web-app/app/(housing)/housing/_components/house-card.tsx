@@ -28,7 +28,8 @@ function parsePriceNumber(rent: string): number | null {
 }
 
 function formatCurrency(n: number): string {
-  return "$" + Math.round(n).toLocaleString();
+  // Fixed locale so SSR (Node) and the browser agree — default locale differs and causes hydration mismatches.
+  return "$" + Math.round(n).toLocaleString("en-US");
 }
 
 export function HouseCard({

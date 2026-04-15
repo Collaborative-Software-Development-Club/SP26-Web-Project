@@ -1,6 +1,5 @@
 import { getHousingListing } from "../_actions";
 import { HousingDetail } from "../_components/housing-detail";
-import { createClient } from "@/lib/supabase/server";
 
 export default async function HousingDetailPage({
   params,
@@ -9,12 +8,10 @@ export default async function HousingDetailPage({
 }) {
   const { id } = await params;
   const listing = await getHousingListing(id);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   return (
-    <HousingDetail key={listing.id} listing={listing} userId={user?.id ?? null} />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <HousingDetail listing={listing} />
+    </div>
   );
 }

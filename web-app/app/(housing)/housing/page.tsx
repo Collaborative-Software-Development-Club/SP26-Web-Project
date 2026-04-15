@@ -12,8 +12,8 @@ export default async function Housing() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="h-full min-h-0 overflow-y-auto bg-background p-8">
+      <div className="mx-auto max-w-7xl">
         <h1 className="text-2xl font-semibold text-foreground mb-6">Housing Listings</h1>
 
         <HousingList initialListings={listings} pageSize={PAGE_SIZE} userId={user?.id ?? null} />
