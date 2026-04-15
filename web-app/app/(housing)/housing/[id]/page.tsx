@@ -1,5 +1,4 @@
-import { getHousingListing } from "../_actions";
-import { HousingDetail } from "../_components/housing-detail";
+import { HousingDetailPageContent } from "../_components/server/housing-detail-page-content";
 
 export default async function HousingDetailPage({
   params,
@@ -7,11 +6,5 @@ export default async function HousingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const listing = await getHousingListing(id);
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <HousingDetail listing={listing} />
-    </div>
-  );
+  return <HousingDetailPageContent id={id} />;
 }

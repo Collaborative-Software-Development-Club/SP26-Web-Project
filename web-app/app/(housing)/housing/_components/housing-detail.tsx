@@ -18,9 +18,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mainImageUrlsFromRecord } from "../main-image-urls";
 import type { HousingListing } from "../types";
 import { HousingDetailGallery } from "./housing-detail-gallery";
+import { HousingDetailFavoriteStar } from "./housing-detail-favorite-star";
 import { OtherAmenitiesMoreInfo } from "./other-amenities-more-info";
 
-export function HousingDetail({ listing }: { listing: HousingListing }) {
+export function HousingDetail({
+  listing,
+  userId,
+  initialIsFavorite,
+}: {
+  listing: HousingListing;
+  userId: string | null;
+  initialIsFavorite: boolean;
+}) {
   const hasAmenityValue = (value?: string | null) => {
     if (!value) return false;
     const normalized = value.trim().toLowerCase();
@@ -130,9 +139,14 @@ export function HousingDetail({ listing }: { listing: HousingListing }) {
       <div className="mx-auto grid w-full min-w-0 max-w-screen-2xl grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_24rem]">
         {/* Main content — root layout <main> scrolls */}
         <main className="relative min-w-0 w-full max-w-5xl justify-self-start border-border p-8 max-lg:border-b">
-          <h1 className="mb-6 text-3xl font-bold text-foreground">
-            {listing.address}
-          </h1>
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold text-foreground">{listing.address}</h1>
+            <HousingDetailFavoriteStar
+              housingId={listing.id}
+              userId={userId}
+              initialIsFavorite={initialIsFavorite}
+            />
+          </div>
 
           {/* Photo gallery */}
           <HousingDetailGallery

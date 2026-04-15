@@ -1,7 +1,10 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- listing images use arbitrary external URLs */
+
 import { Button } from "@/components/ui/button";
 import { House } from "@/app/(housing)/housing/_components/house-card";
+import { parseMainImageUrls } from "@/app/(housing)/housing/main-image-urls";
 
 function parsePriceNumber(rent: string): number | null {
   const numStr = rent?.replace(/[^0-9.]/g, "");
@@ -11,7 +14,8 @@ function parsePriceNumber(rent: string): number | null {
 }
 
 function formatCurrency(n: number): string {
-  return "$" + Math.round(n).toLocaleString();
+  // Fixed locale so SSR (Node) and the browser agree — default locale differs and can cause hydration mismatches.
+  return "$" + Math.round(n).toLocaleString("en-US");
 }
 
 export function AdminHouseCard({ house }: { house: House }) {
@@ -22,10 +26,21 @@ export function AdminHouseCard({ house }: { house: House }) {
     perPerson = `${formatCurrency(base / house.bedrooms)}/mo per person`;
   }
 
+  const imageUrls = parseMainImageUrls(house.main_image_url);
+  const coverSrc = imageUrls[0] ?? null;
+
   return (
     <article className="bg-card rounded-lg shadow-sm overflow-hidden">
-      <div className="h-44 bg-muted flex items-center justify-center">
-        <span className="text-muted-foreground text-sm">No image available</span>
+      <div className="relative h-44 bg-muted flex items-center justify-center overflow-hidden">
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <span className="text-muted-foreground text-sm">No image available</span>
+        )}
       </div>
       <div className="p-4">
         <h2 className="text-lg font-medium text-card-foreground">{house.address}</h2>
