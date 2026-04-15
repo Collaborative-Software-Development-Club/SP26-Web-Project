@@ -8,5 +8,6 @@ export default async function HousingDetailPage({
 }) {
   const { id } = await params;
   const listing = await getHousingListing(id);
+
   return <HousingDetail listing={listing} />;
 }

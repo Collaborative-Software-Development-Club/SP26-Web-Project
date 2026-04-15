@@ -12,6 +12,7 @@ export interface Conversation {
   lastMessage: string;
   timestamp: string;
   unread: boolean;
+  isGroup: boolean;
 }
 
 export type ConversationPreview = {
@@ -20,4 +21,5 @@ export type ConversationPreview = {
   lastMessage: string;
   timestamp: string;
   unread: boolean;
+  isGroup: boolean;
 };

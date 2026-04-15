@@ -30,7 +30,9 @@ export function CreateConversationDialog() {
       setLoading(true);
       setError("");
       getMatchedUserIds()
-        .then(setMatchedUsers)
+        .then((users) => {
+          setMatchedUsers(users);
+        })
         .catch((e) => setError(e instanceof Error ? e.message : "Failed to load users"))
         .finally(() => setLoading(false));
       setSelectedIds(new Set());
@@ -57,8 +59,12 @@ export function CreateConversationDialog() {
     setLoading(true);
     setError("");
     try {
-      await createConversationWithCurrentUser([...selectedIds]);
+      const memberIds = [...selectedIds];
+      const result = await createConversationWithCurrentUser(memberIds);
+      const conversation_id = result.conversation_id;
+
       setOpen(false);
+      router.push(`/chat/${conversation_id}`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create conversation");
@@ -78,9 +84,7 @@ export function CreateConversationDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New Conversation</DialogTitle>
-          <DialogDescription>
-            Select one or more matched users to start a conversation.
-          </DialogDescription>
+          <DialogDescription>Select one or more matched users to start a conversation.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 py-4">
           {loading && matchedUsers.length === 0 ? (

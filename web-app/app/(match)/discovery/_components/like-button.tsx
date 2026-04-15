@@ -1,6 +1,7 @@
 "use client";
 
 import { ThumbsUp } from "lucide-react";
+import { motion } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { saveSwipe } from "../_actions";
 import { saveMatchSwipe } from "../_actions";
@@ -18,7 +19,7 @@ export function LikeButton({
 }) {
   const handleLike = useCallback(() => {
     console.log("Like");
-    
+
     if (onClick) {
       onClick(); // Trigger animation first
     } else {
@@ -35,51 +36,30 @@ export function LikeButton({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        handleLike();
-      }
+      if (e.key !== "ArrowRight") return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        t.closest("textarea, input, select, [contenteditable]")
+      )
+        return;
+      e.preventDefault();
+      handleLike();
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleLike]);
 
-  const DiscoveryButton = () => {
-    return (
-      <button
-        onClick={handleLike}
-        className="text-green-400 hover:bg-green-100 dark:hover:bg-green-100 rounded-full p-3 transition-colors cursor-pointer"
-      >
-        <ThumbsUp />
-      </button>
-    );
-  };
-
-  const LikedYouButton = () => {
-    return (
-      <button
-        onClick={handleLike}
-        aria-label="Accept vibe"
-        className="
-      group relative flex items-center justify-center gap-2
-      px-6 py-3 rounded-2xl
-      bg-black dark:bg-white
-      text-white dark:text-black
-      font-semibold text-sm tracking-wide
-      shadow-md
-      hover:bg-zinc-800 dark:hover:bg-zinc-100
-      hover:shadow-lg hover:shadow-black/20
-      active:scale-95
-      transition-all duration-200
-      disabled:opacity-50 disabled:cursor-not-allowed
-    "
-      >
-        <span>Vibe With Them</span>
-        <ThumbsUp />
-      </button>
-    );
-  };
-
-  return <>{isDiscovery ? DiscoveryButton() : LikedYouButton()}</>;
+  return (
+    <motion.button
+      onClick={handleLike}
+      whileTap={{ scale: 0.85 }}
+      whileHover={{ scale: 1.1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+      className="text-green-400 hover:bg-green-100 dark:hover:bg-green-100 rounded-full p-3 transition-colors cursor-pointer"
+    >
+      <ThumbsUp />
+    </motion.button>
+  );
 }

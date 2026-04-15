@@ -1,52 +1,61 @@
-import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MessageSquare, Home, Users } from "lucide-react";
+import { ArrowRight, Home as HomeIcon, MessageSquare, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const ROUTES = {
   SIGNUP: "/signup",
   LOGIN: "/login",
 } as const;
 
+const HERO_IMAGE = "/background.png";
+
 export default function HomePage() {
   return (
-    <main className="flex flex-col min-h-screen bg-background font-sans">
-      {/* Skip navigation link for keyboard users */}
+    <main className="flex min-h-0 w-full flex-col bg-background font-sans">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded"
+        className="absolute left-[-9999px] z-[100] rounded-md bg-primary px-4 py-2 text-primary-foreground outline-none ring-offset-background focus:left-4 focus:top-4 focus:ring-2 focus:ring-ring focus:ring-offset-2"
       >
         Skip to content
       </a>
 
-      {/* aria-label on hero section */}
       <section
         id="main-content"
-        aria-label="Hero"
-        className="relative w-full pt-12 pb-24 md:pt-24 md:pb-32 overflow-hidden"
+        aria-labelledby="hero-heading"
+        className="relative z-10 w-full pt-12 pb-16 md:pb-24 md:pt-24"
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left Column: Text & CTA */}
-          <div className="flex flex-col space-y-8 z-10">
-            {/* replaced leading-[1.1] with a named Tailwind class */}
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-tight">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 px-6 md:grid-cols-2 md:items-center md:px-12">
+          <div className="relative z-10 flex min-h-0 flex-col space-y-8">
+            <h1
+              id="hero-heading"
+              className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl"
+            >
               Find your perfect <br className="hidden md:block" />
               <span className="text-primary">OSU roommate</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-md">
-              Connect with verified Ohio State University students, find off-campus housing, and safely match with roommates who share your living habits and vibe.
+            <p className="max-w-md text-lg text-muted-foreground md:text-xl">
+              Connect with verified Ohio State University students, find
+              off-campus housing, and safely match with roommates who share your
+              living habits and vibe.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              {/* use ROUTES constant */}
-              <Button asChild size="lg" className="rounded-full px-8 text-base shadow-lg">
-                <Link href={ROUTES.SIGNUP}>
-                  Create a free account
-                </Link>
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-full px-8 text-base shadow-lg"
+              >
+                <Link href={ROUTES.SIGNUP}>Create a free account</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full px-8 text-base">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="rounded-full px-8 text-base"
+              >
                 <Link href={ROUTES.LOGIN}>
                   Log in
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
                 </Link>
               </Button>
             </div>
@@ -55,94 +64,109 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Right Column: Hero Image with Gradient */}
-          {/* replaced h-[400px] and h-[550px] with named Tailwind classes */}
-          <div className="relative w-full h-96 md:h-[550px] rounded-3xl overflow-hidden shadow-2xl border border-border">
-            {/* decorative image uses alt="" and role="presentation" */}
+          <div className="relative h-96 w-full overflow-hidden rounded-3xl border border-border shadow-2xl md:h-[550px]">
             <Image
-              src="/background.png"
+              src={HERO_IMAGE}
               alt=""
-              role="presentation"
               fill
-              loading="lazy"
+              priority
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover object-center"
             />
-            {/* aria-hidden on decorative gradient overlay */}
             <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
             />
-
-            {/* replaced text-[10px] with text-xs */}
-            <div className="absolute bottom-4 right-4 text-xs text-white/80 bg-black/40 px-2 py-1 rounded backdrop-blur-md">
-              This image is generated by Gemini
-            </div>
+            <p className="absolute bottom-4 right-4 rounded bg-black/40 px-2 py-1 text-xs text-white/80 backdrop-blur-md">
+              Placeholder image
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-px bg-border max-w-7xl mx-auto" />
+      <div
+        className="relative z-0 mx-auto h-px w-full max-w-7xl bg-border"
+        role="separator"
+        aria-hidden
+      />
 
-      {/* aria-label on features section */}
-      <section aria-label="Features" className="py-20 md:py-32 w-full">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-semibold mb-16 tracking-tight text-foreground">
+      <section
+        aria-labelledby="features-heading"
+        className="relative z-0 w-full py-20 md:py-32"
+      >
+        <div className="mx-auto max-w-7xl px-6 text-center md:px-12">
+          <h2
+            id="features-heading"
+            className="mb-16 text-3xl font-semibold tracking-tight text-foreground md:text-4xl"
+          >
             Everything you need for off-campus living
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-            {/* renamed "Vibe Check & Match" to a more professional label */}
-            <div className="flex flex-col items-center text-center group">
-              <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-primary/10 text-primary mb-6 transition-transform group-hover:scale-110 duration-300">
-                <Users aria-hidden="true" className="w-8 h-8" />
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8">
+            <article className="group flex flex-col items-center text-center">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                <Users aria-hidden className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-medium mb-3 text-foreground">Smart Roommate Matching</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Browse verified student profiles. Filter by graduation year, major, and living habits like cleanliness, quiet hours, and pet preferences.
+              <h3 className="mb-3 text-xl font-medium text-foreground">
+                Smart Roommate Matching
+              </h3>
+              <p className="leading-relaxed text-muted-foreground">
+                Browse verified student profiles. Filter by graduation year,
+                major, and living habits like cleanliness, quiet hours, and pet
+                preferences.
               </p>
-            </div>
+            </article>
 
-            <div className="flex flex-col items-center text-center group">
-              <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 mb-6 transition-transform group-hover:scale-110 duration-300">
-                <MessageSquare aria-hidden="true" className="w-8 h-8" />
+            <article className="group flex flex-col items-center text-center">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 transition-transform duration-300 group-hover:scale-110">
+                <MessageSquare aria-hidden className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-medium mb-3 text-foreground">Secure Live Chat</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Once you match, connect instantly and securely to coordinate housing plans without having to exchange personal numbers prematurely.
+              <h3 className="mb-3 text-xl font-medium text-foreground">
+                Secure Live Chat
+              </h3>
+              <p className="leading-relaxed text-muted-foreground">
+                Once you match, connect instantly and securely to coordinate
+                housing plans without having to exchange personal numbers
+                prematurely.
               </p>
-            </div>
+            </article>
 
-            <div className="flex flex-col items-center text-center group">
-              <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-6 transition-transform group-hover:scale-110 duration-300">
-                <Home aria-hidden="true" className="w-8 h-8" />
+            <article className="group flex flex-col items-center text-center">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 transition-transform duration-300 group-hover:scale-110">
+                <HomeIcon aria-hidden className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-medium mb-3 text-foreground">Discover Housing</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Browse our comprehensive database of off-campus rentals. Sort by sector, distance to campus, bedrooms, and price.
+              <h3 className="mb-3 text-xl font-medium text-foreground">
+                Discover Housing
+              </h3>
+              <p className="leading-relaxed text-muted-foreground">
+                Browse our comprehensive database of off-campus rentals. Sort by
+                sector, distance to campus, bedrooms, and price.
               </p>
-            </div>
+            </article>
           </div>
         </div>
       </section>
 
-      {/* aria-label on CTA section */}
-      <section aria-label="Call to Action" className="bg-zinc-50 dark:bg-zinc-900/50 py-24 mb-10 w-full text-center">
-        <div className="max-w-3xl mx-auto px-6 flex flex-col items-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">Ready to find your living situation?</h2>
-          <p className="text-lg text-muted-foreground mb-10">
-            Join thousands of Buckeyes streamlining their off-campus living experience.
+      <section
+        aria-labelledby="cta-heading"
+        className="relative z-0 mb-10 w-full bg-zinc-50 py-24 text-center dark:bg-zinc-900/50"
+      >
+        <div className="mx-auto flex max-w-3xl flex-col items-center px-6">
+          <h2
+            id="cta-heading"
+            className="mb-6 text-3xl font-bold tracking-tight md:text-4xl"
+          >
+            Ready to find your living situation?
+          </h2>
+          <p className="mb-10 text-lg text-muted-foreground">
+            Join thousands of Buckeyes streamlining their off-campus living
+            experience.
           </p>
-          {/* use ROUTES constant */}
-          <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg">
-            <Link href={ROUTES.SIGNUP}>
-              Get Started Now
-            </Link>
+          <Button asChild size="lg" className="h-14 rounded-full px-12 text-lg">
+            <Link href={ROUTES.SIGNUP}>Get Started Now</Link>
           </Button>
         </div>
       </section>
     </main>
   );
 }
-

@@ -1,10 +1,14 @@
 "use server";
-//Checking if this triggers the CodeOwner review
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserProfiles } from "@/lib/services/profile";
-import type { Preference } from "./types";
+import type {
+  Hobby,
+  HobbyCategoryGroup,
+  Major,
+  Preference,
+  UserProfile,
+} from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -88,105 +92,156 @@ export async function signupAction(formData: FormData) {
   );
 }
 
-export async function createProfileAction(formData: FormData) {
-  const fname = formData.get("fname") as string;
-  const lname = formData.get("lname") as string;
-  const gender = formData.get("gender") as string;
-  const bio = formData.get("bio") as string;
-  const major = formData.get("major") as string;
-  const year = formData.get("year") as string;
-
-  if (!fname || !lname || !gender || !bio || !major || !year) {
-    return { error: "All fields are required" };
-  }
-
+/**
+ * Saves a profile for the signed-in user
+ */
+export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return { error: "Unauthorized" };
   }
 
-  const now = new Date().toISOString();
-  const { error } = await supabase
+  const { error: profileError } = await supabase
     .from("user_profiles")
-    .insert([
+    .upsert([
       {
         user_id: user.id,
         is_active: true,
-        fname,
-        lname,
-        gender,
-        bio,
-        major,
-        year: parseInt(year),
-        avatar_url: "",
-        created_at: now,
-        last_edited_at: now,
+        bio: profile.bio,
+        year: profile.year,
+        avatar_url: profile.avatar_url,
+        fname: profile.fname,
+        lname: profile.lname,
+        gender: profile.gender,
       },
     ]);
 
-  if (error) {
-    return { error: error.message };
+  if (profileError) {
+    return { error: "Failed to save profile: " + profileError.message };
   }
 
-  // ensure related records exist in the join tables so the user_id is linked
-  // these tables currently don't have any extra information, just associating
-  // the profile with hobbies/preferences; we'll insert a bare record for now
+  const { error: majorsError } = await supabase
+    .from("user_profile_majors")
+    .upsert(profile.majors.map(m => ({
+      user_id: user.id,
+      major_id: m.major_id,
+    })), { onConflict: "user_id,major_id" });
+
+  if (majorsError) {
+    return { error: "Failed to save majors: " + majorsError.message };
+  }
+
   const { error: hobbiesError } = await supabase
     .from("user_profile_hobbies")
-    .insert([{ 
+    .upsert(profile.hobbies.map(h => ({
       user_id: user.id,
-      created_at: now
-     }]);
-  const { error: prefsError } = await supabase
-    .from("user_profile_preferences")
-    .insert([{
-      user_id: user.id,
-      created_at: now
-     }]);
+      hobby_id: h.hobby_id,
+    })), { onConflict: "user_id,hobby_id" });
 
-  if (hobbiesError || prefsError) {
-    // non-critical; log or ignore but could return an error if desired
-    console.warn("error creating empty user profile relations", hobbiesError, prefsError);
+  if (hobbiesError) {
+    return { error: "Failed to save hobbies: " + hobbiesError.message };
   }
 
-  redirect("/profile");
-}
-
-export async function getAllPreferences(): Promise<Preference[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-  .from('user_preferences')
-  .select('*');
-
-  if (error) throw new Error("Error getting all preferences");
-  if (!data) throw new Error("Could not retrieve preferences");
-
-  return data.map(p => ({
-    preference_id: p.preference_id,
-    name: p.name,
-    value: 0 // default value is 0
-  })) as Preference[];
-}
-
-export async function setPreferences(preferences: Preference[]) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Unauthorized");
-    }
-
-  const {error} = await supabase
-  .from("user_profile_preferences")
-  .insert(
-    preferences.map(p => ({
+  const { error: preferencesError } = await supabase
+    .from("user_profile_preferences")
+    .upsert(profile.preferences.map(p => ({
       user_id: user.id,
       preference_id: p.preference_id,
-      value: p.value
-    }))
-  );
+      value: p.value,
+    })), { onConflict: "user_id,preference_id" });
 
-  if (error) throw new Error(`Error updating user preferences: ${error.message}`);
+  if (preferencesError) {
+    return { error: "Failed to save preferences: " + preferencesError.message };
+  }
+
+  return { error: null };
+}
+
+
+/** Supabase may return one object or an array for embedded FK rows. */
+type EmbeddedCategoryName = { name: string };
+
+type UserHobbyRow = {
+  hobby_id: number | string;
+  name: string;
+  user_hobby_categories?: EmbeddedCategoryName | EmbeddedCategoryName[] | null;
+};
+
+function categoryNameFromEmbed(
+  embed: EmbeddedCategoryName | EmbeddedCategoryName[] | null | undefined,
+): string {
+  if (embed == null) return "uncategorized";
+  if (Array.isArray(embed)) {
+    return embed[0]?.name?.trim() || "uncategorized";
+  }
+  return embed.name?.trim() || "uncategorized";
+}
+
+/** Group hobbies by category (nested `user_hobby_categories.name` from Supabase). */
+function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
+  const groups = new Map<string, Hobby[]>();
+
+  for (const row of rows) {
+    const category = categoryNameFromEmbed(row.user_hobby_categories);
+    const hobbyId = String(row.hobby_id);
+    const list = groups.get(category) ?? [];
+    list.push({ hobby_id: hobbyId, name: row.name });
+    groups.set(category, list);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([category, hobbies]) => ({ category, hobbies }));
+}
+
+/** Return all the major, hobby and preference choices **/
+export async function getMajorsHobbiesPreferences(): Promise<
+  | { error: string }
+  | { majorData: Major[]; hobbiesData: HobbyCategoryGroup[]; preferencesData: Preference[] }
+> {
+  const supabase = await createClient();
+
+  const { data: majorsData, error: majorsError } = await supabase
+    .from("user_majors")
+    .select("major_id, name")
+    .order("name", { ascending: true });
+
+  if (majorsError) {
+    return { error: majorsError.message };
+  }
+
+  const { data: preferencesData, error: preferencesError } = await supabase
+    .from("user_preferences")
+    .select("*");
+
+  if (preferencesError) {
+    return { error: preferencesError.message };
+  }
+
+  const { data: hobbiesData, error: hobbiesError } = await supabase
+  .from("user_hobbies")
+  .select(`
+    hobby_id,
+    name,
+    user_hobby_categories(name)
+  `)
+
+
+  if (hobbiesError) {
+    return { error: hobbiesError.message };
+  }
+
+  const hobbies = groupHobbiesData((hobbiesData ?? []) as UserHobbyRow[]);
+  
+  return {
+    majorData: majorsData,
+    hobbiesData: hobbies,
+    preferencesData: (preferencesData ?? []).map((p) => ({
+      preference_id: p.preference_id,
+      name: p.name,
+      value: 0,
+    })),
+  };
 }

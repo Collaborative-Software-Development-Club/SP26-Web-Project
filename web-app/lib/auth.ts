@@ -14,7 +14,7 @@ export async function requireUser(): Promise<UserProfile> {
     const user = await requireAuth();
   const userProfile = (await getUserProfiles([user.id])).at(0);
   if (!userProfile) {
-    redirect("/create-profile");
+    redirect("/profile/create-profile");
   }
   return userProfile as UserProfile;
 }

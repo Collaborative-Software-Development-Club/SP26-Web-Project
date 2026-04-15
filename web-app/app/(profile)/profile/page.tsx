@@ -3,7 +3,7 @@ import { requireAuth, requireUser } from "@/lib/auth";
 Include ways to be able to edit these fields.
 */
 //
-import ProfileHeader from "./profile-components/profile-header";
+import ProfileHeader from "./_components/profile-header";
 import type { UserProfile } from "@/app/(profile)/types";
 export default async function Profile() {
   const user: UserProfile = await requireUser();

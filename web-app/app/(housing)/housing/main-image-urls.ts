@@ -32,3 +32,8 @@ export function mainImageUrlsFromRecord(raw: unknown): string[] {
 function isHttpUrl(s: string): boolean {
   return /^https?:\/\//i.test(s);
 }
+
+/** Alias for list/card code; same normalization as {@link mainImageUrlsFromRecord}. */
+export function parseMainImageUrls(raw: unknown): string[] {
+  return mainImageUrlsFromRecord(raw);
+}

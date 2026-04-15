@@ -1,183 +1,182 @@
 [
-    {
-      "user_id": "1",
-      "is_active": true,
-      "fname": "Emily",
-      "lname": "Chen",
-      "gender": "female",
-      "avatar_url": "https://example.com/avatars/emily.jpg",
-      "bio": "Clean and organized. Love studying at cafes.",
-      "major": "Computer Science",
-      "year": 3,
-      "created_at": "2025-01-12",
-      "last_edited_at": "2025-02-08T14:32:10Z",
-      "hobbies": ["gym", "reading", "boba"],
-      "preferences": [
-        {"preference_id": "1", "name": "Smoker", "value": 0},
-        {"preference_id": "2", "name": "Pets", "value": 1},
-        {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
-        {"preference_id": "4", "name": "Guests", "value": 3}
-      ]
-    },
-    {
-      "user_id": "2",
-      "is_active": true,
-      "fname": "Daniel",
-      "lname": "Kim",
-      "gender": "male",
-      "avatar_url": "https://example.com/avatars/daniel.jpg",
-      "bio": "Chill roommate. Usually coding or gaming.",
-      "major": "Data Analytics",
-      "year": 2,
-      "created_at": "2025-03-01",
-      "last_edited_at": "2025-03-05T09:10:45Z",
-      "hobbies": ["gaming", "basketball", "anime"],
-      "preferences": [
-        {"preference_id": "1", "name": "Smoker", "value": 0},
-        {"preference_id": "2", "name": "Pets", "value": 1},
-        {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
-        {"preference_id": "4", "name": "Guests", "value": 3}
-      ]
-    },
-    {
-      "user_id": "3",
-      "is_active": false,
-      "fname": "Sophia",
-      "lname": "Martinez",
-      "gender": "female",
-      "avatar_url": "https://example.com/avatars/sophia.jpg",
-      "bio": "Looking for a quiet and respectful roommate.",
-      "major": "Biology",
-      "year": 4,
-      "created_at": "2024-11-20",
-      "last_edited_at": "2025-01-15T18:22:00Z",
-      "hobbies": ["hiking", "cooking", "yoga"],
-      "preferences": [
-        {"preference_id": "1", "name": "Smoker", "value": 1},
-        {"preference_id": "2", "name": "Pets", "value": 1},
-        {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
-        {"preference_id": "4", "name": "Guests", "value": 0}
-      ]
-    },
-    {
-      "user_id": "4",
-      "is_active": true,
-      "fname": "Michael",
-      "lname": "Johnson",
-      "gender": "male",
-      "avatar_url": "https://example.com/avatars/michael.jpg",
-      "bio": "Music producer and night owl.",
-      "major": "Music Technology",
-      "year": 3,
-      "created_at": "2025-02-10",
-      "last_edited_at": "2025-02-15T21:05:33Z",
-      "hobbies": ["music", "concerts", "photography"],
-      "preferences": [
-        {"preference_id": "1", "name": "Smoker", "value": 1},
-        {"preference_id": "2", "name": "Pets", "value": 0},
-        {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
-        {"preference_id": "4", "name": "Guests", "value": 0}
-      ]
-    },
-    {
-          "user_id": "5",
-          "is_active": true,
-          "fname": "Aiden",
-          "lname": "Park",
-          "gender": "male",
-          "avatar_url": "https://example.com/avatars/aiden.jpg",
-          "bio": "Quiet, tidy, and focused on academics.",
-          "major": "Mechanical Engineering",
-          "year": 2,
-          "created_at": "2025-01-18",
-          "last_edited_at": "2025-02-12T11:20:45Z",
-          "hobbies": ["basketball", "weightlifting", "podcasts"],
-          "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 0},
-            {"preference_id": "2", "name": "Pets", "value": 0},
-            {"preference_id": "3", "name": "Sleep Schedule", "value": 1},
-            {"preference_id": "4", "name": "Guests", "value": 0}
-          ]
-        },
-        {
-          "user_id": "6",
-          "is_active": true,
-          "fname": "Olivia",
-          "lname": "Nguyen",
-          "gender": "female",
-          "avatar_url": "https://example.com/avatars/olivia.jpg",
-          "bio": "Love cooking and hosting small dinners.",
-          "major": "Business Administration",
-          "year": 4,
-          "created_at": "2024-12-05",
-          "last_edited_at": "2025-01-22T16:05:12Z",
-          "hobbies": ["cooking", "traveling", "yoga"],
-          "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 0},
-            {"preference_id": "2", "name": "Pets", "value": 1},
-            {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
-            {"preference_id": "4", "name": "Guests", "value": 3}
-          ]
-        },
-        {
-          "user_id": "7",
-          "is_active": false,
-          "fname": "Lucas",
-          "lname": "Wright",
-          "gender": "male",
-          "avatar_url": "https://example.com/avatars/lucas.jpg",
-          "bio": "Night owl developer who loves hackathons.",
-          "major": "Computer Engineering",
-          "year": 3,
-          "created_at": "2025-02-02",
-          "last_edited_at": "2025-02-14T23:40:18Z",
-          "hobbies": ["coding", "gaming", "coffee"],
-          "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 0},
-            {"preference_id": "2", "name": "Pets", "value": 0},
-            {"preference_id": "3", "name": "Sleep Schedule", "value": 5},
-            {"preference_id": "4", "name": "Guests", "value": 0}
-          ]
-        },
-        {
-          "user_id": "8",
-          "is_active": true,
-          "fname": "Hannah",
-          "lname": "Lee",
-          "gender": "female",
-          "avatar_url": "https://example.com/avatars/hannah.jpg",
-          "bio": "Looking for a clean and communicative roommate.",
-          "major": "Psychology",
-          "year": 2,
-          "created_at": "2025-01-30",
-          "last_edited_at": "2025-02-16T10:12:00Z",
-          "hobbies": ["painting", "reading", "pilates"],
-          "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 0},
-            {"preference_id": "2", "name": "Pets", "value": 1},
-            {"preference_id": "3", "name": "Sleep Schedule", "value": 2},
-            {"preference_id": "4", "name": "Guests", "value": 3}
-          ]
-        },
-        {
-          "user_id": "9",
-          "is_active": true,
-          "fname": "Noah",
-          "lname": "Anderson",
-          "gender": "male",
-          "avatar_url": "https://example.com/avatars/noah.jpg",
-          "bio": "Easygoing and respectful. Big sports fan.",
-          "major": "Finance",
-          "year": 3,
-          "created_at": "2025-02-08",
-          "last_edited_at": "2025-02-17T08:45:29Z",
-          "hobbies": ["football", "gym", "movies"],
-          "preferences": [
-            {"preference_id": "1", "name": "Smoker", "value": 1},
-            {"preference_id": "2", "name": "Pets", "value": 0},
-            {"preference_id": "3", "name": "Sleep Schedule", "value": 1},
-            {"preference_id": "4", "name": "Guests", "value": 0}
-          ]
-        }
-  ] 
-  
+  {
+    "user_id": "1",
+    "is_active": true,
+    "fname": "Emily",
+    "lname": "Chen",
+    "gender": "female",
+    "avatar_url": "https://example.com/avatars/emily.jpg",
+    "bio": "Clean and organized. Love studying at cafes.",
+    "majors": [{"major_id": "1", "name": "Computer Science"}, {"major_id": "2", "name": "Data Analytics"}],
+    "year": 3,
+    "created_at": "2025-01-12",
+    "last_edited_at": "2025-02-08T14:32:10Z",
+    "hobbies": [{"hobby_id": "1", "name": "gym"}, {"hobby_id": "2", "name": "reading"}, {"hobby_id": "3", "name": "boba"}],
+    "preferences": [
+      {"preference_id": "1", "name": "smoker", "value": 1},
+      {"preference_id": "2", "name": "pets", "value": 5},
+      {"preference_id": "3", "name": "sleep hours", "value": 2},
+      {"preference_id": "4", "name": "guests", "value": 3}
+    ]
+  },
+  {
+    "user_id": "2",
+    "is_active": true,
+    "fname": "Daniel",
+    "lname": "Kim",
+    "gender": "male",
+    "avatar_url": "https://example.com/avatars/daniel.jpg",
+    "bio": "Chill roommate. Usually coding or gaming.",
+    "majors": [{"major_id": "2", "name": "Data Analytics"}],
+    "year": 2,
+    "created_at": "2025-03-01",
+    "last_edited_at": "2025-03-05T09:10:45Z",
+    "hobbies": [{"hobby_id": "4", "name": "gaming"}, {"hobby_id": "5", "name": "basketball"}, {"hobby_id": "6", "name": "anime"}],
+    "preferences": [
+      {"preference_id": "1", "name": "smoker", "value": 5},
+      {"preference_id": "2", "name": "pets", "value": 5},
+      {"preference_id": "3", "name": "sleep hours", "value": 2},
+      {"preference_id": "4", "name": "guests", "value": 3}
+    ]
+  },
+  {
+    "user_id": "3",
+    "is_active": false,
+    "fname": "Sophia",
+    "lname": "Martinez",
+    "gender": "female",
+    "avatar_url": "https://example.com/avatars/sophia.jpg",
+    "bio": "Looking for a quiet and respectful roommate.",
+    "majors": [{"major_id": "3", "name": "Biology"}],
+    "year": 4,
+    "created_at": "2024-11-20",
+    "last_edited_at": "2025-01-15T18:22:00Z",
+    "hobbies": [{"hobby_id": "7", "name": "hiking"}, {"hobby_id": "8", "name": "cooking"}, {"hobby_id": "9", "name": "yoga"}],
+    "preferences": [
+      {"preference_id": "1", "name": "smoker", "value": 1},
+      {"preference_id": "2", "name": "pets", "value": 5},
+      {"preference_id": "3", "name": "sleep hours", "value": 5},
+      {"preference_id": "4", "name": "guests", "value": 0}
+    ]
+  },
+  {
+    "user_id": "4",
+    "is_active": true,
+    "fname": "Michael",
+    "lname": "Johnson",
+    "gender": "male",
+    "avatar_url": "https://example.com/avatars/michael.jpg",
+    "bio": "Music producer and night owl.",
+    "majors": [{"major_id": "4", "name": "Music Technology"}],
+    "year": 3,
+    "created_at": "2025-02-10",
+    "last_edited_at": "2025-02-15T21:05:33Z",
+    "hobbies": [{"hobby_id": "10", "name": "music"}, {"hobby_id": "11", "name": "concerts"}, {"hobby_id": "12", "name": "photography"}],
+    "preferences": [
+      {"preference_id": "1", "name": "smoker", "value": 5},
+      {"preference_id": "2", "name": "pets", "value": 1},
+      {"preference_id": "3", "name": "sleep hours", "value": 5},
+      {"preference_id": "4", "name": "guests", "value": 0}
+    ]
+  },
+  {
+        "user_id": "5",
+        "is_active": true,
+        "fname": "Aiden",
+        "lname": "Park",
+        "gender": "male",
+        "avatar_url": "https://example.com/avatars/aiden.jpg",
+        "bio": "Quiet, tidy, and focused on academics.",
+        "majors": [{"major_id": "5", "name": "Mechanical Engineering"}],
+        "year": 2,
+        "created_at": "2025-01-18",
+        "last_edited_at": "2025-02-12T11:20:45Z",
+        "hobbies": [{"hobby_id": "5", "name": "basketball"}, {"hobby_id": "13", "name": "weightlifting"}, {"hobby_id": "14", "name": "podcasts"}],
+        "preferences": [
+          {"preference_id": "1", "name": "smoker", "value": 1},
+          {"preference_id": "2", "name": "pets", "value": 1},
+          {"preference_id": "3", "name": "sleep hours", "value": 1},
+          {"preference_id": "4", "name": "guests", "value": 1}
+        ]
+      },
+      {
+        "user_id": "6",
+        "is_active": true,
+        "fname": "Olivia",
+        "lname": "Nguyen",
+        "gender": "female",
+        "avatar_url": "https://example.com/avatars/olivia.jpg",
+        "bio": "Love cooking and hosting small dinners.",
+        "majors": [{"major_id": "6", "name": "Business Administration"}],
+        "year": 4,
+        "created_at": "2024-12-05",
+        "last_edited_at": "2025-01-22T16:05:12Z",
+        "hobbies": [{"hobby_id": "8", "name": "cooking"}, {"hobby_id": "15", "name": "traveling"}, {"hobby_id": "9", "name": "yoga"}],
+        "preferences": [
+          {"preference_id": "1", "name": "smoker", "value": 1},
+          {"preference_id": "2", "name": "pets", "value": 5},
+          {"preference_id": "3", "name": "sleep hours", "value": 2},
+          {"preference_id": "4", "name": "guests", "value": 3}
+        ]
+      },
+      {
+        "user_id": "7",
+        "is_active": false,
+        "fname": "Lucas",
+        "lname": "Wright",
+        "gender": "male",
+        "avatar_url": "https://example.com/avatars/lucas.jpg",
+        "bio": "Night owl developer who loves hackathons.",
+        "majors": [{"major_id": "7", "name": "Computer Engineering"}],
+        "year": 3,
+        "created_at": "2025-02-02",
+        "last_edited_at": "2025-02-14T23:40:18Z",
+        "hobbies": [{"hobby_id": "16", "name": "coding"}, {"hobby_id": "4", "name": "gaming"}, {"hobby_id": "17", "name": "coffee"}],
+        "preferences": [
+          {"preference_id": "1", "name": "smoker", "value": 1},
+          {"preference_id": "2", "name": "pets", "value": 1},
+          {"preference_id": "3", "name": "sleep hours", "value": 5},
+          {"preference_id": "4", "name": "guests", "value": 1}
+        ]
+      },
+      {
+        "user_id": "8",
+        "is_active": true,
+        "fname": "Hannah",
+        "lname": "Lee",
+        "gender": "female",
+        "avatar_url": "https://example.com/avatars/hannah.jpg",
+        "bio": "Looking for a clean and communicative roommate.",
+        "majors": [{"major_id": "8", "name": "Psychology"}],
+        "year": 2,
+        "created_at": "2025-01-30",
+        "last_edited_at": "2025-02-16T10:12:00Z",
+        "hobbies": [{"hobby_id": "18", "name": "painting"}, {"hobby_id": "2", "name": "reading"}, {"hobby_id": "19", "name": "pilates"}],
+        "preferences": [
+          {"preference_id": "1", "name": "smoker", "value": 1},
+          {"preference_id": "2", "name": "pets", "value": 5},
+          {"preference_id": "3", "name": "sleep hours", "value": 2},
+          {"preference_id": "4", "name": "guests", "value": 3}
+        ]
+      },
+      {
+        "user_id": "9",
+        "is_active": true,
+        "fname": "Noah",
+        "lname": "Anderson",
+        "gender": "male",
+        "avatar_url": "https://example.com/avatars/noah.jpg",
+        "bio": "Easygoing and respectful. Big sports fan.",
+        "majors": [{"major_id": "9", "name": "Finance"}],
+        "year": 3,
+        "created_at": "2025-02-08",
+        "last_edited_at": "2025-02-17T08:45:29Z",
+        "hobbies": [{"hobby_id": "20", "name": "football"}, {"hobby_id": "3", "name": "gym"}, {"hobby_id": "21", "name": "movies"}],
+        "preferences": [
+          {"preference_id": "1", "name": "smoker", "value": 5},
+          {"preference_id": "2", "name": "pets", "value": 1},
+          {"preference_id": "3", "name": "sleep hours", "value": 1},
+          {"preference_id": "4", "name": "guests", "value": 1}
+        ]
+      }
+] 
