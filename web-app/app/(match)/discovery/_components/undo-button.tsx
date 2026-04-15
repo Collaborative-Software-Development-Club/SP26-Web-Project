@@ -57,7 +57,7 @@ export function UndoButton({
     <button
       onClick={handleUndo}
       className="
-            mt-6 flex items-center gap-2
+            flex items-center gap-2
             text-sm text-zinc-500 dark:text-zinc-400
             hover:text-zinc-800 dark:hover:text-white
             transition-colors duration-150

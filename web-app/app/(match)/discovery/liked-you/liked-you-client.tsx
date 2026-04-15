@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { VibeCheckProfile } from "../_components/vibecheck-profile";
+import { ProfileCard } from "../_components/profile-card";
 import { UndoButton } from "../_components/undo-button";
 import { LikedYouProfile } from "../types"; // adjust path as needed
 
@@ -85,11 +85,11 @@ export function LikedYouClient({
   return (
     <div className="flex flex-col items-center w-full px-4">
       {/* Header */}
-      <div className="w-full max-w-4xl mb-4 text-center space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+      <div className="hidden md:block w-full max-w-4xl mb-4 text-center space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
           Vibe Check
         </h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground xl:text-sm md:text-xs">
           {queue.length} {queue.length === 1 ? "person" : "people"} waiting ·{" "}
           {accepted.length} matched
         </p>
@@ -98,8 +98,9 @@ export function LikedYouClient({
       {/* Main card area */}
       {current ? (
         <div className="w-full flex flex-col items-center justify-center">
-          <VibeCheckProfile
+          <ProfileCard
             profile={current}
+            isDiscovery={false}
             onAccept={handleAccept}
             onPass={handlePass}
           />
