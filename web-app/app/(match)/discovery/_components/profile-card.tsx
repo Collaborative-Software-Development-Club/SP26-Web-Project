@@ -35,7 +35,8 @@ export function ProfileCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user, profile: userProfile } = useUser();
 
-  if (isDiscovery) console.log(profile?.fname, (profile as DiscoveryProfile)?.match_score)
+  if (isDiscovery)
+    console.log(profile?.fname, (profile as DiscoveryProfile)?.match_score);
 
   // Animation Director
   const onAction = (dir: number) => {
@@ -94,7 +95,7 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-full h-[80dvh] md:w-3/4 md:h-auto md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
+          className="w-full h-[80dvh] md:w-3/4 md:max-h-[60dvh] md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
         >
           <div className="flex flex-col md:grid md:grid-cols-12 h-full">
             {/* Photo column */}
@@ -164,8 +165,8 @@ export function ProfileCard({
             </div>
 
             {/* Info column */}
-            <div className="flex flex-col flex-1 md:col-span-7 overflow-hidden">
-              <div className="p-4 md:p-6 flex-1 overflow-y-auto">
+            <div className="flex flex-col flex-1 md:col-span-7 overflow-hidden min-h-0">
+              <div className="p-4 md:p-6 flex-1 overflow-y-auto min-h-0">
                 {/* Bio */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -211,6 +212,7 @@ export function ProfileCard({
                     <ProfilePreferences
                       preferences={profile?.preferences ?? []}
                       userPreferences={userProfile?.preferences ?? []}
+                      maxPrefsToShow={"message" in profile ? 4 : 6}
                     />
                   </div>
 
@@ -279,7 +281,7 @@ export function ProfileCard({
               height={900}
               className="object-contain max-h-[95vh]"
             />
-          </div>  
+          </div>
         </div>
       )}
     </div>

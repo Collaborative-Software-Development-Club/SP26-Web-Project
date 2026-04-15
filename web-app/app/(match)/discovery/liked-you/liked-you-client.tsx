@@ -83,7 +83,7 @@ export function LikedYouClient({
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col items-center w-full px-4">
+    <div className="flex flex-col items-center w-full px-4 gap-2">
       {/* Header */}
       <div className="hidden md:block w-full max-w-4xl mb-4 text-center space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
