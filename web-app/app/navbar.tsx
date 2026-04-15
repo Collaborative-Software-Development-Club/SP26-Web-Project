@@ -84,8 +84,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                 <form action={signOut}>
                   <Button 
                     type="submit" 
-                    variant="ghost" 
-                    className="rounded-full h-9 px-4 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                    className="rounded-full h-9 px-4 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:hover:bg-red-900/50"
                   >
                     Sign Out
                   </Button>
@@ -101,7 +100,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                 </Button>
                 <Button
                   asChild
-                  className="rounded-full h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="rounded-full h-9 px-4 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:hover:bg-red-900/50"
                 >
                   <Link href="/signup">Sign Up</Link>
                 </Button>
