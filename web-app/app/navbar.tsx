@@ -15,7 +15,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function Navbar({ user }: { user: User | null }) {
+
+
+export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?: boolean;}) {
   const isSignedIn = user !== null;
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -30,6 +32,7 @@ export function Navbar({ user }: { user: User | null }) {
         { href: "/chat", label: "Chat" },
         { href: "/housing", label: "Housing" },
         { href: "/profile", label: "My Profile" },
+        ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [
         { href: "/housing", label: "Housing" },
