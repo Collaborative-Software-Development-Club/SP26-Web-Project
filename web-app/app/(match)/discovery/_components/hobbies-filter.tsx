@@ -30,6 +30,7 @@ export function HobbiesFilter({
               key={hobby.hobby_id}
               variant="outline"
               onClick={() => handleHobbyFilterUpdate(hobby)}
+              className="capitalize"
             >
               {hobby.name}
             </Button>

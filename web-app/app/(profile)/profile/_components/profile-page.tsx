@@ -78,7 +78,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
               <Card className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white shadow-sm sm:rounded-3xl">
                 <CardHeader>
                   <h2 className="text-lg font-semibold text-gray-900 sm:text-xl md:text-2xl">
-                    Hobbies
+                    Hobbies & Interests
                   </h2>
                   <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                     Things {user.fname} is into.

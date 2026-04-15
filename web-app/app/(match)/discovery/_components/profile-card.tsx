@@ -8,11 +8,7 @@ import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-
-// TODO: replace with user context
-import profiles from "@/mock/profiles.json";
-import { on } from "events";
-const user = profiles[0];
+import { useUser } from "@/contexts/UserContext";
 
 // TODO: replace with profile data
 const PHOTOS = ["selfie", "room1", "room2"] as const;
@@ -37,6 +33,9 @@ export function ProfileCard({
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const { user, profile: userProfile } = useUser();
+
+  console.log(profile?.fname, profile?.match_score)
 
   // Animation Director
   const onAction = (dir: number) => {
@@ -171,17 +170,17 @@ export function ProfileCard({
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-serif font-normal text-foreground tracking-tight">
-                      {profile.fname} {profile.lname}
+                      {profile?.fname} {profile?.lname}
                     </h1>
+                    {/* IDK why but the profiles have major attribute instead of majors*/}
                     <p className="font-serif text-sm text-muted-foreground">
-                      {profile.majors.map((m) => m.name).join(" | ")} • Year{" "}
-                      {profile.year}
+                    Year {profile?.year} • {profile.major?.map((m) => m.name).join(" | ")}
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-3 text-sm italic text-muted-foreground leading-relaxed">
-                  &quot;{profile.bio}&quot;
+                  &quot;{profile?.bio}&quot;
                 </p>
 
                 <div className="h-px w-full bg-border my-4 md:my-5" />
@@ -193,10 +192,10 @@ export function ProfileCard({
                       Hobbies & interests
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {profile.hobbies.map((hobby) => (
+                      {profile?.hobbies?.map((hobby) => (
                         <span
                           key={hobby.hobby_id}
-                          className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs border border-border"
+                          className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs border border-border capitalize"
                         >
                           {hobby.name}
                         </span>
@@ -210,8 +209,8 @@ export function ProfileCard({
                       Living habits
                     </h3>
                     <ProfilePreferences
-                      preferences={profile.preferences}
-                      userPreferences={user.preferences}
+                      preferences={profile?.preferences ?? []}
+                      userPreferences={userProfile?.preferences ?? []}
                     />
                   </div>
 
@@ -222,7 +221,7 @@ export function ProfileCard({
                         Their message to you
                       </h3>
                       <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm text-foreground italic">
-                        &quot;{profile.message}&quot;
+                        &quot;{profile?.message}&quot;
                       </div>
                     </div>
                   )}
@@ -274,13 +273,13 @@ export function ProfileCard({
               ✕
             </button>
             <Image
-              src={`/demo/${PHOTOS[photoIndex]}.png`}
+              src={profile?.avatar_url ?? `/demo/${PHOTOS[photoIndex]}.png`}
               alt="Full photo"
               width={1200}
               height={900}
               className="object-contain max-h-[95vh]"
             />
-          </div>
+          </div>  
         </div>
       )}
     </div>

@@ -9,12 +9,15 @@ export default async function DiscoveryPage() {
   const user = await requireAuth();
   const c_discoveryProfiles = await getDiscoveryProfiles();
   const c_discoveryFilter = await getDiscoveryFilter();
+  const use_API = true;
 
-  //TODO: replace with c_discoveryProfiles and Filter
+  console.log("c_discoveryProfiles", c_discoveryProfiles);
+  console.log("c_discoveryFilter", c_discoveryFilter);
+  
   return (
     <DiscoveryClient
-      initialProfiles={discoveryProfiles}
-      discoveryFilters={discoveryFilter}
+      initialProfiles={use_API ? c_discoveryProfiles : discoveryProfiles}
+      discoveryFilters={use_API ? c_discoveryFilter : discoveryFilter}
     />
   );
 }
