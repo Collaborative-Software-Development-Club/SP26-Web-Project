@@ -5,7 +5,6 @@ Include ways to be able to edit these fields.
 //
 import ProfilePage from "./profile-page";
 import SettingsPage from "./settings-page";
-import PreferencesPage from "./living-habits-page";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
