@@ -14,7 +14,6 @@ import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import {motion} from "framer-motion";
 
 export function Navbar({ user }: { user: User | null }) {
@@ -35,8 +34,8 @@ export function Navbar({ user }: { user: User | null }) {
       ]
     : [
         { href: "/housing", label: "Housing" },
-        { href: "/login", label: "Login" },
-        { href: "/signup", label: "Sign Up" },
+        //{ href: "/login", label: "Login" },
+        //{ href: "/signup", label: "Sign Up" },
       ];
 
   return (
@@ -76,22 +75,40 @@ export function Navbar({ user }: { user: User | null }) {
               </Link>
             );
           })}
-          {isSignedIn && (
-            <div className="pl-2 border-l border-border/50 ml-1">
-              <form action={signOut}>
-                <Button 
-                  type="submit" 
-                  variant="ghost" 
-                  className="rounded-full h-9 px-4 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50"
+            
+          <div className="pl-2 border-l border-border/50 ml-1">
+            {isSignedIn ? (
+                <form action={signOut}>
+                  <Button 
+                    type="submit" 
+                    variant="ghost" 
+                    className="rounded-full h-9 px-4 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                  >
+                    Sign Out
+                  </Button>
+                </form>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="rounded-full h-9 px-4 hover:bg-muted"
                 >
-                  Sign Out
+                  <Link href="/login">Login</Link>
                 </Button>
-              </form>
-            </div>
-          )}
+                <Button
+                  asChild
+                  className="rounded-full h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
+         </div>
         </nav>
 
-        <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+      
+      <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
           <DialogTrigger asChild>
             <Button
               type="button"
@@ -113,10 +130,7 @@ export function Navbar({ user }: { user: User | null }) {
           >
             <DialogTitle className="sr-only">Main menu</DialogTitle>
             <div className="flex h-full flex-col gap-4 p-6 pt-14">
-              <nav
-                className="flex flex-col gap-1"
-                aria-label="Main"
-              >
+              <nav className="flex flex-col gap-1" aria-label="Main">
                 {navLinks.map((link) => {
                   const isActive = pathname.includes(link.href);
                   return (
@@ -136,13 +150,28 @@ export function Navbar({ user }: { user: User | null }) {
                   );
                 })}
               </nav>
-              {isSignedIn && (
+              <div className="mt-auto flex flex-col gap-2 border-t pt-4">
+                {isSignedIn ? (
                 <form action={signOut} className="mt-auto border-t pt-4">
                   <Button type="submit" className="w-full" variant="secondary">
                     Sign Out
                   </Button>
                 </form>
-              )}
+                ) : (
+                  <>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/login" onClick={() => setMobileOpen(false)}>
+                        Login
+                      </Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
