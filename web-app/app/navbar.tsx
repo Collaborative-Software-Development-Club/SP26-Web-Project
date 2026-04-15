@@ -152,7 +152,7 @@ export function Navbar({ user }: { user: User | null }) {
               </nav>
               <div className="mt-auto flex flex-col gap-2 border-t pt-4">
                 {isSignedIn ? (
-                <form action={signOut} className="mt-auto border-t pt-4">
+                <form action={signOut} className="mt-auto">
                   <Button type="submit" className="w-full" variant="secondary">
                     Sign Out
                   </Button>
