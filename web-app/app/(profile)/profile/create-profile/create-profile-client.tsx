@@ -28,6 +28,7 @@ import {
 } from "./helpers";
 import { HobbiesStep } from "./hobbies-step";
 import { PreferencesStep } from "./preferences-step";
+import { ProfilePictureStep } from "./profile-picture-step";
 import { WizardFooter } from "./wizard-footer";
 import { WizardHeader } from "./wizard-header";
 
@@ -58,6 +59,7 @@ export function CreateProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preferenceQuestionIndex, setPreferenceQuestionIndex] = useState(0);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const update = useCallback(
     <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
@@ -132,12 +134,16 @@ export function CreateProfileClient({
       return;
     }
     if (step === 1) {
+      setStep(2);
+      return;
+    }
+    if (step === 2) {
       const msg = validateHobbiesStep(profile);
       if (msg) {
         setError(msg);
         return;
       }
-      setStep(2);
+      setStep(3);
     }
   };
 
@@ -176,7 +182,7 @@ export function CreateProfileClient({
       <Card
         className={cn(
           "flex w-full max-h-[80vh] flex-col gap-0 overflow-hidden py-0 shadow-sm",
-          step === 1 ? "max-w-2xl" : step === 2 ? "max-w-lg" : "max-w-md",
+          step === 2 ? "max-w-2xl" : step === 3 ? "max-w-lg" : "max-w-md",
         )}
       >
         <CardHeader className="shrink-0 border-b pb-6">
@@ -207,6 +213,16 @@ export function CreateProfileClient({
           )}
 
           {step === 1 && (
+            <ProfilePictureStep
+              profile={profile}
+              isEditMode={isEditMode}
+              isSubmitting={isSubmitting}
+              update={update}
+              onUploadingChange={setIsUploadingAvatar}
+            />
+          )}
+
+          {step === 2 && (
             <HobbiesStep
               profile={profile}
               toggleHobby={toggleHobby}
@@ -216,7 +232,7 @@ export function CreateProfileClient({
             />
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <PreferencesStep
               profile={profile}
               prefsLoading={false}
@@ -235,6 +251,7 @@ export function CreateProfileClient({
             step={step}
             stepsLength={STEPS.length}
             isSubmitting={isSubmitting}
+            disableNext={isUploadingAvatar}
             canCreateProfile={allPreferencesAnswered}
             submitLabel={isEditMode ? "Save Changes" : "Create Profile"}
             submittingLabel={

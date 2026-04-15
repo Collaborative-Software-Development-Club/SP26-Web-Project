@@ -94,7 +94,7 @@ export async function signupAction(formData: FormData) {
 }
 
 /**
- * Saves a profile for the signed-in user
+ * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
  */
 export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
@@ -112,7 +112,7 @@ export async function saveProfileAction(profile: UserProfile) {
       is_active: true,
       bio: profile.bio,
       year: profile.year,
-      avatar_url: profile.avatar_url,
+      avatar_url: profile.avatar_url || null,
       fname: profile.fname,
       lname: profile.lname,
       gender: profile.gender,

@@ -18,7 +18,7 @@ export default function ProfilePage({ profile }: { profile: UserProfile }) {
 
             <div className="relative px-6 pb-6">
               <img
-                src="demo/selfie.png"
+                src={user.avatar_url ?? "demo/selfie.png"}
                 alt={`${user.fname} ${user.lname}`}
                 className="absolute -top-14 h-28 w-28 rounded-full border-4 border-white object-cover shadow-md"
               />
