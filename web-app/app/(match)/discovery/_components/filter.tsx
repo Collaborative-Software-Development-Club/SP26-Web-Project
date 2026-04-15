@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,7 +33,12 @@ export function Filter({
   const [tempDiscoveryFilter, setTempDiscoveryFilter] =
     useState<DiscoveryFilter>(discoveryFilter);
 
-  const { user, profile } = useUser();
+  useEffect(() => {
+    setTempDiscoveryFilter(discoveryFilter);
+  }, [discoveryFilter]);
+
+  const { profile } = useUser();
+  const router = useRouter();
 
   const handlePreferenceUpdate = (id: string, val: number) => {
     setTempDiscoveryFilter((prev) => ({
@@ -65,9 +71,11 @@ export function Filter({
     }));
   };
 
-  const handleSave = () => {
-    saveDiscoveryFilter(tempDiscoveryFilter);
-    setOpen(false);
+  const handleSave = async () => {
+    if (await saveDiscoveryFilter(tempDiscoveryFilter)) {
+      setOpen(false);
+      router.refresh();
+    }
   };
 
   return (

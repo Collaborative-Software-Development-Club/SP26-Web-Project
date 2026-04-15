@@ -35,7 +35,7 @@ export function ProfileCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user, profile: userProfile } = useUser();
 
-  console.log(profile?.fname, profile?.match_score)
+  if (isDiscovery) console.log(profile?.fname, (profile as DiscoveryProfile)?.match_score)
 
   // Animation Director
   const onAction = (dir: number) => {
@@ -172,9 +172,9 @@ export function ProfileCard({
                     <h1 className="text-2xl md:text-3xl font-serif font-normal text-foreground tracking-tight">
                       {profile?.fname} {profile?.lname}
                     </h1>
-                    {/* IDK why but the profiles have major attribute instead of majors*/}
                     <p className="font-serif text-sm text-muted-foreground">
-                    Year {profile?.year} • {profile.major?.map((m) => m.name).join(" | ")}
+                      Year {profile?.year} •{" "}
+                      {profile.majors?.map((m) => m.name).join(" | ")}
                     </p>
                   </div>
                 </div>
