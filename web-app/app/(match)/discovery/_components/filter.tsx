@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,12 +19,9 @@ import { cn } from "@/lib/utils";
 import { ImportanceControl } from "./importance-control";
 import { saveDiscoveryFilter } from "../_actions";
 import { DiscoveryFilter, ProfileFilter, YesNoPreferences } from "../types";
+import type { Hobby } from "@/app/(profile)/types";
 import { HobbiesFilter } from "./hobbies-filter";
-
-// TODO: replace with user context
-import profiles from "@/mock/profiles.json";
-import { Hobby } from "@/app/(profile)/types";
-const user = profiles[0];
+import { useUser } from "@/contexts/UserContext";
 
 export function Filter({
   discoveryFilter,
@@ -34,6 +32,13 @@ export function Filter({
 
   const [tempDiscoveryFilter, setTempDiscoveryFilter] =
     useState<DiscoveryFilter>(discoveryFilter);
+
+  useEffect(() => {
+    setTempDiscoveryFilter(discoveryFilter);
+  }, [discoveryFilter]);
+
+  const { profile } = useUser();
+  const router = useRouter();
 
   const handlePreferenceUpdate = (id: string, val: number) => {
     setTempDiscoveryFilter((prev) => ({
@@ -66,10 +71,18 @@ export function Filter({
     }));
   };
 
-  const handleSave = () => {
-    // TODO: save preferences to database (PENDING)
-    setOpen(false);
-  };
+  const handleSave = async () => {
+    try {
+      if (await saveDiscoveryFilter(tempDiscoveryFilter)) {
+        setOpen(false);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+      setOpen(false);
+      router.refresh();
+    };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -134,7 +147,7 @@ export function Filter({
           </div>
           <HobbiesFilter
             selectedHobbies={tempDiscoveryFilter?.hobby_filters}
-            userHobbies={user.hobbies}
+            userHobbies={profile?.hobbies ?? []}
             handleHobbyFilterUpdate={handleHobbyFilterUpdate}
           />
           <div className="flex pr-2 flex-col gap-1">
@@ -150,7 +163,7 @@ export function Filter({
                 >
                   <Label
                     className={cn(
-                      "text-sm cursor-default",
+                      "text-sm cursor-default capitalize",
                       !isActive && "text-muted-foreground",
                     )}
                   >

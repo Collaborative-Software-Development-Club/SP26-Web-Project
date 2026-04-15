@@ -94,7 +94,7 @@ export async function signupAction(formData: FormData) {
 }
 
 /**
- * Saves a profile for the signed-in user
+ * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
  */
 export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
@@ -112,7 +112,7 @@ export async function saveProfileAction(profile: UserProfile) {
       is_active: true,
       bio: profile.bio,
       year: profile.year,
-      avatar_url: profile.avatar_url,
+      avatar_url: profile.avatar_url || null,
       fname: profile.fname,
       lname: profile.lname,
       gender: profile.gender,
@@ -197,6 +197,32 @@ export async function saveProfileAction(profile: UserProfile) {
 
   if (preferencesError) {
     return { error: "Failed to save preferences: " + preferencesError.message };
+  }
+
+  const { error: filterError } = await supabase
+    .from("discovery_profile_filters")
+    .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+
+  if (filterError) {
+    return { error: "Failed to save filters: " + filterError.message };
+  }
+
+  const { error: preferenceFilterError } =
+    profile.preferences.length > 0
+      ? await supabase
+          .from("discovery_roommate_preferences")
+          .upsert(
+            profile.preferences.map((p) => ({
+              user_id: user.id,
+              preference_id: p.preference_id,
+              importance: 3,
+            })),
+            { onConflict: "user_id,preference_id", ignoreDuplicates: true },
+          )
+      : { error: null };
+      
+  if (preferenceFilterError) {  
+    return { error: "Failed to save preferences: " + preferenceFilterError.message };
   }
 
   revalidatePath("/profile");

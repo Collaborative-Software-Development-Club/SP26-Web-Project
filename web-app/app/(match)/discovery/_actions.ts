@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { LikedYouProfile, DiscoveryProfile, DiscoveryFilter } from "./types";
 import type { UserProfile } from "@/app/(profile)/types";
 import { getUserProfiles } from "@/lib/services/profile";
+import { revalidatePath } from "next/cache";
 
 export async function getLikedYouProfiles(): Promise<LikedYouProfile[]> {
   const supabase = await createClient();
@@ -232,42 +233,38 @@ export async function saveDiscoveryFilter(
     throw new Error(`Error fetching current user: ${userError?.message}`);
   }
 
-  const { error: saveError } = await supabase
-    .rpc("save_discovery_filter", {
-      user_id: user.id,
-      roommate_preferences: filters.roommate_preferences,
-      profile_filters: filters.profile_filters,
-      hobby_filters: filters.hobby_filters,
-    });
+  const { error: saveError } = await supabase.rpc("save_discovery_filter", {
+    p_user_id: user.id,
+    roommate_preferences: filters.roommate_preferences,
+    profile_filters: filters.profile_filters,
+    hobby_filters: filters.hobby_filters,
+  });
 
   if (saveError) {
-    throw new Error(
-      `Failed to save discovery filter: ${saveError.message}`,
-    );
+    throw new Error(`Failed to save discovery filter: ${saveError.message}`);
   }
+
+  revalidatePath("/discovery");
+  return true;
 }
-    
-  
-  /* 
-    This action gets the profiles with the calculated match score for potential matches. 
-    It calls the get_ranked_matches function in the database.
 
-    Here is how the get_ranked_matches function works:
-    1. It gets the user's profile, profile filters, roommate preferences, and hobby filters
-    2. It filters the candidates based on the profile filters, hobby filters, dealbreaker roommate preferences, and if user already swiped on them
-    3. It computes the match score for each candidate by doing Sum(importance * (1 - |user_preference - candidate_preference| / ))
-    4. It returns the candidates sorted by the match score in descending order
-  */
-  export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+/*
+  getDiscoveryProfiles calls get_ranked_matches in the database:
+  1. User profile, filters, roommate prefs, hobby filters
+  2. Filter candidates (profile/hobby prefs, dealbreakers, already swiped)
+  3. Match score: sum of importance * (1 - |delta| / range)
+  4. Return candidates sorted by score descending
+*/
+export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-    if (userError || user === null) {
-      throw new Error(`Error fetching current user: ${userError?.message}`);
-    }
+  if (userError || user === null) {
+    throw new Error(`Error fetching current user: ${userError?.message}`);
+  }
 
     const { data, error } = await supabase.rpc("get_ranked_matches", {
       current_user_id: user.id,

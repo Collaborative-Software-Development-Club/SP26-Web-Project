@@ -13,20 +13,20 @@ export function DiscoveryClient({
   initialProfiles: DiscoveryProfile[];
   discoveryFilters: DiscoveryFilter;
 }) {
-  const [profiles, setProfiles] = useState<DiscoveryProfile[]>(initialProfiles);
-  const [selectedProfile, setSelectedProfile] = useState<DiscoveryProfile>(
-    profiles[0],
-  );
+  const [selectedProfile, setSelectedProfile] = useState<
+    DiscoveryProfile | undefined
+  >(initialProfiles[0]);
   const [history, setHistory] = useState<DiscoveryProfile[]>([]);
   const [reachedEnd, setReachedEnd] = useState(false);
 
   const handleNext = () => {
-    const currentIndex = profiles.findIndex(
+    if (!selectedProfile) return;
+    const currentIndex = initialProfiles.findIndex(
       (p) => p.user_id === selectedProfile.user_id,
     );
     setHistory((h) => [...h, selectedProfile]);
-    if (currentIndex < profiles.length - 1) {
-      setSelectedProfile(profiles[currentIndex + 1]);
+    if (currentIndex < initialProfiles.length - 1) {
+      setSelectedProfile(initialProfiles[currentIndex + 1]);
     } else {
       setReachedEnd(true);
     }
@@ -70,21 +70,23 @@ export function DiscoveryClient({
       </div>
 
       <div className="w-full flex flex-col items-center justify-center">
-        {profiles.length === 0 ? (
+        {initialProfiles.length === 0 ? (
           <NoResultsReturned />
         ) : reachedEnd ? (
-          <NoMoreResults
-            handleBefore={handleBefore}
-            profile={selectedProfile}
-          />
-        ) : (
+          selectedProfile ? (
+            <NoMoreResults
+              handleBefore={handleBefore}
+              profile={selectedProfile}
+            />
+          ) : null
+        ) : selectedProfile ? (
           <ProfileCard
             profile={selectedProfile}
             isDiscovery={true}
             handleNext={handleNext}
             handleBefore={handleBefore}
           />
-        )}
+        ) : null}
         <div className="w-full max-w-4xl items-start grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
           <div />
           <div className="justify-self-center">

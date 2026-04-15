@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, X } from "lucide-react";
 import { useMemo } from "react";
-import { MAX_MAJORS } from "./helpers";
+import { MAX_MAJORS } from "../create-profile/helpers";
 
 function sameId(a: string, b: string) {
   return String(a) === String(b);

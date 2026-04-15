@@ -6,15 +6,23 @@ import discoveryFilter from "@/mock/discovery_filter.json";
 import discoveryProfiles from "@/mock/discover_profiles.json";
 
 export default async function DiscoveryPage() {
-  const user = await requireAuth();
+  await requireAuth();
   const c_discoveryProfiles = await getDiscoveryProfiles();
   const c_discoveryFilter = await getDiscoveryFilter();
+  const use_API = true;
 
-  //TODO: replace with c_discoveryProfiles and Filter
+  const profiles = use_API ? c_discoveryProfiles : discoveryProfiles;
+  const filters = use_API ? c_discoveryFilter : discoveryFilter;
+
+  const discoveryClientKey = JSON.stringify({
+    filter: filters
+  });
+
   return (
     <DiscoveryClient
-      initialProfiles={discoveryProfiles}
-      discoveryFilters={discoveryFilter}
+      key={discoveryClientKey}
+      initialProfiles={profiles}
+      discoveryFilters={filters}
     />
   );
 }
