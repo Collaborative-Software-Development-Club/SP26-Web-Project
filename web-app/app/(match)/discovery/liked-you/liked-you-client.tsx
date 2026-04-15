@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { VibeCheckProfile } from "../_components/vibecheck-profile";
+import { ProfileCard } from "../_components/profile-card";
 import { UndoButton } from "../_components/undo-button";
 import { LikedYouProfile } from "../types"; // adjust path as needed
 
@@ -98,8 +98,9 @@ export function LikedYouClient({
       {/* Main card area */}
       {current ? (
         <div className="w-full flex flex-col items-center justify-center">
-          <VibeCheckProfile
+          <ProfileCard
             profile={current}
+            isDiscovery={false}
             onAccept={handleAccept}
             onPass={handlePass}
           />

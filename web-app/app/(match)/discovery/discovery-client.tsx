@@ -47,7 +47,7 @@ export function DiscoveryClient({
   return (
     <div className="flex flex-col items-center w-full px-4">
       {/* Mobile: filter absolute position by navbar */}
-      <div className="md:hidden absolute right-8 top-28 z-30">
+      <div className="md:hidden absolute right-6 top-22 z-30">
         <div className="w-[220px]">
           <Filter discoveryFilter={discoveryFilters} />
         </div>
@@ -80,6 +80,7 @@ export function DiscoveryClient({
         ) : (
           <ProfileCard
             profile={selectedProfile}
+            isDiscovery={true}
             handleNext={handleNext}
             handleBefore={handleBefore}
           />

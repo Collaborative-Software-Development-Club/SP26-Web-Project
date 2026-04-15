@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DiscoveryProfile } from "../types";
+import { DiscoveryProfile, LikedYouProfile } from "../types";
 import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
 import { DislikeButton } from "./dislike-button";
@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // TODO: replace with user context
 import profiles from "@/mock/profiles.json";
+import { on } from "events";
 const user = profiles[0];
 
 // TODO: replace with profile data
@@ -18,12 +19,20 @@ const PHOTOS = ["selfie", "room1", "room2"] as const;
 
 export function ProfileCard({
   profile,
+  isDiscovery,
   handleNext,
   handleBefore,
+  onAccept,
+  onPass,
 }: {
-  profile: DiscoveryProfile;
-  handleNext: () => void;
-  handleBefore: () => void;
+  profile: DiscoveryProfile | LikedYouProfile;
+  isDiscovery: boolean;
+  // discovery
+  handleNext?: () => void;
+  handleBefore?: () => void;
+  // liked-you
+  onAccept?: (userId: string) => void;
+  onPass?: (userId: string) => void;
 }) {
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -33,10 +42,18 @@ export function ProfileCard({
   const onAction = (dir: number) => {
     setSwipeDirection(dir);
     setTimeout(() => {
-      if (dir === 2) {
-        handleBefore();
+      if (isDiscovery) {
+        if (dir === 1) {
+          if (handleNext) handleNext();
+        } else {
+          if (handleBefore) handleBefore();
+        }
       } else {
-        handleNext();
+        if (dir === 1) {
+          if (onAccept) onAccept(profile.user_id);
+        } else {
+          if (onPass) onPass(profile.user_id);
+        }
       }
     }, 10);
   };
@@ -150,6 +167,7 @@ export function ProfileCard({
             {/* Info column */}
             <div className="flex flex-col flex-1 md:col-span-7 overflow-hidden">
               <div className="p-4 md:p-6 flex-1 overflow-y-auto">
+                {/* Bio */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-serif font-normal text-foreground tracking-tight">
@@ -169,6 +187,7 @@ export function ProfileCard({
                 <div className="h-px w-full bg-border my-4 md:my-5" />
 
                 <div className="grid grid-cols-2 gap-y-4 md:gap-y-5 gap-x-4">
+                  {/* Hobbies & Interests */}
                   <div className="col-span-2">
                     <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
                       Hobbies & interests
@@ -185,16 +204,28 @@ export function ProfileCard({
                     </div>
                   </div>
 
-                  <div className="col-span-2">
+                  {/* Preferences / Living Habits */}
+                  <div className="col-span-2 gap-y-4 md:gap-y-5 gap-x-4">
                     <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
                       Living habits
                     </h3>
-                    {/* TODO: Replace with actual user preferences */}
                     <ProfilePreferences
                       preferences={profile.preferences}
                       userPreferences={user.preferences}
                     />
                   </div>
+
+                  {/* Their message */}
+                  {!isDiscovery && "message" in profile && (
+                    <div className="col-span-2">
+                      <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                        Their message to you
+                      </h3>
+                      <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm text-foreground italic">
+                        &quot;{profile.message}&quot;
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -202,20 +233,20 @@ export function ProfileCard({
               <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
                 <DislikeButton
                   onClick={() => onAction(-1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(-1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <LikeButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <MessageButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
               </div>
