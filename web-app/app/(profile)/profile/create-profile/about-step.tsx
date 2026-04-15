@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MajorsSelectField } from "./majors-select-field";
+import { MajorsSelectField } from "../_components/majors-select-field";
 
 export function AboutStep({
   profile,

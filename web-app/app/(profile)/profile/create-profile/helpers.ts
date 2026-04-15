@@ -11,6 +11,7 @@ export const STEPS = [
   { title: "About you", description: "Basic info and bio" },
   { title: "Hobbies", description: "What do you enjoy?" },
   { title: "Questionnaires", description: "Your living habits" },
+  { title: "Profile picture", description: "Add a profile picture" },
 ] as const;
 
 export function emptyProfile(): UserProfile {

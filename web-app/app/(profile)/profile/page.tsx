@@ -4,9 +4,9 @@ import { useUser } from "@/contexts/UserContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import ProfileHeader from "./_components/profile-header";
+import { ProfileHeader } from "./_components/profile-header";
 
-export default function Profile() {
+export default function ProfilePage() {
   const { user, profile } = useUser();
   const router = useRouter();
 

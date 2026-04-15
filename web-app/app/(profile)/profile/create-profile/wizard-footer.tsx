@@ -4,6 +4,7 @@ export function WizardFooter({
   step,
   stepsLength,
   isSubmitting,
+  disableNext,
   canCreateProfile,
   submitLabel,
   submittingLabel,
@@ -14,6 +15,7 @@ export function WizardFooter({
   step: number;
   stepsLength: number;
   isSubmitting: boolean;
+  disableNext?: boolean;
   canCreateProfile: boolean;
   submitLabel: string;
   submittingLabel: string;
@@ -35,7 +37,11 @@ export function WizardFooter({
       </Button>
 
       {!isLastStep ? (
-        <Button type="button" onClick={onNextStep} disabled={isSubmitting}>
+        <Button
+          type="button"
+          onClick={onNextStep}
+          disabled={isSubmitting || disableNext}
+        >
           Next
         </Button>
       ) : (

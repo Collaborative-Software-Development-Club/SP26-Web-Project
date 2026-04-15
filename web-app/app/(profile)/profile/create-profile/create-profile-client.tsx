@@ -28,6 +28,7 @@ import {
 } from "./helpers";
 import { HobbiesStep } from "./hobbies-step";
 import { PreferencesStep } from "./preferences-step";
+import { ProfilePictureStep } from "./profile-picture-step";
 import { WizardFooter } from "./wizard-footer";
 import { WizardHeader } from "./wizard-header";
 
@@ -58,6 +59,7 @@ export function CreateProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preferenceQuestionIndex, setPreferenceQuestionIndex] = useState(0);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const update = useCallback(
     <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
@@ -138,6 +140,14 @@ export function CreateProfileClient({
         return;
       }
       setStep(2);
+      return;
+    }
+    if (step === 2) {
+      if (!allPreferencesAnswered) {
+        setError("Please answer all preference questions.");
+        return;
+      }
+      setStep(3);
     }
   };
 
@@ -228,6 +238,16 @@ export function CreateProfileClient({
               onNextQuestion={goNextPreferenceQuestion}
             />
           )}
+
+          {step === 3 && (
+            <ProfilePictureStep
+              profile={profile}
+              isEditMode={isEditMode}
+              isSubmitting={isSubmitting}
+              update={update}
+              onUploadingChange={setIsUploadingAvatar}
+            />
+          )}
         </CardContent>
 
         <CardFooter className="shrink-0 border-t pt-6">
@@ -235,6 +255,7 @@ export function CreateProfileClient({
             step={step}
             stepsLength={STEPS.length}
             isSubmitting={isSubmitting}
+            disableNext={isUploadingAvatar}
             canCreateProfile={allPreferencesAnswered}
             submitLabel={isEditMode ? "Save Changes" : "Create Profile"}
             submittingLabel={
