@@ -245,3 +245,23 @@ export async function getMajorsHobbiesPreferences(): Promise<
     })),
   };
 }
+
+export async function updateProfile(profile:UserProfile){
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+    }
+
+  const {error} = await supabase
+  .from("user_profiles")
+  .update(
+    {
+      fname:profile.fname,
+      lname:profile.lname,
+      bio:profile.bio,
+    }
+  ).eq("user_id",profile.user_id);
+
+  if (error) throw new Error(`Error updating user profile: ${error.message}`);
+}

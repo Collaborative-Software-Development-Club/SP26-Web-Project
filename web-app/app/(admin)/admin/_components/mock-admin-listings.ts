@@ -1,0 +1,58 @@
+import { House } from "@/app/(housing)/housing/_components/house-card";
+
+export const mockAdminListings: House[] = [
+  {
+    id: "admin-mock-1",
+    address: "123 Woodruff Ave, Columbus, OH 43210",
+    monthly_rent: "$1,200",
+    bedrooms: 3,
+    full_bathrooms: 1,
+    half_bathrooms: 1,
+    sector: "north",
+  },
+  {
+    id: "admin-mock-2",
+    address: "456 Neil Ave, Columbus, OH 43215",
+    monthly_rent: "$950",
+    bedrooms: 2,
+    full_bathrooms: 1,
+    half_bathrooms: 0,
+    sector: "west",
+  },
+  {
+    id: "admin-mock-3",
+    address: "789 High St, Columbus, OH 43201",
+    monthly_rent: "$1,500",
+    bedrooms: 4,
+    full_bathrooms: 2,
+    half_bathrooms: 0,
+    sector: "south",
+  },
+  {
+    id: "admin-mock-4",
+    address: "321 Lane Ave, Columbus, OH 43221",
+    monthly_rent: "$800",
+    bedrooms: 1,
+    full_bathrooms: 1,
+    half_bathrooms: 0,
+    sector: "west",
+  },
+  {
+    id: "admin-mock-5",
+    address: "654 Summit St, Columbus, OH 43202",
+    monthly_rent: "$1,100",
+    bedrooms: 2,
+    full_bathrooms: 1,
+    half_bathrooms: 1,
+    sector: "north",
+  },
+  {
+    id: "admin-mock-6",
+    address: "987 King Ave, Columbus, OH 43212",
+    monthly_rent: "$1,350",
+    bedrooms: 3,
+    full_bathrooms: 2,
+    half_bathrooms: 0,
+    sector: "east",
+  },
+];

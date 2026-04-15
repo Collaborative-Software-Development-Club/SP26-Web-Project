@@ -151,7 +151,7 @@ export function CreateProfileClient({
     setIsSubmitting(true);
     try {
       const result = await saveProfileAction(profile);
-      if (result && "error" in result) {
+      if (result && "error" in result && result.error) {
         setError(result.error);
         return;
       }
