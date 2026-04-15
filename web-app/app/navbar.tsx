@@ -15,6 +15,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import {motion} from "framer-motion";
+
 export function Navbar({ user }: { user: User | null }) {
   const isSignedIn = user !== null;
   const pathname = usePathname();
@@ -47,25 +49,41 @@ export function Navbar({ user }: { user: User | null }) {
         </Link>
 
         <nav
-          className="hidden flex-wrap items-center gap-2 md:flex md:gap-4"
+          className="hidden flex-wrap items-center gap-2 rounded-full md:flex md:gap-4 bg-muted/40 p-1 border border/50 shadow-sm"
           aria-label="Main"
         >
           {navLinks.map((link) => {
             const isActive = pathname.includes(link.href);
             return (
-              <Button
-                asChild
+              <Link
                 key={link.href}
-                variant={isActive ? "outline" : "ghost"}
+                href={link.href}
+                className={cn(
+                  "relative rounded-full px-5 py-2 text-sm font-medium transition-colors outline-none",
+                  isActive
+                    ? "text-foreground"
+                    : "text-foreground/70 hover:text-foreground"
+                )}
               >
-                <Link href={link.href}>{link.label}</Link>
-              </Button>
+                {isActive && (
+                  <motion.div
+                    layoutId="desktop-nav-pill"
+                    className = "absolute inset-0 rounded-full bg-background shadow-sm border border-border/50"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.5}}
+                  />
+                )}
+                <span className="relative z-10">{link.label}</span>
+              </Link>
             );
           })}
           {isSignedIn && (
-            <form action={signOut}>
-              <Button type="submit">Sign Out</Button>
-            </form>
+            <div className="pl-2 border-l border-border/50 ml-1">
+              <form action={signOut}>
+                <Button type="submit" variant="ghost" className="rounded-full h-9 px-4">
+                  Sign Out
+                </Button>
+              </form>
+            </div>
           )}
         </nav>
 
