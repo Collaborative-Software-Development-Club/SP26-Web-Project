@@ -1,16 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import type { HousingListing } from "../types";
 
-export interface House {
-  id: string;
-  address: string;
-  monthly_rent: string;
-  bedrooms: number;
-  full_bathrooms: number;
-  half_bathrooms: number;
-  sector: string;
-}
+export type House = Pick<
+  HousingListing,
+  | "id"
+  | "address"
+  | "monthly_rent"
+  | "bedrooms"
+  | "full_bathrooms"
+  | "half_bathrooms"
+  | "sector"
+>;
 
 function parsePriceNumber(rent: string): number | null {
   const numStr = rent?.replace(/[^0-9.]/g, "");

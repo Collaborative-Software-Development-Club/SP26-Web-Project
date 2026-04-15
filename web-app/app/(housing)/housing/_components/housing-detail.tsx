@@ -1,7 +1,3 @@
-"use client";
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 /* Import for icons for amenities */
 import {
   Armchair,
@@ -17,68 +13,20 @@ import {
   Droplets,
   Zap,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { mainImageUrlsFromRecord } from "../main-image-urls";
+import type { HousingListing } from "../types";
+import { HousingDetailGallery } from "./housing-detail-gallery";
+import { OtherAmenitiesMoreInfo } from "./other-amenities-more-info";
 
-type Listing = {
-  id: string;
-  address: string;
-  listing_url: string;
-  monthly_rent: string;
-  move_in_date: string;
-  move_out_date: string;
-  lease_term: string;
-  short_lease_term: boolean;
-  sublease_permitted: boolean;
-  security_deposit: string;
-  property_owner: string;
-  property_type: string;
-  sector: string;
-  level: string;
-  city: string;
-  bedrooms: number;
-  full_bathrooms: number;
-  half_bathrooms: number;
-  max_occupancy: number;
-  wheelchair_access: boolean;
-  basement: boolean;
-  laundry: string;
-  parking: boolean;
-  num_parking_spaces: number;
-  offstreet_parking: boolean;
-  onstreet_parking: boolean;
-  onstreet_permit_required: string;
-  garage_parking: boolean;
-  furnished: boolean;
-  fireplace: boolean;
-  air_conditioning: string;
-  dishwasher: boolean;
-  stove: boolean;
-  refrigerator: boolean;
-  security_system: boolean;
-  backyard: boolean;
-  deck_or_porch: boolean;
-  other_amenities: string;
-  pet_deposit: string;
-  additional_pet_rent: string;
-  additional_dog_rent: string;
-  additional_cat_rent: string;
-  pets_allowed: boolean;
-  dogs_allowed: boolean;
-  cats_allowed: boolean;
-  pet_deposit_refundable: boolean;
-  water_included: boolean;
-  electric_included: boolean;
-  gas_included: boolean;
-};
-
-export function HousingDetail({ listing }: { listing: Listing }) {
-  const [selectedImage, setSelectedImage] = useState(0);
-  const images: string[] = [];
+export function HousingDetail({ listing }: { listing: HousingListing }) {
   const hasAmenityValue = (value?: string | null) => {
     if (!value) return false;
     const normalized = value.trim().toLowerCase();
     return normalized !== "" && normalized !== "no" && normalized !== "none" && normalized !== "n/a";
   };
-  const additionalAmenitiesLink = hasAmenityValue(listing.other_amenities)
+  const otherAmenitiesDetail = hasAmenityValue(listing.other_amenities)
     ? listing.other_amenities.trim()
     : null;
 
@@ -124,41 +72,18 @@ export function HousingDetail({ listing }: { listing: Listing }) {
     { label: listing.gas_included ? "Gas included" : "No gas included", Icon: Flame },
   ];
 
+  const galleryImages = mainImageUrlsFromRecord(listing.main_image_url);
+
   return (
-    <div className="flex h-full bg-background font-sans">
+    <div className="flex h-full min-h-0 w-full bg-background font-sans">
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-8 max-w-5xl">
+      <main className="min-h-0 flex-1 overflow-y-auto p-8 max-w-5xl">
         <h1 className="mb-6 text-3xl font-bold text-foreground">
           {listing.address}
         </h1>
 
         {/* Photo gallery */}
-        {images.length > 0 ? (
-          <div className="w-full aspect-[16/9] overflow-hidden rounded-2xl border border-border shadow-sm">
-            <img
-              src={images[selectedImage]}
-              alt="Property"
-              className="h-full w-full object-cover"
-            />
-            <div className="mt-2 grid grid-cols-4 gap-1">
-              {images.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`View ${i + 1}`}
-                  onClick={() => setSelectedImage(i)}
-                  className={`h-14 w-full cursor-pointer rounded object-cover border-2 ${
-                    selectedImage === i ? "border-primary" : "border-transparent"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6 flex w-full aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted shadow-sm">
-            <span className="text-sm text-muted-foreground">No image available</span>
-          </div>
-        )}
+        <HousingDetailGallery images={galleryImages} title={listing.address} />
 
         {/* Lease Information */}
         <Card className="mb-6">
@@ -201,7 +126,6 @@ export function HousingDetail({ listing }: { listing: Listing }) {
           </CardContent>
         </Card>
 
-        {/* Amenities */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Amenities</CardTitle>
@@ -218,16 +142,9 @@ export function HousingDetail({ listing }: { listing: Listing }) {
                 </div>
               ))}
             </div>
-            {additionalAmenitiesLink && (
+            {otherAmenitiesDetail && (
               <div className="mt-6">
-                <a
-                  href={additionalAmenitiesLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
-                >
-                  More Pictures and Showings
-                </a>
+                <OtherAmenitiesMoreInfo value={otherAmenitiesDetail} />
               </div>
             )}
           </CardContent>
@@ -330,7 +247,7 @@ export function HousingDetail({ listing }: { listing: Listing }) {
       </main>
 
       {/* Right column - Contact */}
-      <aside className="flex w-150 shrink-0 items-center border-l border-border p-4">
+      <aside className="flex min-h-0 w-96 shrink-0 items-center overflow-y-auto border-l border-border p-4">
         <Card className="w-full rounded-2xl shadow-sm">
           <CardHeader className="pb-0">
             <CardTitle className="text-center text-2xl">Interested in Renting This Property?</CardTitle>
@@ -373,14 +290,11 @@ export function HousingDetail({ listing }: { listing: Listing }) {
               Owned by {listing.property_owner}
             </div>
 
-            <a
-              href={listing.listing_url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex w-full items-center justify-center rounded-full bg-red-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-red-700"
-            >
-              View Original Listing
-            </a>
+            <Button size="lg" className="w-full rounded-full text-base font-semibold" asChild>
+              <a href={listing.listing_url} target="_blank" rel="noopener noreferrer">
+                View Original Listing
+              </a>
+            </Button>
           </CardContent>
         </Card>
       </aside>

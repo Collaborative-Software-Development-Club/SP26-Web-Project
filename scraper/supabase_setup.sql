@@ -1,6 +1,11 @@
+-- housing_property_records: matches live Supabase / introspected schema.
+-- main_image_url: JSONB — e.g. ["https://..."] for multiple images, or a single URL string/object depending on ingest.
+
 CREATE TABLE housing_property_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  address TEXT NOT NULL,
+  modified_date TIMESTAMPTZ,
+
+  address TEXT,
   listing_url TEXT,
   osu_id TEXT,
   monthly_rent TEXT,
@@ -15,6 +20,7 @@ CREATE TABLE housing_property_records (
   sector TEXT,
   level TEXT,
   city TEXT,
+
   bedrooms INTEGER,
   full_bathrooms INTEGER,
   half_bathrooms INTEGER,
@@ -22,6 +28,7 @@ CREATE TABLE housing_property_records (
   wheelchair_access BOOLEAN,
   basement BOOLEAN,
   laundry TEXT,
+
   parking BOOLEAN,
   num_parking_spaces INTEGER,
   offstreet_parking BOOLEAN,
@@ -32,6 +39,7 @@ CREATE TABLE housing_property_records (
   garage_parking BOOLEAN,
   garage_monthly TEXT,
   garage_yearly TEXT,
+
   furnished BOOLEAN,
   fireplace BOOLEAN,
   air_conditioning TEXT,
@@ -42,6 +50,8 @@ CREATE TABLE housing_property_records (
   backyard BOOLEAN,
   deck_or_porch BOOLEAN,
   other_amenities TEXT,
+  main_image_url JSONB,
+
   pet_deposit TEXT,
   additional_pet_rent TEXT,
   additional_dog_rent TEXT,
@@ -50,7 +60,10 @@ CREATE TABLE housing_property_records (
   dogs_allowed BOOLEAN,
   cats_allowed BOOLEAN,
   pet_deposit_refundable BOOLEAN,
+
   water_included BOOLEAN,
   electric_included BOOLEAN,
   gas_included BOOLEAN
 );
+
+COMMENT ON COLUMN housing_property_records.main_image_url IS 'JSONB: commonly a JSON array of image URL strings; may be a single string or object from legacy ingest.';
