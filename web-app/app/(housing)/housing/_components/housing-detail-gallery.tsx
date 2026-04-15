@@ -24,11 +24,11 @@ export function HousingDetailGallery({
 
   return (
     <div className="mb-6 w-full space-y-2">
-      <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border shadow-sm">
+      <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted p-2 shadow-sm sm:p-3">
         <img
           src={mainSrc}
           alt={`${title} — photo ${safeIndex + 1}`}
-          className="h-full w-full object-cover"
+          className="h-full w-full rounded-xl object-contain"
         />
       </div>
       {images.length > 1 && (
@@ -45,7 +45,7 @@ export function HousingDetailGallery({
               <img
                 src={src}
                 alt=""
-                className="h-14 w-full object-cover"
+                className="h-14 w-full bg-muted object-contain"
               />
             </button>
           ))}
