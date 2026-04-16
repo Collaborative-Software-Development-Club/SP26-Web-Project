@@ -85,6 +85,10 @@ export async function signupAction(formData: FormData) {
   if (data.session) {
     redirect("/profile");
   }
+  
+  console.log("signup user id:", data.user?.id);
+  console.log("signup session exists:", !!data.session);
+  console.log("email confirmed at:", data.user?.email_confirmed_at);
 
   redirect(
     `/confirm?message=${encodeURIComponent(

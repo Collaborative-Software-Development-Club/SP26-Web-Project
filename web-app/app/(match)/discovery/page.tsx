@@ -16,7 +16,7 @@ export default async function DiscoveryPage() {
 
   const discoveryClientKey = JSON.stringify({
     filter: filters
-  });
+    });
 
   return (
     <DiscoveryClient

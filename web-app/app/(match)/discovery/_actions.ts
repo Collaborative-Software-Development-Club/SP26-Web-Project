@@ -211,7 +211,7 @@ export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
     throw new Error("Unauthorized");
   }
   const { data, error } = await supabase.rpc("get_discovery_filter", {
-    user_id: user.id,
+    p_user_id: user.id,
   }).select("*");
 
   if (error) {
