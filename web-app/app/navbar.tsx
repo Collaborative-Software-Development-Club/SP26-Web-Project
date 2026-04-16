@@ -51,7 +51,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
         </Link>
 
         <nav
-          className="hidden flex-wrap items-center gap-2 rounded-full md:flex md:gap-4 bg-muted/40 p-1 border border/50 shadow-sm"
+          className="hidden flex-wrap items-center gap-2 rounded-full md:flex md:gap-4 bg-muted p-1 border border/50 shadow-sm"
           aria-label="Main"
         >
           {navLinks.map((link) => {
@@ -71,7 +71,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                   <motion.div
                     layoutId="desktop-nav-pill"
                     className = "absolute inset-0 rounded-full bg-background shadow-sm border border-border/50"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5}}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6}}
                   />
                 )}
                 <span className="relative z-10">{link.label}</span>
