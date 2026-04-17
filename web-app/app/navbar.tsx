@@ -51,7 +51,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
         </Link>
 
         <nav
-          className="hidden flex-wrap items-center gap-2 rounded-full md:flex md:gap-4 bg-muted p-1 border border/50 shadow-sm"
+          className="hidden flex-wrap items-center gap-2 rounded-full lg:flex md:gap-4 bg-muted p-1 border border/50 shadow-sm"
           aria-label="Main"
         >
           {navLinks.map((link) => {
@@ -116,7 +116,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
               type="button"
               variant="outline"
               size="icon"
-              className="shrink-0 md:hidden"
+              className="shrink-0 lg:hidden"
               aria-label="Open menu"
               aria-expanded={mobileOpen}
             >
