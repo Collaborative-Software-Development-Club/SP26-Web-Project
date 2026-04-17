@@ -1,14 +1,27 @@
-import pandas as pd
-from supabase import create_client, Client
-from dotenv import load_dotenv
+import base64
+import json
 import math
 import os
 import re
+from pathlib import Path
 
-load_dotenv(".env.local")
+import pandas as pd
+from dotenv import load_dotenv
+from postgrest.exceptions import APIError
+from supabase import create_client
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+_SCRAPER = Path(__file__).resolve().parent
+load_dotenv(_SCRAPER.parent / "web-app" / ".env.local")
+load_dotenv(_SCRAPER / ".env.local", override=True)
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SECRET_SERVER_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SECRET_KEY")
+API_KEY = SECRET_SERVER_KEY or (
+    os.environ.get("SUPABASE_KEY")
+    or os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+    or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    or os.environ.get("SUPABASE_ANON_KEY")
+)
 
 TABLE_NAME = "housing_property_records"
 FILE_PATH = "osu_offcampus_housing.json"
@@ -16,6 +29,7 @@ FILE_PATH = "osu_offcampus_housing.json"
 LABEL_TO_COLUMN = {
     "Address": "address",
     "Detail_URL": "listing_url",
+    "Property_Images": "main_image_url",
     "ID": "osu_id",
     "Monthly Rent": "monthly_rent",
     "Move In Date": "move_in_date",
@@ -81,6 +95,28 @@ INTEGER_COLUMNS = {
 }
 
 
+def describe_api_key_role(key: str) -> str:
+    """Single line for logs — never print the full key."""
+    if key.startswith("sb_publishable_"):
+        return "publishable — RLS still applies (wrong key for this script)"
+    if key.startswith("sb_secret_"):
+        return "sb_secret — should bypass RLS; if you still see 42501, key may be wrong or not loaded"
+    if key.startswith("eyJ"):
+        try:
+            payload_b64 = key.split(".")[1]
+            pad = (-len(payload_b64)) % 4
+            if pad:
+                payload_b64 += "=" * pad
+            claims = json.loads(base64.urlsafe_b64decode(payload_b64.encode("ascii")))
+            role = claims.get("role", "?")
+            if role == "service_role":
+                return "JWT role=service_role — bypasses RLS"
+            return f"JWT role={role!r} — only service_role bypasses RLS for this flow"
+        except Exception:
+            return "JWT — could not decode; check key is full service_role secret"
+    return "unknown key shape"
+
+
 def parse_bathrooms(value):
     full = half = 0
     if isinstance(value, str):
@@ -107,6 +143,14 @@ def clean_row(row):
 
         if isinstance(value, float) and math.isnan(value):
             cleaned[col] = None
+        elif col == "main_image_url":
+            # Keep as a list for jsonb / array columns; store null if empty.
+            if isinstance(value, list):
+                cleaned[col] = value if len(value) > 0 else None
+            elif value:
+                cleaned[col] = [value]
+            else:
+                cleaned[col] = None
         elif col == "bathrooms":
             full, half = parse_bathrooms(value)
             cleaned["full_bathrooms"] = full
@@ -125,7 +169,22 @@ def clean_row(row):
 
 
 def main():
-    supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    if not SUPABASE_URL or not API_KEY:
+        raise SystemExit(
+            "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY in .env.local "
+            "(Project Settings → API → secret / service_role). "
+            "Publishable keys are blocked by RLS on upsert."
+        )
+
+    if not SECRET_SERVER_KEY:
+        print(
+            "Warning: No secret server key in env; falling back to publishable/anon. "
+            "Set SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY in scraper/.env.local only.\n"
+        )
+
+    print(f"Using API key: {describe_api_key_role(API_KEY)}\n")
+
+    supabase_client = create_client(SUPABASE_URL, API_KEY)
 
     if FILE_PATH.endswith(".csv"):
         df = pd.read_csv(FILE_PATH)
@@ -136,13 +195,44 @@ def main():
 
     print(f"Loaded {len(df)} properties from {FILE_PATH}")
 
-    records = [clean_row(row) for _, row in df.iterrows()]
+    # Clean rows and de-dupe by normalized address within this import run.
+    # NOTE: Upserts require a UNIQUE constraint on `address`. Missing unique → PostgREST error
+    # about ON CONFLICT, not code 42501. RLS violations (42501) are permissions, not uniqueness.
+    seen_addresses = set()
+    records = []
+    for _, row in df.iterrows():
+        cleaned = clean_row(row)
+        addr_norm = (cleaned.get("address") or "").strip().lower()
+        if not addr_norm:
+            continue
+        if addr_norm in seen_addresses:
+            continue
+        seen_addresses.add(addr_norm)
+        records.append(cleaned)
 
     BATCH_SIZE = 50
     for i in range(0, len(records), BATCH_SIZE):
         batch = records[i : i + BATCH_SIZE]
-        response = supabase_client.table(TABLE_NAME).insert(batch).execute()
-        print(f"Inserted batch {i // BATCH_SIZE + 1} ({len(batch)} rows)")
+        # Upsert by address: existing rows get updated in place and keep the same UUID `id`.
+        try:
+            supabase_client.table(TABLE_NAME).upsert(batch, on_conflict="address").execute()
+        except APIError as e:
+            msg = (e.message or str(e)).lower()
+            if e.code == "42501" or "row-level security" in msg:
+                print(
+                    "\nRLS blocked this write.\n\n"
+                    "  1) Recommended: add your server secret to scraper/.env.local (never commit it):\n"
+                    "       SUPABASE_SECRET_KEY=sb_secret_...\n"
+                    "     or legacy JWT:\n"
+                    "       SUPABASE_SERVICE_ROLE_KEY=eyJ...\n"
+                    "     Dashboard → Project Settings → API → Secret API keys.\n\n"
+                    "  2) If you must use the publishable key: upsert runs INSERT + UPDATE on conflict.\n"
+                    "     You need policies for both, including UPDATE USING/WITH CHECK. Messages that\n"
+                    "     mention \"USING expression\" usually mean the UPDATE (or row visibility) check\n"
+                    "     failed. Easiest fix is still the secret key, which bypasses RLS for this script.\n"
+                )
+            raise
+        print(f"Upserted batch {i // BATCH_SIZE + 1} ({len(batch)} rows)")
 
     print(f"\nDone! Uploaded {len(records)} properties to '{TABLE_NAME}'.")
 

@@ -1,232 +1,467 @@
-"use client";
-
-import { useState } from "react";
+/* Import for icons for amenities */
+import {
+  Armchair,
+  CarFront,
+  ChefHat,
+  DoorOpen,
+  Flame,
+  Refrigerator,
+  Shield,
+  Snowflake,
+  Trees,
+  WashingMachine,
+  Droplets,
+  Zap,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { mainImageUrlsFromRecord } from "../main-image-urls";
+import type { HousingListing } from "../types";
+import { HousingDetailGallery } from "./housing-detail-gallery";
+import { HousingDetailFavoriteStar } from "./housing-detail-favorite-star";
+import { OtherAmenitiesMoreInfo } from "./other-amenities-more-info";
 
-type Listing = {
-  id: string;
-  address: string;
-  listing_url: string;
-  monthly_rent: string;
-  move_in_date: string;
-  move_out_date: string;
-  lease_term: string;
-  short_lease_term: boolean;
-  sublease_permitted: boolean;
-  security_deposit: string;
-  property_owner: string;
-  property_type: string;
-  sector: string;
-  level: string;
-  city: string;
-  bedrooms: number;
-  full_bathrooms: number;
-  half_bathrooms: number;
-  max_occupancy: number;
-  wheelchair_access: boolean;
-  basement: boolean;
-  laundry: string;
-  parking: boolean;
-  num_parking_spaces: number;
-  offstreet_parking: boolean;
-  onstreet_parking: boolean;
-  onstreet_permit_required: string;
-  garage_parking: boolean;
-  furnished: boolean;
-  fireplace: boolean;
-  air_conditioning: string;
-  dishwasher: boolean;
-  stove: boolean;
-  refrigerator: boolean;
-  security_system: boolean;
-  backyard: boolean;
-  deck_or_porch: boolean;
-  other_amenities: string;
-  pet_deposit: string;
-  additional_pet_rent: string;
-  additional_dog_rent: string;
-  additional_cat_rent: string;
-  pets_allowed: boolean;
-  dogs_allowed: boolean;
-  cats_allowed: boolean;
-  pet_deposit_refundable: boolean;
-  water_included: boolean;
-  electric_included: boolean;
-  gas_included: boolean;
-};
+export function HousingDetail({
+  listing,
+  userId,
+  initialIsFavorite,
+  isAdmin = false,
+}: {
+  listing: HousingListing;
+  userId: string | null;
+  initialIsFavorite: boolean;
+  isAdmin?: boolean;
+}) {
+  const hasAmenityValue = (value?: string | null) => {
+    if (!value) return false;
+    const normalized = value.trim().toLowerCase();
+    return (
+      normalized !== "" &&
+      normalized !== "no" &&
+      normalized !== "none" &&
+      normalized !== "n/a"
+    );
+  };
+  const otherAmenitiesDetail = hasAmenityValue(listing.other_amenities)
+    ? listing.other_amenities.trim()
+    : null;
 
-export function HousingDetail({ listing }: { listing: Listing }) {
-  const [selectedImage, setSelectedImage] = useState(0);
-  const images: string[] = [];
+  const amenityItems = [
+    {
+      label: listing.furnished ? "Furnished" : "Not furnished",
+      Icon: Armchair,
+    },
+    { label: listing.fireplace ? "Fireplace" : "No fireplace", Icon: Flame },
+    {
+      label: hasAmenityValue(listing.air_conditioning)
+        ? listing.air_conditioning
+        : "No air conditioning",
+      Icon: Snowflake,
+    },
+    {
+      label: listing.dishwasher ? "Dishwasher" : "No dishwasher",
+      Icon: ChefHat,
+    },
+    { label: listing.stove ? "Stove" : "No stove", Icon: ChefHat },
+    {
+      label: listing.refrigerator ? "Refrigerator" : "No refrigerator",
+      Icon: Refrigerator,
+    },
+    {
+      label: listing.security_system ? "Security system" : "No security system",
+      Icon: Shield,
+    },
+    { label: listing.backyard ? "Backyard" : "No backyard", Icon: Trees },
+    {
+      label: listing.deck_or_porch ? "Deck/Porch" : "No deck or porch",
+      Icon: DoorOpen,
+    },
+    {
+      label: hasAmenityValue(listing.laundry)
+        ? listing.laundry
+        : "No laundry listed",
+      Icon: WashingMachine,
+    },
+    {
+      label: listing.parking ? "Parking available" : "No parking",
+      Icon: CarFront,
+    },
+    {
+      label: listing.offstreet_parking
+        ? "Off-street parking"
+        : "No off-street parking",
+      Icon: CarFront,
+    },
+    {
+      label: listing.onstreet_parking
+        ? "On-street parking"
+        : "No on-street parking",
+      Icon: CarFront,
+    },
+    {
+      label: listing.garage_parking ? "Garage parking" : "No garage parking",
+      Icon: CarFront,
+    },
+    {
+      label:
+        listing.num_parking_spaces > 0
+          ? `Parking for ${listing.num_parking_spaces} vehicle${listing.num_parking_spaces === 1 ? "" : "s"}`
+          : "No parking spaces listed",
+      Icon: CarFront,
+    },
+    {
+      label: hasAmenityValue(listing.onstreet_permit_required)
+        ? "Permit required for street parking"
+        : "No street permit required",
+      Icon: CarFront,
+    },
+  ];
+  const utilityItems = [
+    {
+      label: listing.water_included ? "Water included" : "No water included",
+      Icon: Droplets,
+    },
+    {
+      label: listing.electric_included
+        ? "Electric included"
+        : "No electric included",
+      Icon: Zap,
+    },
+    {
+      label: listing.gas_included ? "Gas included" : "No gas included",
+      Icon: Flame,
+    },
+  ];
+
+  const galleryImages = mainImageUrlsFromRecord(listing.main_image_url);
 
   return (
-    <div className="flex min-h-screen bg-background font-sans">
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-background font-sans [--app-header-height:5.75rem] md:[--app-header-height:6.25rem]">
+      {/* Grid on lg keeps the aside centered in its fixed track; main keeps a slight right gap so divider sits a bit left. */}
+      <div className="mx-auto grid w-full min-w-0 max-w-screen-2xl grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_24rem]">
+        {/* Main content — root layout <main> scrolls */}
+        <main className="relative min-w-0 w-full max-w-5xl justify-self-start border-border p-8 max-lg:border-b">
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold text-foreground">{listing.address}</h1>
+            {!isAdmin && (
+              <HousingDetailFavoriteStar
+                housingId={listing.id}
+                userId={userId}
+                initialIsFavorite={initialIsFavorite}
+              />
+            )}
+          </div>
 
-      {/* Main content */}
-      <main className="flex-1 p-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">
-          {listing.address}
-        </h1>
+          {/* Photo gallery */}
+          <HousingDetailGallery
+            images={galleryImages}
+            title={listing.address}
+          />
 
-        {/* Listing Information */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Listing Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">ID:</span> {listing.id}</li>
-              <li><span className="font-semibold">Monthly Rent:</span> {listing.monthly_rent}</li>
-              <li><span className="font-semibold">Move In Date:</span> {listing.move_in_date}</li>
-              <li><span className="font-semibold">Move Out Date:</span> {listing.move_out_date}</li>
-              <li><span className="font-semibold">Lease Term:</span> {listing.lease_term}</li>
-              <li><span className="font-semibold">Short Lease Term:</span> {listing.short_lease_term ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Sublease Permitted:</span> {listing.sublease_permitted ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Security Deposit:</span> {listing.security_deposit}</li>
-              <li><span className="font-semibold">Property Owner:</span> {listing.property_owner}</li>
-            </ul>
-          </CardContent>
-        </Card>
+          {/* Lease Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">Lease Info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-border text-sm">
+                <li className="py-3">
+                  <span className="font-semibold">Monthly Rent:</span>{" "}
+                  {listing.monthly_rent}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Move In Date:</span>{" "}
+                  {listing.move_in_date}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Move Out Date:</span>{" "}
+                  {listing.move_out_date}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Lease Term:</span>{" "}
+                  {listing.lease_term}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Short Lease Term:</span>{" "}
+                  {listing.short_lease_term ? "Yes" : "No"}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Sublease Permitted:</span>{" "}
+                  {listing.sublease_permitted ? "Yes" : "No"}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Security Deposit:</span>{" "}
+                  {listing.security_deposit}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Property Owner:</span>{" "}
+                  {listing.property_owner}
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
 
-        {/* Property Details */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Property Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">Property Type:</span> {listing.property_type}</li>
-              <li><span className="font-semibold">Sector:</span> {listing.sector}</li>
-              <li><span className="font-semibold">Level:</span> {listing.level}</li>
-              <li><span className="font-semibold">City:</span> {listing.city}</li>
-              <li><span className="font-semibold">Bedrooms:</span> {listing.bedrooms}</li>
-              <li><span className="font-semibold">Full Bathrooms:</span> {listing.full_bathrooms}</li>
-              <li><span className="font-semibold">Half Bathrooms:</span> {listing.half_bathrooms}</li>
-              <li><span className="font-semibold">Max Occupancy:</span> {listing.max_occupancy}</li>
-              <li><span className="font-semibold">Wheelchair Access:</span> {listing.wheelchair_access ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Basement:</span> {listing.basement ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Laundry:</span> {listing.laundry}</li>
-            </ul>
-          </CardContent>
-        </Card>
+          {/* Property Details */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">Property Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-border text-sm">
+                <li className="py-3">
+                  <span className="font-semibold">Property Type:</span>{" "}
+                  {listing.property_type}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Sector:</span>{" "}
+                  {listing.sector}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Level:</span> {listing.level}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">City:</span> {listing.city}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Bedrooms:</span>{" "}
+                  {listing.bedrooms}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Full Bathrooms:</span>{" "}
+                  {listing.full_bathrooms}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Half Bathrooms:</span>{" "}
+                  {listing.half_bathrooms}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Max Occupancy:</span>{" "}
+                  {listing.max_occupancy}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Wheelchair Access:</span>{" "}
+                  {listing.wheelchair_access ? "Yes" : "No"}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Basement:</span>{" "}
+                  {listing.basement ? "Yes" : "No"}
+                </li>
+                <li className="py-3">
+                  <span className="font-semibold">Laundry:</span>{" "}
+                  {listing.laundry}
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
 
-        {/* Parking */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Parking Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">Parking:</span> {listing.parking ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Number of Spaces:</span> {listing.num_parking_spaces}</li>
-              <li><span className="font-semibold">Off-Street Parking:</span> {listing.offstreet_parking ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">On-Street Parking:</span> {listing.onstreet_parking ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">On-Street Permit Required:</span> {listing.onstreet_permit_required}</li>
-              <li><span className="font-semibold">Garage Parking:</span> {listing.garage_parking ? "Yes" : "No"}</li>
-            </ul>
-          </CardContent>
-        </Card>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">Amenities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+                {amenityItems.map(({ label, Icon }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground"
+                  >
+                    <Icon className="h-5 w-5 shrink-0 text-foreground" />
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+              {otherAmenitiesDetail && (
+                <div className="mt-6">
+                  <OtherAmenitiesMoreInfo value={otherAmenitiesDetail} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Amenities */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Amenities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">Furnished:</span> {listing.furnished ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Fireplace:</span> {listing.fireplace ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Air Conditioning:</span> {listing.air_conditioning}</li>
-              <li><span className="font-semibold">Dishwasher:</span> {listing.dishwasher ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Stove:</span> {listing.stove ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Refrigerator:</span> {listing.refrigerator ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Security System:</span> {listing.security_system ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Backyard:</span> {listing.backyard ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Deck or Porch:</span> {listing.deck_or_porch ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Other Amenities:</span> {listing.other_amenities}</li>
-            </ul>
-          </CardContent>
-        </Card>
+          {/* Pet Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">Pet Info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {listing.pets_allowed ? (
+                <div className="space-y-4">
+                  <div className="overflow-hidden rounded-2xl border border-border">
+                    <div className="grid grid-cols-3">
+                      <div className="border-r border-border p-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          General
+                        </p>
+                        <p className="text-base font-medium text-foreground">
+                          Pets allowed
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Pet rent: {listing.additional_pet_rent}
+                        </p>
+                      </div>
 
-        {/* Pet Information */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Pet Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">Pets Allowed:</span> {listing.pets_allowed ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Dogs Allowed:</span> {listing.dogs_allowed ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Cats Allowed:</span> {listing.cats_allowed ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Pet Deposit:</span> {listing.pet_deposit}</li>
-              <li><span className="font-semibold">Additional Pet Rent:</span> {listing.additional_pet_rent}</li>
-              <li><span className="font-semibold">Additional Dog Rent:</span> {listing.additional_dog_rent}</li>
-              <li><span className="font-semibold">Additional Cat Rent:</span> {listing.additional_cat_rent}</li>
-              <li><span className="font-semibold">Pet Deposit Refundable:</span> {listing.pet_deposit_refundable ? "Yes" : "No"}</li>
-            </ul>
-          </CardContent>
-        </Card>
+                      <div className="border-r border-border p-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Dogs
+                        </p>
+                        <p className="text-base font-medium text-foreground">
+                          {listing.dogs_allowed ? "Allowed" : "Not allowed"}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Dog rent: {listing.additional_dog_rent}
+                        </p>
+                      </div>
 
-        {/* Utilities */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Utilities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1 text-sm">
-              <li><span className="font-semibold">Water Included:</span> {listing.water_included ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Electric Included:</span> {listing.electric_included ? "Yes" : "No"}</li>
-              <li><span className="font-semibold">Gas Included:</span> {listing.gas_included ? "Yes" : "No"}</li>
-            </ul>
-          </CardContent>
-        </Card>
+                      <div className="p-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Cats
+                        </p>
+                        <p className="text-base font-medium text-foreground">
+                          {listing.cats_allowed ? "Allowed" : "Not allowed"}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Cat rent: {listing.additional_cat_rent}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-      </main>
+                  <ul className="divide-y divide-border text-sm text-foreground">
+                    <li className="py-3">
+                      <span className="font-semibold">Pet Deposit:</span>{" "}
+                      {listing.pet_deposit}
+                    </li>
+                    <li className="py-3">
+                      <span className="font-semibold">
+                        Pet Deposit Refundable:
+                      </span>{" "}
+                      {listing.pet_deposit_refundable ? "Yes" : "No"}
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="flex items-center justify-center rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm font-medium text-foreground sm:col-span-3">
+                    No pets allowed
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Right column - Photos + Contact */}
-      <aside className="w-80 p-6 border-l border-border space-y-4">
+          {/* Utilities */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">Utilities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {utilityItems.map(({ label, Icon }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground"
+                  >
+                    <Icon className="h-5 w-5 shrink-0 text-foreground" />
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Photo gallery */}
-        {images.length > 0 && (
-          <div>
-            <img
-              src={images[selectedImage]}
-              alt="Property"
-              className="w-full rounded object-cover h-52"
-            />
-            <div className="grid grid-cols-4 gap-1 mt-2">
-              {images.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`View ${i + 1}`}
-                  onClick={() => setSelectedImage(i)}
-                  className={`w-full h-14 object-cover rounded cursor-pointer border-2 ${
-                    selectedImage === i ? "border-primary" : "border-transparent"
-                  }`}
-                />
-              ))}
+          {/* More Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>More Info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-1 text-sm">
+                <li>
+                  <span className="font-semibold">ID:</span> {listing.id}
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+          {/* Divider is explicitly offset from the right so it can be nudged left without affecting layout widths. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-4 hidden w-px bg-border lg:block"
+          />
+        </main>
+
+        {/* Sticky column: height uses --app-header-height from root layout (one subtract from 100dvh). */}
+        {/* min-h-full + justify-center: reliable vertical center vs margin:auto on a lone flex child. */}
+        <aside className="sticky top-0 flex min-h-0 w-full min-w-0 flex-col self-start overflow-y-auto p-4 h-[calc(100dvh-var(--app-header-height))] max-h-[calc(100dvh-var(--app-header-height))]">
+          <div className="flex min-h-full w-full min-w-0 flex-col justify-center">
+            <div className="mx-auto w-full max-w-sm shrink-0">
+              <Card className="w-full rounded-2xl shadow-sm">
+                <CardHeader className="pb-0">
+                  <CardTitle className="text-center text-2xl">
+                    Interested in Renting This Property?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 p-6">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Base Info
+                    </p>
+                    <p className="text-2xl font-semibold text-foreground">
+                      {listing.monthly_rent}{" "}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        per month
+                      </span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {listing.bedrooms}{" "}
+                      {listing.bedrooms === 1 ? "Bedroom" : "Bedrooms"}
+                    </p>
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-border">
+                    <div className="grid grid-cols-2">
+                      <div className="border-r border-border p-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Move In
+                        </p>
+                        <p className="text-base font-medium text-foreground">
+                          {listing.move_in_date}
+                        </p>
+                      </div>
+
+                      <div className="p-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Move Out
+                        </p>
+                        <p className="text-base font-medium text-foreground">
+                          {listing.move_out_date}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                    Owned by {listing.property_owner}
+                  </div>
+
+                  <Button
+                    size="lg"
+                    className="w-full rounded-full text-base font-semibold"
+                    asChild
+                  >
+                    <a
+                      href={listing.listing_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Original Listing
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        )}
-
-        {/* Contact */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Interested in Renting This Property?</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm space-y-1">
-            <p className="font-semibold">{listing.property_owner}</p>
-            <p>
-              Listing URL:{" "}
-              <a href={listing.listing_url} className="text-primary underline" target="_blank" rel="noreferrer">
-                View Original Listing
-              </a>
-            </p>
-          </CardContent>
-        </Card>
-
-      </aside>
+        </aside>
+      </div>
     </div>
   );
 }

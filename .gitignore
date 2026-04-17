@@ -15,8 +15,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-#Temp storage files
-scraper\sample-output.txt
+# local data (not repo source)
+scraper/sample-output.txt
+scraper/*.csv
+scraper/*.json
 
 # environment variables
 .env

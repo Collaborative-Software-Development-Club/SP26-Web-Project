@@ -1,16 +1,18 @@
 "use client";
-
+import majors from "@/mock/majors.json";
+import hobbies from "@/mock/hobbies.json";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent,SelectTrigger,SelectValue, SelectItem } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { UserProfile } from "@/app/(profile)/types";
-type ProfilePageProps = {
-  profile: UserProfile
-}
-export default function SettingsPage({profile}: ProfilePageProps) {
+
+export function SettingsPage({profile}: {profile: UserProfile}) {
   const [darkMode, setDarkMode] = useState(false);
+  const [formData, setFormData] = useState<UserProfile>(profile);
 
   return (
     <div className="h-full w-full overflow-auto bg-zinc-50 p-8 dark:bg-black">
@@ -26,37 +28,35 @@ export default function SettingsPage({profile}: ProfilePageProps) {
           </p>
         </div>
 
-        {/* Account info */}
-        <Card className="border p-6 shadow-sm">
+      {/*Email*/}
+      <Card className="border p-6 shadow-sm">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Email & Phone
+            </h2>
+            <p className="text-sm text-gray-500">
+              Change your contact information
+            </p>
+          </div>
+
           <div className="space-y-6">
-
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Account Information
-              </h2>
-              <p className="text-sm text-gray-500">
-                Update your name and email
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="example@osu.edu" />
+              <Input id="email"/>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input id="phone"/>
             </div>
 
             <div className="flex justify-end">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button type="submit" className="px-6">
                 Save Changes
               </Button>
             </div>
-
           </div>
-        </Card>
+      </Card>
 
         {/* Password */}
         <Card className="border p-6 shadow-sm">
@@ -139,26 +139,6 @@ export default function SettingsPage({profile}: ProfilePageProps) {
                 <option>Chinese</option>
               </select>
             </div>
-
-          </div>
-        </Card>
-
-        {/* Logout */}
-        <Card className="border border-red-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-
-            <div>
-              <h2 className="text-lg font-semibold text-red-600">
-                Log Out
-              </h2>
-              <p className="text-sm text-gray-500">
-                Sign out of your account
-              </p>
-            </div>
-
-            <Button variant="destructive">
-              Log Out
-            </Button>
 
           </div>
         </Card>

@@ -1,9 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { LikedYouProfile, RoommatePreference, DiscoveryProfile } from "./types";
+import type { LikedYouProfile, DiscoveryProfile, DiscoveryFilter } from "./types";
 import type { UserProfile } from "@/app/(profile)/types";
 import { getUserProfiles } from "@/lib/services/profile";
+import { revalidatePath } from "next/cache";
 
 export async function getLikedYouProfiles(): Promise<LikedYouProfile[]> {
   const supabase = await createClient();
@@ -201,28 +202,26 @@ export async function undoMatchSwipe(targetUserId: string) {
   }
 }
 
-// Gets users preference table
-export async function getUserRoommatePreferences(user_id: string): Promise<RoommatePreference[]> {
+// Gets user's profile filters, roommate preferences, and hobby filters aggregated to one json object
+export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
   const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("discovery_roommate_preferences")
-    .select("preference_id, importance, user_preferences(name)")
-    .eq("user_id", user_id);
+  const {data: {user}} = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  const { data, error } = await supabase.rpc("get_discovery_filter", {
+    p_user_id: user.id,
+  }).select("*");
 
   if (error) {
-    throw new Error(`Error fetching user roommate preferences: ${error.message}`);
-  } else {
-    return data.map((item) => ({
-      preference_id: item.preference_id,
-      importance: item.importance,
-      name: item.user_preferences[0]?.name,
-    }));
+    throw new Error(`Error fetching discovery filter: ${error.message}`);
   }
+  return data;
 }
 
-export async function saveUserRoommatePreferences(
-  preferences: RoommatePreference[],
+export async function saveDiscoveryFilter(
+  filters: DiscoveryFilter,
 ) {
   const supabase = await createClient();
   const {
@@ -234,44 +233,41 @@ export async function saveUserRoommatePreferences(
     throw new Error(`Error fetching current user: ${userError?.message}`);
   }
 
-  const { error: saveError } = await supabase
-    .from("discovery_roommate_preferences")
-    .upsert(
-      preferences.map((preference) => ({
-        user_id: user.id,
-        preference_id: preference.preference_id,
-        importance: preference.importance,
-      })),
-      { onConflict: "user_id,preference_id" },
-    );
+  const { error: saveError } = await supabase.rpc("save_discovery_filter", {
+    p_user_id: user.id,
+    roommate_preferences: filters.roommate_preferences,
+    profile_filters: filters.profile_filters,
+    hobby_filters: filters.hobby_filters,
+  });
 
   if (saveError) {
-    throw new Error(
-      `Failed to save user roommate preferences: ${saveError.message}`,
-    );
+    throw new Error(`Failed to save discovery filter: ${saveError.message}`);
   }
-}
-    
-  
-  /* 
-    Function gets all active user profiles and then takes a user_id to return a sorted list of match score objects
-    Matches a user with all active users in the database based on the distance in preferences
-    If we do not have preferences or importance assigned the score will default to 0    
-  */
-  export async function getDiscoveryProfiles(preference_ids: string[]): Promise<DiscoveryProfile[]> {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
 
-    if (userError || user === null) {
-      throw new Error(`Error fetching current user: ${userError?.message}`);
-    }
+  revalidatePath("/discovery");
+  return true;
+}
+
+/*
+  getDiscoveryProfiles calls get_ranked_matches in the database:
+  1. User profile, filters, roommate prefs, hobby filters
+  2. Filter candidates (profile/hobby prefs, dealbreakers, already swiped)
+  3. Match score: sum of importance * (1 - |delta| / range)
+  4. Return candidates sorted by score descending
+*/
+export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || user === null) {
+    throw new Error(`Error fetching current user: ${userError?.message}`);
+  }
 
     const { data, error } = await supabase.rpc("get_ranked_matches", {
       current_user_id: user.id,
-      preference_ids,
     }).select("*");
 
     if (error) {

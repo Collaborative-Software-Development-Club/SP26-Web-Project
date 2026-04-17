@@ -1,10 +1,15 @@
 "use server";
-//Checking if this triggers the CodeOwner review
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserProfiles } from "@/lib/services/profile";
-import type { Preference } from "./types";
+import type {
+  Hobby,
+  HobbyCategoryGroup,
+  Major,
+  Preference,
+  UserProfile,
+} from "./types";
 
 const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
@@ -80,6 +85,10 @@ export async function signupAction(formData: FormData) {
   if (data.session) {
     redirect("/profile");
   }
+  
+  console.log("signup user id:", data.user?.id);
+  console.log("signup session exists:", !!data.session);
+  console.log("email confirmed at:", data.user?.email_confirmed_at);
 
   redirect(
     `/confirm?message=${encodeURIComponent(
@@ -88,105 +97,236 @@ export async function signupAction(formData: FormData) {
   );
 }
 
-export async function createProfileAction(formData: FormData) {
-  const fname = formData.get("fname") as string;
-  const lname = formData.get("lname") as string;
-  const gender = formData.get("gender") as string;
-  const bio = formData.get("bio") as string;
-  const major = formData.get("major") as string;
-  const year = formData.get("year") as string;
-
-  if (!fname || !lname || !gender || !bio || !major || !year) {
-    return { error: "All fields are required" };
-  }
-
+/**
+ * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
+ */
+export async function saveProfileAction(profile: UserProfile) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return { error: "Unauthorized" };
   }
 
-  const now = new Date().toISOString();
-  const { error } = await supabase
-    .from("user_profiles")
-    .insert([
-      {
-        user_id: user.id,
-        is_active: true,
-        fname,
-        lname,
-        gender,
-        bio,
-        major,
-        year: parseInt(year),
-        avatar_url: "",
-        created_at: now,
-        last_edited_at: now,
-      },
-    ]);
+  const { error: profileError } = await supabase.from("user_profiles").upsert([
+    {
+      user_id: user.id,
+      is_active: true,
+      bio: profile.bio,
+      year: profile.year,
+      avatar_url: profile.avatar_url || null,
+      fname: profile.fname,
+      lname: profile.lname,
+      gender: profile.gender,
+    },
+  ]);
 
-  if (error) {
-    return { error: error.message };
+  if (profileError) {
+    return { error: "Failed to save profile: " + profileError.message };
   }
 
-  // ensure related records exist in the join tables so the user_id is linked
-  // these tables currently don't have any extra information, just associating
-  // the profile with hobbies/preferences; we'll insert a bare record for now
-  const { error: hobbiesError } = await supabase
+  const { error: clearMajorsError } = await supabase
+    .from("user_profile_majors")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (clearMajorsError) {
+    return {
+      error: "Failed to update majors: " + clearMajorsError.message,
+    };
+  }
+
+  const { error: majorsError } =
+    profile.majors.length > 0
+      ? await supabase.from("user_profile_majors").insert(
+          profile.majors.map((m) => ({
+            user_id: user.id,
+            major_id: m.major_id,
+          })),
+        )
+      : { error: null };
+
+  if (majorsError) {
+    return { error: "Failed to save majors: " + majorsError.message };
+  }
+
+  const { error: clearHobbiesError } = await supabase
     .from("user_profile_hobbies")
-    .insert([{ 
-      user_id: user.id,
-      created_at: now
-     }]);
-  const { error: prefsError } = await supabase
-    .from("user_profile_preferences")
-    .insert([{
-      user_id: user.id,
-      created_at: now
-     }]);
+    .delete()
+    .eq("user_id", user.id);
 
-  if (hobbiesError || prefsError) {
-    // non-critical; log or ignore but could return an error if desired
-    console.warn("error creating empty user profile relations", hobbiesError, prefsError);
+  if (clearHobbiesError) {
+    return {
+      error: "Failed to update hobbies: " + clearHobbiesError.message,
+    };
   }
 
-  redirect("/profile");
+  const { error: hobbiesError } =
+    profile.hobbies.length > 0
+      ? await supabase.from("user_profile_hobbies").insert(
+          profile.hobbies.map((h) => ({
+            user_id: user.id,
+            hobby_id: h.hobby_id,
+          })),
+        )
+      : { error: null };
+
+  if (hobbiesError) {
+    return { error: "Failed to save hobbies: " + hobbiesError.message };
+  }
+
+  const { error: clearPreferencesError } = await supabase
+    .from("user_profile_preferences")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (clearPreferencesError) {
+    return {
+      error: "Failed to update preferences: " + clearPreferencesError.message,
+    };
+  }
+
+  const { error: preferencesError } =
+    profile.preferences.length > 0
+      ? await supabase.from("user_profile_preferences").insert(
+          profile.preferences.map((p) => ({
+            user_id: user.id,
+            preference_id: p.preference_id,
+            value: p.value,
+          })),
+        )
+      : { error: null };
+
+  if (preferencesError) {
+    return { error: "Failed to save preferences: " + preferencesError.message };
+  }
+
+  const { error: filterError } = await supabase
+    .from("discovery_profile_filters")
+    .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+
+  if (filterError) {
+    return { error: "Failed to save filters: " + filterError.message };
+  }
+
+  const { error: preferenceFilterError } =
+    profile.preferences.length > 0
+      ? await supabase
+          .from("discovery_roommate_preferences")
+          .upsert(
+            profile.preferences.map((p) => ({
+              user_id: user.id,
+              preference_id: p.preference_id,
+              importance: 3,
+            })),
+            { onConflict: "user_id,preference_id", ignoreDuplicates: true },
+          )
+      : { error: null };
+      
+  if (preferenceFilterError) {  
+    return { error: "Failed to save preferences: " + preferenceFilterError.message };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/profile/create-profile");
+
+  return { error: null };
 }
 
-export async function getAllPreferences(): Promise<Preference[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-  .from('user_preferences')
-  .select('*');
+/** Supabase may return one object or an array for embedded FK rows. */
+type EmbeddedCategoryName = { name: string };
 
-  if (error) throw new Error("Error getting all preferences");
-  if (!data) throw new Error("Could not retrieve preferences");
+type UserHobbyRow = {
+  hobby_id: number | string;
+  name: string;
+  user_hobby_categories?: EmbeddedCategoryName | EmbeddedCategoryName[] | null;
+};
 
-  return data.map(p => ({
-    preference_id: p.preference_id,
-    name: p.name,
-    value: 0 // default value is 0
-  })) as Preference[];
+function categoryNameFromEmbed(
+  embed: EmbeddedCategoryName | EmbeddedCategoryName[] | null | undefined,
+): string {
+  if (embed == null) return "uncategorized";
+  if (Array.isArray(embed)) {
+    return embed[0]?.name?.trim() || "uncategorized";
+  }
+  return embed.name?.trim() || "uncategorized";
 }
 
-export async function setPreferences(preferences: Preference[]) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+/** Group hobbies by category (nested `user_hobby_categories.name` from Supabase). */
+function groupHobbiesData(rows: UserHobbyRow[]): HobbyCategoryGroup[] {
+  const groups = new Map<string, Hobby[]>();
 
-  if (!user) {
-    throw new Error("Unauthorized");
+  for (const row of rows) {
+    const category = categoryNameFromEmbed(row.user_hobby_categories);
+    const hobbyId = String(row.hobby_id);
+    const list = groups.get(category) ?? [];
+    list.push({ hobby_id: hobbyId, name: row.name });
+    groups.set(category, list);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([category, hobbies]) => ({ category, hobbies }));
+}
+
+/** Return all the major, hobby and preference choices **/
+export async function getMajorsHobbiesPreferences(): Promise<
+  | { error: string }
+  | {
+      majorData: Major[];
+      hobbiesData: HobbyCategoryGroup[];
+      preferencesData: Preference[];
     }
+> {
+  const supabase = await createClient();
 
-  const {error} = await supabase
-  .from("user_profile_preferences")
-  .insert(
-    preferences.map(p => ({
-      user_id: user.id,
+  const { data: majorsData, error: majorsError } = await supabase
+    .from("user_majors")
+    .select("major_id, name")
+    .order("name", { ascending: true });
+
+  if (majorsError) {
+    return { error: majorsError.message };
+  }
+
+  const { data: preferencesData, error: preferencesError } = await supabase
+    .from("user_preferences")
+    .select("*");
+
+  if (preferencesError) {
+    return { error: preferencesError.message };
+  }
+
+  const { data: hobbiesData, error: hobbiesError } = await supabase.from(
+    "user_hobbies",
+  ).select(`
+    hobby_id,
+    name,
+    user_hobby_categories(name)
+  `);
+
+  if (hobbiesError) {
+    return { error: hobbiesError.message };
+  }
+
+  const hobbies = groupHobbiesData((hobbiesData ?? []) as UserHobbyRow[]);
+
+  return {
+    majorData: majorsData,
+    hobbiesData: hobbies,
+    preferencesData: (preferencesData ?? []).map((p) => ({
       preference_id: p.preference_id,
-      value: p.value
-    }))
-  );
+      name: p.name,
+      value: 0,
+    })),
+  };
+}
 
-  if (error) throw new Error(`Error updating user preferences: ${error.message}`);
+export async function updateProfile(profile: UserProfile) {
+  const result = await saveProfileAction(profile);
+  if (result.error) {
+    throw new Error(result.error);
+  }
 }

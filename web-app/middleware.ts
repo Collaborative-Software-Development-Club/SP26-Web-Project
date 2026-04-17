@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-const protectedPaths = ["/profile", "/discovery", "/chat", "/housing"];
+const protectedPaths = ["/profile", "/discovery", "/chat"];
 const authPaths = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect routes
   if (
     protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p)) &&
     !user
@@ -22,7 +21,6 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // Redirect logged-in users away from auth pages
   if (authPaths.some((p) => request.nextUrl.pathname.startsWith(p)) && user) {
     return NextResponse.redirect(new URL("/profile", request.url));
   }

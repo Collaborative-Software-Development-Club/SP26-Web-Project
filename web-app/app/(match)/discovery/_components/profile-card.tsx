@@ -1,68 +1,82 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DiscoveryProfile, YesNoPreferences } from "../types";
-import { BookOpen, Cigarette, Cat, Moon, Users } from "lucide-react";
+import { DiscoveryProfile, LikedYouProfile } from "../types";
+import { ProfilePreferences } from "./profile-preferences";
 import { LikeButton } from "./like-button";
-import { UndoButton } from "./undo-button";
 import { DislikeButton } from "./dislike-button";
 import { MessageButton } from "./message-button";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@/contexts/UserContext";
 
-// [ready] Icon helper moved outside component for better performance
-const getPreferenceIcon = (key: string) => {
-  switch (key) {
-    case "Smoker":
-      return <Cigarette className="w-4 h-4" />;
-    case "Pets":
-      return <Cat className="w-4 h-4" />;
-    case "Sleep Schedule":
-      return <Moon className="w-4 h-4" />;
-    case "Guests":
-      return <Users className="w-4 h-4" />;
-    default:
-      return <BookOpen className="w-4 h-4" />;
-  }
-};
+// TODO: replace with profile data
+const PHOTOS = ["selfie", "room1", "room2"] as const;
 
 export function ProfileCard({
   profile,
+  isDiscovery,
   handleNext,
   handleBefore,
+  onAccept,
+  onPass,
 }: {
-  profile: DiscoveryProfile;
-  handleNext: () => void;
-  handleBefore: () => void;
+  profile: DiscoveryProfile | LikedYouProfile;
+  isDiscovery: boolean;
+  // discovery
+  handleNext?: () => void;
+  handleBefore?: () => void;
+  // liked-you
+  onAccept?: (userId: string) => void;
+  onPass?: (userId: string) => void;
 }) {
-  // [ready] Expand state for living habits
   const [swipeDirection, setSwipeDirection] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const INITIAL_VISIBLE_PREFS = 4;
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const { user, profile: userProfile } = useUser();
+
+  if (isDiscovery) console.log(profile?.fname, (profile as DiscoveryProfile)?.match_score)
 
   // Animation Director
   const onAction = (dir: number) => {
     setSwipeDirection(dir);
     setTimeout(() => {
-      if (dir === 2) {
-        handleBefore();
+      if (isDiscovery) {
+        if (dir === 1) {
+          if (handleNext) handleNext();
+        } else {
+          if (handleBefore) handleBefore();
+        }
       } else {
-        handleNext();
+        if (dir === 1) {
+          if (onAccept) onAccept(profile.user_id);
+        } else {
+          if (onPass) onPass(profile.user_id);
+        }
       }
     }, 10);
   };
 
-  // [ready] Reset expand state when profile changes
+  const nextPhoto = () => setPhotoIndex((i) => (i + 1) % PHOTOS.length);
+  const prevPhoto = () =>
+    setPhotoIndex((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
+
+  const openLightbox = () => setLightboxOpen(true);
+  const closeLightbox = () => setLightboxOpen(false);
+
   useEffect(() => {
-    setTimeout(() => {
-      setIsExpanded(false);
-    }, 0);
-  }, [profile?.user_id]);
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxOpen]);
 
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="w-full bg-zinc-50 dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
+    <div className="w-full flex flex-col items-center">
       <AnimatePresence mode="wait" custom={swipeDirection}>
         <motion.div
           key={profile.user_id}
@@ -80,156 +94,158 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-3/4 max-w-4xl bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden relative md:h-[560px]"
+          className="w-full h-[80dvh] md:w-3/4 md:h-auto md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
         >
-          <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-linear-to-br from-indigo-200/30 to-purple-200/30 dark:from-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full pointer-events-none" />
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 relative z-10 h-full">
-            {/* Left Column */}
-            <div className="md:col-span-5 flex flex-col p-5 gap-3 border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-black/20 h-full">
-              <div className="w-full flex-1 min-h-[300px] md:min-h-0 rounded-2xl overflow-hidden relative shadow-inner bg-zinc-200 dark:bg-zinc-800 group">
+          <div className="flex flex-col md:grid md:grid-cols-12 h-full">
+            {/* Photo column */}
+            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[30vh] md:h-auto">
+              <div className="relative w-full bg-muted overflow-hidden h-full md:aspect-[3/4]">
                 <Image
-                  src="/demo/selfie.png"
-                  alt="User Avatar"
+                  src={`/demo/${PHOTOS[photoIndex]}.png`}
+                  alt="Profile photo"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-opacity duration-300"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-2 h-24 shrink-0">
-                <div className="rounded-xl bg-zinc-200 dark:bg-zinc-800 relative overflow-hidden flex items-center justify-center text-zinc-400">
-                  <Image
-                    src="/demo/room1.png"
-                    alt="Room 1"
-                    fill
-                    sizes="(max-width: 768px) 50vw, 16vw"
-                    className="object-cover"
+
+                {/* Click zones: prev | open lightbox | next */}
+                <div className="absolute inset-0 flex">
+                  <button
+                    className="group relative flex-1"
+                    onClick={prevPhoto}
+                    aria-label="Previous photo"
+                  >
+                    <span
+                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{
+                        background:
+                          "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                      }}
+                    />
+                  </button>
+
+                  <button
+                    className="relative flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLightbox();
+                    }}
+                    aria-label="Open full photo"
                   />
+
+                  <button
+                    className="group relative flex-1"
+                    onClick={nextPhoto}
+                    aria-label="Next photo"
+                  >
+                    <span
+                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{
+                        background:
+                          "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                      }}
+                    />
+                  </button>
                 </div>
-                <div className="rounded-xl bg-zinc-200 dark:bg-zinc-800 relative overflow-hidden flex items-center justify-center text-zinc-400">
-                  <Image
-                    src="/demo/room2.png"
-                    alt="Room 2"
-                    fill
-                    sizes="(max-width: 768px) 50vw, 16vw"
-                    className="object-cover"
-                  />
+
+                {/* Dot indicators */}
+                <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-4 pb-3 pt-8 bg-gradient-to-t from-black/30 to-transparent">
+                  {PHOTOS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPhotoIndex(i)}
+                      className={`h-0.5 flex-1 rounded-full transition-colors duration-200 ${
+                        i === photoIndex ? "bg-white" : "bg-white/40"
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="w-full md:col-span-7 flex flex-col h-full overflow-hidden">
-              <div className="p-6 flex-1 overflow-y-auto">
+            {/* Info column */}
+            <div className="flex flex-col flex-1 md:col-span-7 overflow-hidden">
+              <div className="p-4 md:p-6 flex-1 overflow-y-auto">
+                {/* Bio */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                      {profile.fname} {profile.lname}
+                    <h1 className="text-2xl md:text-3xl font-serif font-normal text-foreground tracking-tight">
+                      {profile?.fname} {profile?.lname}
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 font-medium">
-                      {profile.major} • Year {profile.year}
+                    <p className="font-serif text-sm text-muted-foreground">
+                      Year {profile?.year} •{" "}
+                      {profile.majors?.map((m) => m.name).join(" | ")}
                     </p>
                   </div>
                 </div>
 
-                <div className="w-full">
-                  <p className="mt-3 text-zinc-600 dark:text-zinc-300 leading-relaxed text-base">
-                    &quot;{profile.bio}&quot;
-                  </p>
-                </div>
+                <p className="mt-3 text-sm italic text-muted-foreground leading-relaxed">
+                  &quot;{profile?.bio}&quot;
+                </p>
 
-                <div className="h-px w-full bg-zinc-100 dark:bg-zinc-800 my-5" />
+                <div className="h-px w-full bg-border my-4 md:my-5" />
 
-                <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                <div className="grid grid-cols-2 gap-y-4 md:gap-y-5 gap-x-4">
+                  {/* Hobbies & Interests */}
                   <div className="col-span-2">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
-                      Hobbies & Interests
+                    <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                      Hobbies & interests
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {profile.hobbies.map((hobby) => (
+                      {profile?.hobbies?.map((hobby) => (
                         <span
-                          key={hobby}
-                          className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium border border-zinc-200 dark:border-zinc-700"
+                          key={hobby.hobby_id}
+                          className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs border border-border capitalize"
                         >
-                          {hobby}
+                          {hobby.name}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="col-span-2">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
-                      Living Habits
+                  {/* Preferences / Living Habits */}
+                  <div className="col-span-2 gap-y-4 md:gap-y-5 gap-x-4">
+                    <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                      Living habits
                     </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {profile.preferences
-                        .slice(
-                          0,
-                          isExpanded
-                            ? profile.preferences.length
-                            : INITIAL_VISIBLE_PREFS,
-                        )
-                        .map((pref) => (
-                          <div
-                            key={pref.name}
-                            className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800"
-                          >
-                            <div className="p-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 shadow-sm shrink-0">
-                              {getPreferenceIcon(pref.name)}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[9px] text-zinc-400 uppercase font-semibold truncate">
-                                {pref.name}
-                              </p>
-                              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 capitalize truncate">
-                                {YesNoPreferences.includes(pref.name)
-                                  ? pref.value === 1
-                                    ? "Yes"
-                                    : "No"
-                                  : pref.value}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                    {profile.preferences.length > INITIAL_VISIBLE_PREFS && (
-                      <button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
-                      >
-                        {isExpanded
-                          ? "Show Less"
-                          : `+${profile.preferences.length - INITIAL_VISIBLE_PREFS} More`}
-                      </button>
-                    )}
+                    <ProfilePreferences
+                      preferences={profile?.preferences ?? []}
+                      userPreferences={userProfile?.preferences ?? []}
+                    />
                   </div>
+
+                  {/* Their message */}
+                  {!isDiscovery && "message" in profile && (
+                    <div className="col-span-2">
+                      <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                        Their message to you
+                      </h3>
+                      <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm text-foreground italic">
+                        &quot;{profile?.message}&quot;
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Action Buttons - Order: Undo, Dislike, Like, Message */}
-              <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-around items-center gap-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md shrink-0">
-                <UndoButton
-                  onClick={() => onAction(2)}
-                  handleBefore={handleBefore}
-                  isDiscovery={true}
-                  targetUserId={profile.user_id}
-                />
+              {/* Action Buttons - Order: Dislike, Like, Message */}
+              <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
                 <DislikeButton
                   onClick={() => onAction(-1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(-1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <LikeButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <MessageButton
                   onClick={() => onAction(1)}
-                  handleNext={handleNext}
-                  isDiscovery={true}
+                  handleNext={() => onAction(1)}
+                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
               </div>
@@ -237,6 +253,35 @@ export function ProfileCard({
           </div>
         </motion.div>
       </AnimatePresence>
+      {/* Lightbox Modal */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-w-[95vw] max-h-[95vh]">
+            <button
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/40 p-2 text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeLightbox();
+              }}
+              aria-label="Close full photo"
+            >
+              ✕
+            </button>
+            <Image
+              src={profile?.avatar_url ?? `/demo/${PHOTOS[photoIndex]}.png`}
+              alt="Full photo"
+              width={1200}
+              height={900}
+              className="object-contain max-h-[95vh]"
+            />
+          </div>  
+        </div>
+      )}
     </div>
   );
 }
