@@ -1,5 +1,6 @@
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,65 @@ DEFAULT_HEADERS = {
 
 # We request listings in pages because the source endpoint is paginated.
 PAGE_SIZE = 100
+
+# Match the current OSU JSON structure exactly so records can be merged later
+# without an extra schema-normalization step.
+OSU_FIELD_ORDER = [
+    "Address",
+    "Detail_URL",
+    "ID",
+    "Monthly Rent",
+    "Move In Date",
+    "Move Out Date",
+    "Lease Term",
+    "Short Lease Term",
+    "Sublease Permitted",
+    "Security Deposit",
+    "Property Owner",
+    "Property Type",
+    "Location\r\n                                            Sector",
+    "Level",
+    "City",
+    "Bedrooms",
+    "Bathrooms",
+    "Max Occupancy",
+    "Wheel Chair Access",
+    "Basement",
+    "Laundry",
+    "Parking",
+    "Number of Parking Spaces",
+    "Off-street Parking",
+    "Off-street Monthly",
+    "Off-street Yearly",
+    "On-street Parking",
+    "On-street Permit Required",
+    "Garage Parking",
+    "Garage Monthly",
+    "Garage Yearly",
+    "Furnished",
+    "Fireplace",
+    "Air Conditioning",
+    "Dishwasher",
+    "Stove",
+    "Refrigerator",
+    "Security System",
+    "Backyard",
+    "Deck Or Porch",
+    "Other Amenities",
+    "Pet Deposit",
+    "Additional Pet Rent",
+    "Additional Dog Rent",
+    "Additional Cat Rent",
+    "Pets Allowed",
+    "Dogs Allowed",
+    "Cats Allowed",
+    "Pet Deposit Refundable",
+    "Water Included",
+    "Electric Included",
+    "Gas Included",
+    "Name",
+    "Phone",
+]
 
 
 def stringify(value: Any) -> str:
@@ -67,6 +127,114 @@ def build_listing_url(data: dict[str, Any]) -> str:
     if not listable_uid or not database_url:
         return ""
     return f"{str(database_url).rstrip('/')}/listings/detail/{listable_uid}"
+
+
+def includes_term(text: str, *terms: str) -> bool:
+    """Case-insensitive substring test for amenity/utility text."""
+    lowered = text.lower()
+    return any(term.lower() in lowered for term in terms)
+
+
+def yes_no_from_boolish(value: Any) -> str:
+    """Convert mixed truthy source values into OSU-style Yes/No strings."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "Yes" if value else "No"
+
+    text = stringify(value).lower()
+    if not text:
+        return ""
+    if text in {"yes", "true", "1", "allowed"}:
+        return "Yes"
+    if text in {"no", "false", "0", "not allowed"}:
+        return "No"
+    if "allow" in text:
+        return "Yes"
+    return ""
+
+
+def build_city(data: dict[str, Any]) -> str:
+    """Mirror the OSU city style of `City, ST` when possible."""
+    city = stringify(data.get("address_city"))
+    state = stringify(data.get("address_state"))
+    return ", ".join(part for part in [city, state] if part)
+
+
+def normalize_osu_schema(mapped_fields: dict[str, str]) -> dict[str, str]:
+    """
+    Force every Buckeye record into the exact OSU field set and order.
+
+    Missing Buckeye information stays as an empty string so downstream merges can
+    rely on a stable schema instead of a sparse, source-specific one.
+    """
+    return {field: mapped_fields.get(field, "") for field in OSU_FIELD_ORDER}
+
+
+def format_currency(value: Any) -> str:
+    """
+    Format numeric Buckeye money values like the OSU JSON style.
+
+    Examples:
+    - 1290 -> $1,290.00
+    - 55 -> $55.00
+    """
+    text = stringify(value)
+    if not text:
+        return ""
+    if text.startswith("$"):
+        return text
+
+    cleaned = text.replace(",", "").strip()
+    try:
+        amount = float(cleaned)
+    except ValueError:
+        return text
+
+    return f"${amount:,.2f}"
+
+
+def format_date(value: Any) -> str:
+    """
+    Convert source dates into a slash-separated month/day/year string.
+
+    Buckeye commonly uses ISO dates like 2026-08-20; OSU uses slash-heavy
+    display strings, so we normalize into M/D/YYYY.
+    """
+    text = stringify(value)
+    if not text:
+        return ""
+
+    for pattern in ("%Y-%m-%d", "%m-%d-%Y", "%m/%d/%Y", "%m/%d/%y"):
+        try:
+            parsed = datetime.strptime(text, pattern)
+            return f"{parsed.month}/{parsed.day}/{parsed.year}"
+        except ValueError:
+            continue
+
+    return text.replace("-", "/")
+
+
+def format_bathrooms(value: Any) -> str:
+    """
+    Express bathroom counts in the OSU style, e.g. `1 full, 1 half`.
+    """
+    text = stringify(value)
+    if not text:
+        return ""
+    if "full" in text or "half" in text:
+        return text
+
+    cleaned = text.strip()
+    try:
+        amount = float(cleaned)
+    except ValueError:
+        return text
+
+    full_baths = int(amount)
+    fractional = round(amount - full_baths, 2)
+    half_baths = 1 if fractional >= 0.5 else 0
+    return f"{full_baths} full, {half_baths} half"
 
 
 def fetch_listings(limit: int) -> list[dict[str, Any]]:
@@ -115,67 +283,101 @@ def convert_to_osu_record(data: dict[str, Any]) -> dict[str, str]:
     - human-readable field labels
     - string values
 
-    Some OSU fields do not exist on Buckeye, so we simply omit them rather than
-    inventing placeholder values that might be misleading.
+    Some OSU fields do not exist on Buckeye, so we leave them as empty strings
+    to preserve a merge-friendly schema without inventing values.
     """
     amenities = stringify(data.get("amenities"))
     utilities = stringify(data.get("utilities"))
+    parking_type = stringify(data.get("parking_type"))
+    laundry_type = stringify(data.get("laundry_type"))
+    air_conditioning_type = stringify(data.get("air_conditioning_type"))
 
-    record = {
+    parking_present = bool(parking_type) or includes_term(
+        amenities, "parking", "garage", "carport"
+    )
+    off_street_parking = bool(parking_type) or includes_term(
+        amenities, "off street parking"
+    )
+
+    dishwasher = yes_no_from_boolish(data.get("dishwasher"))
+    if not dishwasher and includes_term(amenities, "dishwasher"):
+        dishwasher = "Yes"
+
+    refrigerator = yes_no_from_boolish(data.get("refrigerator"))
+    if not refrigerator and includes_term(amenities, "refrigerator", "fridge"):
+        refrigerator = "Yes"
+
+    stove = "Yes" if includes_term(amenities, "range", "stove", "oven") else ""
+
+    pets_allowed = yes_no_from_boolish(data.get("pets_allowed"))
+    if not pets_allowed:
+        if stringify(data.get("dogs")) or stringify(data.get("cats")):
+            pets_allowed = "Yes"
+
+    mapped_fields = {
         "Address": stringify(
             data.get("full_address") or data.get("address_address1") or "Unknown Address"
         ),
         "Detail_URL": build_listing_url(data),
         "ID": stringify(data.get("id")),
-        "Monthly Rent": stringify(data.get("market_rent")),
-        "Move In Date": stringify(data.get("available_date")),
+        "Monthly Rent": format_currency(data.get("market_rent")),
+        "Move In Date": format_date(data.get("available_date")),
+        "Move Out Date": "",
         "Lease Term": stringify(data.get("advertised_lease_term")),
-        "Security Deposit": stringify(data.get("deposit")),
+        "Short Lease Term": "",
+        "Sublease Permitted": "",
+        "Security Deposit": format_currency(data.get("deposit")),
         "Property Owner": "Buckeye Real Estate",
         "Property Type": stringify(data.get("property_type")),
-        "City": stringify(
-            ", ".join(
-                part
-                for part in [
-                    stringify(data.get("address_city")),
-                    stringify(data.get("address_state")),
-                ]
-                if part
-            )
-        ),
+        "Location\r\n                                            Sector": "",
+        "Level": "",
+        "City": build_city(data),
         "Bedrooms": stringify(data.get("bedrooms")),
-        "Bathrooms": stringify(data.get("bathrooms")),
-        "Laundry": stringify(data.get("laundry_type")),
-        "Parking": "Yes" if stringify(data.get("parking_type")) else "",
-        "Furnished": stringify(data.get("furnished")),
-        "Air Conditioning": stringify(data.get("air_conditioning_type")),
-        "Dishwasher": stringify(data.get("dishwasher")),
-        "Refrigerator": stringify(data.get("refrigerator")),
+        "Bathrooms": format_bathrooms(data.get("bathrooms")),
+        "Max Occupancy": stringify(data.get("max_occupancy")),
+        "Wheel Chair Access": yes_no_from_boolish(data.get("wheelchair_accessible")),
+        "Basement": "",
+        "Laundry": laundry_type or ("Laundry facilities in the building" if includes_term(
+            amenities, "laundry"
+        ) else ""),
+        "Parking": "Yes" if parking_present else "",
+        "Number of Parking Spaces": stringify(data.get("parking_spaces")),
+        "Off-street Parking": "Yes" if off_street_parking else "",
+        "Off-street Monthly": "",
+        "Off-street Yearly": "",
+        "On-street Parking": "",
+        "On-street Permit Required": "",
+        "Garage Parking": "Yes" if includes_term(amenities, "garage") else "",
+        "Garage Monthly": "",
+        "Garage Yearly": "",
+        "Furnished": yes_no_from_boolish(data.get("furnished")),
+        "Fireplace": yes_no_from_boolish(data.get("fireplace")),
+        "Air Conditioning": air_conditioning_type,
+        "Dishwasher": dishwasher,
+        "Stove": stove,
+        "Refrigerator": refrigerator,
+        "Security System": yes_no_from_boolish(data.get("security_system")),
+        "Backyard": yes_no_from_boolish(data.get("backyard")),
+        "Deck Or Porch": "Yes" if includes_term(amenities, "deck", "porch", "balcony") else "",
         "Other Amenities": amenities,
-        "Pets Allowed": stringify(data.get("pets_allowed")),
-        "Dogs Allowed": stringify(data.get("dogs")),
-        "Cats Allowed": stringify(data.get("cats")),
-        "Water Included": "Yes" if "water" in utilities.lower() else "",
-        "Electric Included": "Yes" if "electric" in utilities.lower() else "",
-        "Gas Included": "Yes" if "gas" in utilities.lower() else "",
+        "Pet Deposit": format_currency(data.get("pet_deposit")),
+        "Additional Pet Rent": format_currency(data.get("pet_rent")),
+        "Additional Dog Rent": format_currency(data.get("dog_rent")),
+        "Additional Cat Rent": format_currency(data.get("cat_rent")),
+        "Pets Allowed": pets_allowed,
+        "Dogs Allowed": yes_no_from_boolish(data.get("dogs")),
+        "Cats Allowed": yes_no_from_boolish(data.get("cats")),
+        "Pet Deposit Refundable": yes_no_from_boolish(data.get("pet_deposit_refundable")),
+        "Water Included": "Yes" if includes_term(f"{utilities} {amenities}", "water included", "water") else "",
+        "Electric Included": "Yes" if includes_term(
+            f"{utilities} {amenities}", "electric included", "electric"
+        ) else "",
+        "Gas Included": "Yes" if includes_term(f"{utilities} {amenities}", "gas included", "gas") else "",
+        "Name": "",
+        "Phone": stringify(data.get("contact_phone_number")),
     }
 
-    # Preserve a few source-specific details using the same human-readable field style.
-    extra_fields = {
-        "Application Fee": stringify(data.get("application_fee")),
-        "Square Feet": stringify(data.get("square_feet")),
-        "Postal Code": stringify(data.get("address_postal_code")),
-        "Available": stringify(data.get("available")),
-        "Utilities": utilities,
-        "Contact Phone": stringify(data.get("contact_phone_number")),
-        "Contact Email": stringify(data.get("contact_email_address")),
-    }
-
-    # Only keep fields that actually contain information. This mirrors the OSU scraper's
-    # "whatever we found becomes a key" behavior more closely than filling every key.
-    cleaned_record = {key: value for key, value in record.items() if value != ""}
-    cleaned_record.update({key: value for key, value in extra_fields.items() if value != ""})
-    return cleaned_record
+    return normalize_osu_schema(mapped_fields)
 
 
 def parse_args() -> argparse.Namespace:
