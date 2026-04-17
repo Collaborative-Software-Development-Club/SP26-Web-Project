@@ -11,7 +11,7 @@ import type {
   UserProfile,
 } from "./types";
 
-const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
+//const OSU_EMAIL_REGEX = /^[a-z]+\.[0-9]+@osu\.edu$/;
 
 export async function signOut() {
   const supabase = await createClient();
@@ -27,11 +27,11 @@ export async function loginAction(formData: FormData) {
     return;
   }
 
-  if (!OSU_EMAIL_REGEX.test(email)) {
+  /*if (!OSU_EMAIL_REGEX.test(email)) {
     redirect(
       `/login?error=${encodeURIComponent("You must use an OSU email address")}`,
     );
-  }
+  }*/
 
   if (password.length < 6) {
     redirect(
@@ -56,11 +56,12 @@ export async function signupAction(formData: FormData) {
   if (!email || !password) {
     return;
   }
-  if (!OSU_EMAIL_REGEX.test(email)) {
+  /*if (!OSU_EMAIL_REGEX.test(email)) {
     redirect(
       `/signup?error=${encodeURIComponent("You must use an OSU email address")}`,
     );
-  }
+  }*/
+
 
   if (password.length < 6) {
     redirect(
