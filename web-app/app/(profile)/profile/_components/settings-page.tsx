@@ -1,5 +1,6 @@
 "use client";
-
+import majors from "@/mock/majors.json";
+import hobbies from "@/mock/hobbies.json";
 import { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
