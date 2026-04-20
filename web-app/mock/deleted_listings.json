@@ -1,0 +1,17 @@
+[
+  {
+    "id": "deleted-001",
+    "address": "123 High Street",
+    "listing_url": "https://example.com/listing/123"
+  },
+  {
+    "id": "deleted-002",
+    "address": "456 Campus Drive",
+    "listing_url": "https://example.com/listing/456"
+  },
+  {
+    "id": "deleted-003",
+    "address": "789 University Ave",
+    "listing_url": "https://example.com/listing/789"
+  }
+]

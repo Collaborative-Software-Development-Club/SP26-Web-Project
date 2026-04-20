@@ -1,4 +1,5 @@
 import type { House } from "./_components/house-card";
+import type { DeletedListing } from "./_components/deleted-listing-card";
 
 export interface HousingFilters {
   minRent: string;
@@ -7,6 +8,7 @@ export interface HousingFilters {
   semester: string;
   location: string;
   distance: string;
+  showDeleted: boolean;
 }
 
 function parsePriceNumber(rent?: string): number | null {
@@ -79,6 +81,19 @@ export function filterHouses(listings: House[], filters: HousingFilters) {
     }
 
     if (filters.distance && !Number.isNaN(Number(filters.distance))) {
+    }
+
+    return true;
+  });
+}
+
+export function filterDeletedListings(listings: DeletedListing[], filters: HousingFilters): DeletedListing[] {
+  return listings.filter((listing) => {
+    if (filters.location) {
+      const text = listing.address.toLowerCase();
+      if (!text.includes(filters.location.toLowerCase())) {
+        return false;
+      }
     }
 
     return true;

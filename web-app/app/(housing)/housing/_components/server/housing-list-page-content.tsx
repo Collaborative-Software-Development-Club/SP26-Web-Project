@@ -4,13 +4,14 @@ import type { House } from "../house-card";
 import { HousingList } from "../housing-list";
 
 const PAGE_SIZE = 9;
+const initialListingPullCount = 100; // Number of pages to pre-load (for better UX on initial load)
 
 export async function HousingListPageContent() {
   let listings: House[] = [];
   let loadError: string | null = null;
 
   try {
-    const result = await getHousingListings(1, PAGE_SIZE);
+    const result = await getHousingListings(1, initialListingPullCount);
     listings = (result.listings as House[]) ?? [];
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Failed to load listings.";

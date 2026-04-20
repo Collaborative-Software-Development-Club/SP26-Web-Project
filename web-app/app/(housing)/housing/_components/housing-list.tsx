@@ -14,15 +14,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { House, HouseCard } from "./house-card";
+import { DeletedListingCard, type DeletedListing } from "./deleted-listing-card";
 import {
   assertCanFavoriteHousing,
   getSavedHousing,
   saveHousingListing,
   unsaveHousingListing,
 } from "../_actions";
-import { filterHouses, type HousingFilters } from "../housing-utils";
+import { filterHouses, filterDeletedListings, type HousingFilters } from "../housing-utils";
+import deletedListings from "@/mock/deleted_listings.json";
 
 export function HousingList({
   initialListings,
@@ -34,7 +36,9 @@ export function HousingList({
   userId: string | null;
 }) {
   const [allListings] = useState<House[]>(initialListings);
+  const [deletedListingsData] = useState<DeletedListing[]>(deletedListings as DeletedListing[]);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
+  const [filteredDeletedListings, setFilteredDeletedListings] = useState<DeletedListing[]>([]);
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
   const [filters, setFilters] = useState<HousingFilters>({
@@ -44,6 +48,7 @@ export function HousingList({
     semester: "Any",
     location: "",
     distance: "",
+    showDeleted: false,
   });
   const [savedOnly, setSavedOnly] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,19 +56,24 @@ export function HousingList({
   const router = useRouter();
 
   const displayedListings = useMemo(() => {
+    const combined = [...filteredListings, ...(filters.showDeleted ? filteredDeletedListings : [])];
     const start = (page - 1) * pageSize;
-    return filteredListings.slice(start, start + pageSize);
-  }, [filteredListings, page, pageSize]);
+    return combined.slice(start, start + pageSize);
+  }, [filteredListings, filteredDeletedListings, page, pageSize, filters.showDeleted]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+  const totalPages = useMemo(() => {
+    const combined = [...filteredListings, ...(filters.showDeleted ? filteredDeletedListings : [])];
+    return Math.max(1, Math.ceil(combined.length / pageSize));
+  }, [filteredListings, filteredDeletedListings, pageSize, filters.showDeleted]);
 
   const listingRangeLabel = useMemo(() => {
-    const total = filteredListings.length;
+    const combined = [...filteredListings, ...(filters.showDeleted ? filteredDeletedListings : [])];
+    const total = combined.length;
     if (total === 0) return "Showing 0 of 0 listings";
     const start = (page - 1) * pageSize + 1;
     const end = Math.min(page * pageSize, total);
     return `Showing ${start}–${end} of ${total} listings`;
-  }, [filteredListings.length, page, pageSize]);
+  }, [filteredListings, filteredDeletedListings, page, pageSize, filters.showDeleted]);
 
   function applyFilters() {
     startTransition(() => {
@@ -72,15 +82,24 @@ export function HousingList({
         next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
       }
       setFilteredListings(next);
+      
+      // Filter deleted listings
+      let nextDeleted = filterDeletedListings(deletedListingsData, filters);
+      if (savedOnly) {
+        nextDeleted = userId ? nextDeleted.filter((d) => favoriteIds.has(d.id)) : [];
+      }
+      setFilteredDeletedListings(nextDeleted);
+      
       setPage(1);
       setIsDialogOpen(false);
     });
   }
 
   function clearFilters() {
-    setFilters({ minRent: "", maxRent: "", startDate: "", semester: "Any", location: "", distance: "" });
+    setFilters({ minRent: "", maxRent: "", startDate: "", semester: "Any", location: "", distance: "", showDeleted: false });
     setSavedOnly(false);
-    setFilteredListings(allListings);
+    setFilteredListings(initialListings);
+    setFilteredDeletedListings([]);
     setPage(1);
   }
 
@@ -118,9 +137,29 @@ export function HousingList({
       let next = filterHouses(allListings, filters);
       next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
       setFilteredListings(next);
+      
+      let nextDeleted = filterDeletedListings(deletedListingsData, filters);
+      nextDeleted = userId ? nextDeleted.filter((d) => favoriteIds.has(d.id)) : [];
+      setFilteredDeletedListings(nextDeleted);
+      
       setPage(1);
     });
-  }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
+  }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition, deletedListingsData]);
+
+  // Update deleted listings when showDeleted filter changes or filters change
+  useEffect(() => {
+    startTransition(() => {
+      if (filters.showDeleted) {
+        let nextDeleted = filterDeletedListings(deletedListingsData, filters);
+        if (savedOnly) {
+          nextDeleted = userId ? nextDeleted.filter((d) => favoriteIds.has(d.id)) : [];
+        }
+        setFilteredDeletedListings(nextDeleted);
+      } else {
+        setFilteredDeletedListings([]);
+      }
+    });
+  }, [filters, deletedListingsData, savedOnly, userId, favoriteIds, startTransition]);
 
   async function toggleFavorite(id: string) {
     if (!userId) {
@@ -197,6 +236,22 @@ export function HousingList({
                 </button>
               </div>
 
+              <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground">Show Deleted Listings</span>
+                </div>
+
+                <button
+                  type="button"
+                  aria-pressed={filters.showDeleted}
+                  aria-label={filters.showDeleted ? "Hide deleted listings" : "Show deleted listings"}
+                  onClick={() => setFilters((prev) => ({ ...prev, showDeleted: !prev.showDeleted }))}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-background text-foreground shadow-sm ring-1 ring-border transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Trash2 className={filters.showDeleted ? "h-5 w-5 text-red-500" : "h-5 w-5"} />
+                </button>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <Label className="flex flex-col gap-1">
                   Min rent
@@ -269,14 +324,32 @@ export function HousingList({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedListings.map((h) => (
-          <HouseCard
-            key={h.id}
-            house={h}
-            isFavorite={userId ? favoriteIds.has(h.id) : false}
-            onToggleFavorite={toggleFavorite}
-          />
-        ))}
+        {displayedListings.map((item) => {
+          // Check if it's a DeletedListing or House based on presence of bedrooms
+          if ("bedrooms" in item && item.bedrooms !== undefined) {
+            // It's a House
+            const house = item as House;
+            return (
+              <HouseCard
+                key={house.id}
+                house={house}
+                isFavorite={userId ? favoriteIds.has(house.id) : false}
+                onToggleFavorite={toggleFavorite}
+              />
+            );
+          } else {
+            // It's a DeletedListing
+            const deleted = item as DeletedListing;
+            return (
+              <DeletedListingCard
+                key={deleted.id}
+                listing={deleted}
+                isFavorite={userId ? favoriteIds.has(deleted.id) : false}
+                onToggleFavorite={toggleFavorite}
+              />
+            );
+          }
+        })}
       </div>
 
       {totalPages > 1 && (
