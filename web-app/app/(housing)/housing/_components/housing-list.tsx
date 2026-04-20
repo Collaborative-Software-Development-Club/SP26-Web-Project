@@ -108,12 +108,14 @@ export function HousingList({
   const hasMoreRaw = allListings.length < totalCount;
 
   const listingRangeLabel = useMemo(() => {
-    const total = filteredListings.length;
-    if (total === 0) return "Showing 0 of 0 listings";
+    const totalForLabel = showingFullDataset ? totalRecordCount : filteredListings.length;
+    if (filteredListings.length === 0) {
+      return totalForLabel === 0 ? "Showing 0 of 0 listings" : `Showing 0 of ${totalForLabel} listings`;
+    }
     const start = (page - 1) * pageSize + 1;
-    const end = Math.min(page * pageSize, total);
-    return `Showing ${start}–${end} of ${total} listings`;
-  }, [filteredListings.length, page, pageSize]);
+    const end = Math.min(page * pageSize, filteredListings.length);
+    return `Showing ${start}–${end} of ${totalForLabel} listings`;
+  }, [filteredListings.length, page, pageSize, showingFullDataset, totalRecordCount]);
 
   function applyFilters() {
     startTransition(() => {
