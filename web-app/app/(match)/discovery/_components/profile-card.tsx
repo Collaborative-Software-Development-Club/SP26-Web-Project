@@ -95,12 +95,12 @@ export function ProfileCard({
             scale: 0.8,
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="w-full h-[80dvh] md:w-3/4 md:max-h-[60dvh] md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
+          className="w-full h-[80dvh] md:h-auto md:w-3/4 md:aspect-video md:max-w-4xl bg-card rounded-3xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.04),_0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),_0_8px_24px_rgba(0,0,0,0.3)] overflow-hidden"
         >
           <div className="flex flex-col md:grid md:grid-cols-12 h-full">
             {/* Photo column */}
-            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[30vh] md:h-auto">
-              <div className="relative w-full bg-muted overflow-hidden h-full md:aspect-[3/4]">
+            <div className="shrink-0 md:col-span-5 md:flex md:flex-col md:border-r border-border overflow-hidden h-[30vh] md:h-full">
+              <div className="relative w-full bg-muted overflow-hidden h-full">
                 <Image
                   src={`/demo/${PHOTOS[photoIndex]}.png`}
                   alt="Profile photo"
@@ -231,7 +231,7 @@ export function ProfileCard({
               </div>
 
               {/* Action Buttons - Order: Dislike, Like, Message */}
-              <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0">
+              <div className="px-7 py-4 border-t border-border flex justify-around items-center shrink-0 h-16">
                 <DislikeButton
                   onClick={() => onAction(-1)}
                   handleNext={() => onAction(-1)}
