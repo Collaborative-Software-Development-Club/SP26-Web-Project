@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,36 +14,71 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { House } from "@/app/(housing)/housing/_components/house-card";
+import { getHousingListings } from "@/app/(housing)/housing/_actions";
+import { HOUSING_LISTINGS_BATCH_SIZE } from "@/app/(housing)/housing/housing-list-batch";
 import { AdminHouseCard } from "./admin-house-card";
-import { filterHouses, type HousingFilters } from "@/app/(housing)/housing/housing-utils";
+import {
+  EMPTY_HOUSING_FILTERS,
+  filterHouses,
+  housingFiltersAreEmpty,
+  type HousingFilters,
+} from "@/app/(housing)/housing/housing-utils";
 
 export function AdminHousingList({
   initialListings,
+  initialTotal,
   pageSize = 9,
 }: {
   initialListings: House[];
+  initialTotal: number;
   pageSize?: number;
 }) {
-  const [allListings] = useState<House[]>(initialListings);
+  const [allListings, setAllListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
+  const [totalCount, setTotalCount] = useState(initialTotal);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<HousingFilters>({
-    minRent: "",
-    maxRent: "",
-    startDate: "",
-    semester: "Any",
-    location: "",
-    distance: "",
-  });
+  const [filters, setFilters] = useState<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
+  const appliedFiltersRef = useRef<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const allListingsRef = useRef(allListings);
+  allListingsRef.current = allListings;
+
+  function computeFiltered(rows: House[]) {
+    return filterHouses(rows, filters);
+  }
+
+  // Keep client state aligned with the server RSC payload (e.g. after router.refresh() when a listing is deleted).
+  useEffect(() => {
+    setAllListings(initialListings);
+    setTotalCount(initialTotal);
+    const nextFiltered = filterHouses(initialListings, appliedFiltersRef.current);
+    setFilteredListings(nextFiltered);
+    setPage((p) => {
+      const maxPage = Math.max(1, Math.ceil(nextFiltered.length / pageSize));
+      return Math.min(p, maxPage);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when server props change, not draft dialog edits
+  }, [initialListings, initialTotal, pageSize]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filteredListings.slice(start, start + pageSize);
   }, [filteredListings, page, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+  /** Total rows in the database (Supabase exact count). */
+  const totalRecordCount = totalCount;
+
+  const pagesFromLoadedFiltered = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+  const showingFullDataset = housingFiltersAreEmpty(appliedFiltersRef.current);
+  const pagesFromTotalRecords = Math.max(1, Math.ceil(totalRecordCount / pageSize));
+  const navTotalPages = showingFullDataset
+    ? Math.max(pagesFromLoadedFiltered, pagesFromTotalRecords)
+    : pagesFromLoadedFiltered;
+
+  const hasMoreRaw = allListings.length < totalCount;
 
   const listingRangeLabel = useMemo(() => {
     const total = filteredListings.length;
@@ -55,29 +90,68 @@ export function AdminHousingList({
 
   function applyFilters() {
     startTransition(() => {
-      const next = filterHouses(allListings, filters);
-      setFilteredListings(next);
+      appliedFiltersRef.current = { ...filters };
+      setFilteredListings(computeFiltered(allListings));
       setPage(1);
       setIsDialogOpen(false);
     });
   }
 
   function clearFilters() {
-    setFilters({
-      minRent: "",
-      maxRent: "",
-      startDate: "",
-      semester: "Any",
-      location: "",
-      distance: "",
-    });
+    appliedFiltersRef.current = { ...EMPTY_HOUSING_FILTERS };
+    setFilters({ ...EMPTY_HOUSING_FILTERS });
     setFilteredListings(allListings);
     setPage(1);
   }
 
-  function go(n: number) {
-    const target = Math.min(Math.max(1, n), totalPages);
-    if (target !== page) setPage(target);
+  const busy = isPending || isLoadingMore;
+
+  async function goToPage(n: number) {
+    const target = Math.max(1, n);
+    if (busy) return;
+    if (target === page) return;
+
+    setIsLoadingMore(true);
+    try {
+      let rows = [...allListingsRef.current];
+
+      while (true) {
+        const filtered = computeFiltered(rows);
+        const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+        const neededEnd = target * pageSize;
+
+        if (neededEnd <= filtered.length) {
+          setAllListings(rows);
+          setFilteredListings(filtered);
+          setPage(Math.min(target, maxPage));
+          break;
+        }
+
+        if (rows.length >= totalCount) {
+          setAllListings(rows);
+          setFilteredListings(filtered);
+          setPage(Math.min(target, maxPage));
+          break;
+        }
+
+        const apiPage = Math.floor(rows.length / HOUSING_LISTINGS_BATCH_SIZE) + 1;
+        const { listings: batch } = await getHousingListings(
+          apiPage,
+          HOUSING_LISTINGS_BATCH_SIZE,
+        );
+        if (!batch?.length) {
+          const f = computeFiltered(rows);
+          setAllListings(rows);
+          setFilteredListings(f);
+          setPage(Math.min(target, Math.max(1, Math.ceil(f.length / pageSize))));
+          break;
+        }
+        rows = [...rows, ...(batch as House[])];
+        allListingsRef.current = rows;
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
   }
 
   return (
@@ -193,11 +267,11 @@ export function AdminHousingList({
         ))}
       </div>
 
-      {totalPages > 1 && (
+      {(navTotalPages > 1 || hasMoreRaw) && (
         <div className="mt-6 flex items-center justify-center gap-3">
           <Button
-            onClick={() => go(page - 1)}
-            disabled={page === 1 || isPending}
+            onClick={() => void goToPage(page - 1)}
+            disabled={page === 1 || busy}
             variant="outline"
             size="sm"
           >
@@ -205,15 +279,15 @@ export function AdminHousingList({
           </Button>
 
           <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
+            {Array.from({ length: navTotalPages }, (_, i) => i + 1)
               .filter((n) => n >= page - 3 && n <= page + 3)
               .map((n) => (
                 <Button
                   key={n}
-                  onClick={() => go(n)}
+                  onClick={() => void goToPage(n)}
                   variant={n === page ? "default" : "outline"}
                   size="sm"
-                  disabled={isPending}
+                  disabled={busy}
                 >
                   {n}
                 </Button>
@@ -221,8 +295,8 @@ export function AdminHousingList({
           </div>
 
           <Button
-            onClick={() => go(page + 1)}
-            disabled={page === totalPages || isPending}
+            onClick={() => void goToPage(page + 1)}
+            disabled={busy || (page >= navTotalPages && !hasMoreRaw)}
             variant="outline"
             size="sm"
           >
