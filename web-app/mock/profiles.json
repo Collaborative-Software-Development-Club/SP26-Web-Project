@@ -5,7 +5,7 @@
     "fname": "Emily",
     "lname": "Chen",
     "gender": "female",
-    "avatar_url": "https://example.com/avatars/emily.jpg",
+    "avatar_url": null,
     "bio": "Clean and organized. Love studying at cafes.",
     "majors": [{"major_id": "1", "name": "Computer Science"}, {"major_id": "2", "name": "Data Analytics"}],
     "year": 3,
@@ -17,7 +17,8 @@
       {"preference_id": "2", "name": "pets", "value": 5},
       {"preference_id": "3", "name": "sleep hours", "value": 2},
       {"preference_id": "4", "name": "guests", "value": 3}
-    ]
+    ],
+    "lifestyle_images":[]
   },
   {
     "user_id": "2",
@@ -25,7 +26,7 @@
     "fname": "Daniel",
     "lname": "Kim",
     "gender": "male",
-    "avatar_url": "https://example.com/avatars/daniel.jpg",
+    "avatar_url": null,
     "bio": "Chill roommate. Usually coding or gaming.",
     "majors": [{"major_id": "2", "name": "Data Analytics"}],
     "year": 2,
@@ -37,7 +38,8 @@
       {"preference_id": "2", "name": "pets", "value": 5},
       {"preference_id": "3", "name": "sleep hours", "value": 2},
       {"preference_id": "4", "name": "guests", "value": 3}
-    ]
+    ],
+    "lifestyle_images":[]
   },
   {
     "user_id": "3",
@@ -45,7 +47,7 @@
     "fname": "Sophia",
     "lname": "Martinez",
     "gender": "female",
-    "avatar_url": "https://example.com/avatars/sophia.jpg",
+    "avatar_url": null,
     "bio": "Looking for a quiet and respectful roommate.",
     "majors": [{"major_id": "3", "name": "Biology"}],
     "year": 4,
@@ -57,7 +59,8 @@
       {"preference_id": "2", "name": "pets", "value": 5},
       {"preference_id": "3", "name": "sleep hours", "value": 5},
       {"preference_id": "4", "name": "guests", "value": 0}
-    ]
+    ],
+    "lifestyle_images":[]
   },
   {
     "user_id": "4",
@@ -65,7 +68,7 @@
     "fname": "Michael",
     "lname": "Johnson",
     "gender": "male",
-    "avatar_url": "https://example.com/avatars/michael.jpg",
+    "avatar_url": null,
     "bio": "Music producer and night owl.",
     "majors": [{"major_id": "4", "name": "Music Technology"}],
     "year": 3,
@@ -77,7 +80,8 @@
       {"preference_id": "2", "name": "pets", "value": 1},
       {"preference_id": "3", "name": "sleep hours", "value": 5},
       {"preference_id": "4", "name": "guests", "value": 0}
-    ]
+    ],
+    "lifestyle_images":[]
   },
   {
         "user_id": "5",
@@ -85,7 +89,7 @@
         "fname": "Aiden",
         "lname": "Park",
         "gender": "male",
-        "avatar_url": "https://example.com/avatars/aiden.jpg",
+        "avatar_url": null,
         "bio": "Quiet, tidy, and focused on academics.",
         "majors": [{"major_id": "5", "name": "Mechanical Engineering"}],
         "year": 2,
@@ -97,7 +101,8 @@
           {"preference_id": "2", "name": "pets", "value": 1},
           {"preference_id": "3", "name": "sleep hours", "value": 1},
           {"preference_id": "4", "name": "guests", "value": 1}
-        ]
+        ],
+        "lifestyle_images":[]
       },
       {
         "user_id": "6",
@@ -105,7 +110,7 @@
         "fname": "Olivia",
         "lname": "Nguyen",
         "gender": "female",
-        "avatar_url": "https://example.com/avatars/olivia.jpg",
+        "avatar_url": null,
         "bio": "Love cooking and hosting small dinners.",
         "majors": [{"major_id": "6", "name": "Business Administration"}],
         "year": 4,
@@ -117,7 +122,8 @@
           {"preference_id": "2", "name": "pets", "value": 5},
           {"preference_id": "3", "name": "sleep hours", "value": 2},
           {"preference_id": "4", "name": "guests", "value": 3}
-        ]
+        ],
+        "lifestyle_images":[]
       },
       {
         "user_id": "7",
@@ -125,7 +131,7 @@
         "fname": "Lucas",
         "lname": "Wright",
         "gender": "male",
-        "avatar_url": "https://example.com/avatars/lucas.jpg",
+        "avatar_url": null,
         "bio": "Night owl developer who loves hackathons.",
         "majors": [{"major_id": "7", "name": "Computer Engineering"}],
         "year": 3,
@@ -137,7 +143,8 @@
           {"preference_id": "2", "name": "pets", "value": 1},
           {"preference_id": "3", "name": "sleep hours", "value": 5},
           {"preference_id": "4", "name": "guests", "value": 1}
-        ]
+        ],
+        "lifestyle_images":[]
       },
       {
         "user_id": "8",
@@ -145,7 +152,7 @@
         "fname": "Hannah",
         "lname": "Lee",
         "gender": "female",
-        "avatar_url": "https://example.com/avatars/hannah.jpg",
+        "avatar_url": null,
         "bio": "Looking for a clean and communicative roommate.",
         "majors": [{"major_id": "8", "name": "Psychology"}],
         "year": 2,
@@ -157,7 +164,8 @@
           {"preference_id": "2", "name": "pets", "value": 5},
           {"preference_id": "3", "name": "sleep hours", "value": 2},
           {"preference_id": "4", "name": "guests", "value": 3}
-        ]
+        ],
+        "lifestyle_images":[]
       },
       {
         "user_id": "9",
@@ -165,7 +173,7 @@
         "fname": "Noah",
         "lname": "Anderson",
         "gender": "male",
-        "avatar_url": "https://example.com/avatars/noah.jpg",
+        "avatar_url": null,
         "bio": "Easygoing and respectful. Big sports fan.",
         "majors": [{"major_id": "9", "name": "Finance"}],
         "year": 3,
@@ -177,6 +185,7 @@
           {"preference_id": "2", "name": "pets", "value": 1},
           {"preference_id": "3", "name": "sleep hours", "value": 1},
           {"preference_id": "4", "name": "guests", "value": 1}
-        ]
+        ],
+        "lifestyle_images":[]
       }
 ] 

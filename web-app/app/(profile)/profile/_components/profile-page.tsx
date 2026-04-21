@@ -167,7 +167,7 @@ export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfil
             </CardHeader>
             <CardContent className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6">
               {user.preferences?.length ? (
-                <div className="grid grid-cols-1 gap-2 sm:gap-3 lg:grid-cols-2 lg:gap-4">
+                <div className="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2 md:gap-4">
                   {user.preferences.map((pref) => (
                     <div
                       key={pref.preference_id}
@@ -176,7 +176,7 @@ export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfil
                       <div className="mt-0.5 shrink-0 text-muted-foreground sm:mt-0">
                         {getPreferenceIcon(pref.name)}
                       </div>
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="flex min-w-0 flex-1 flex-row gap-0.5 items-center justify-between sm:gap-4">
                         <span className="text-xs font-medium capitalize text-foreground sm:text-sm">
                           {pref.name}
                         </span>
