@@ -316,20 +316,18 @@ export function ProfileCard({
                 <DislikeButton
                   onClick={() => onAction(-1)}
                   handleNext={() => onAction(-1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <LikeButton
                   onClick={() => onAction(1)}
                   handleNext={() => onAction(1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <MessageButton
                   onClick={() => onAction(1)}
                   handleNext={() => onAction(1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
+                  isDiscovery={isDiscovery}
                 />
               </div>
             </div>

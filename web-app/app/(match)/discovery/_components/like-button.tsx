@@ -4,35 +4,24 @@ import { ThumbsUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { saveSwipe } from "../_actions";
-import { saveMatchSwipe } from "../_actions";
 
 export function LikeButton({
   handleNext,
   targetUserId,
-  isDiscovery, // true on Discovery page, false on Liked You page
   onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
-  isDiscovery: boolean;
   onClick?: () => void; // Optional callback for additional actions on click
 }) {
   const handleLike = useCallback(() => {
-    console.log("Like");
-
     if (onClick) {
       onClick(); // Trigger animation first
     } else {
       handleNext(); // Fallback if no animation logic is passed
     }
-
-    //Commented out to prevent swipe actions until its ready
-    if (isDiscovery) {
-      //saveSwipe(targetUserId, "like", null);
-    } else {
-      //saveMatchSwipe(targetUserId, "like", null);
-    }
-  }, [handleNext, isDiscovery, targetUserId, onClick]);
+    saveSwipe(targetUserId, "like", null);
+  }, [handleNext, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

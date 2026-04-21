@@ -15,12 +15,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquareText } from "lucide-react";
 import { saveSwipe } from "../_actions";
-import { saveMatchSwipe } from "../_actions";
 
 export function MessageButton({
   handleNext,
   targetUserId,
-  isDiscovery, // true on Discovery page, false on Liked You page
+  isDiscovery,
   onClick, // Optional callback for additional actions on click
 }: {
   handleNext: () => void;
@@ -44,16 +43,12 @@ export function MessageButton({
         handleNext(); // Fallback if no animation logic is passed
       }
 
-      if (isDiscovery) {
-        //saveSwipe(targetUserId, "like", message);
-      } else {
-        //saveMatchSwipe(targetUserId, "like", message);
-      }
+      saveSwipe(targetUserId, "like", message);
       setMessage("");
       setError("");
       setOpen(false);
     }
-  }, [message, handleNext, isDiscovery, targetUserId, onClick]);
+  }, [message, handleNext, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
