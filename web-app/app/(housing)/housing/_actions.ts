@@ -1,6 +1,10 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
+import {
+  getDirectConversationTargets,
+  sendChatMessage,
+} from "@/app/(chat)/chat/_actions";
 
 function housingQueryErrorMessage(error: { message: string }, context: string) {
   const raw = error.message ?? "";
@@ -138,5 +142,42 @@ export async function unsaveHousingListing(housingId: string) {
       ),
     );
   }
+  return { ok: true as const };
+}
+
+export type HousingShareTarget = {
+  peerUserId: string;
+  conversationId: string;
+  fname: string | null;
+  lname: string | null;
+  name: string;
+};
+
+export async function getHousingShareTargets(): Promise<HousingShareTarget[]> {
+  const byUserId = await getDirectConversationTargets();
+  return Object.entries(byUserId).map(([peerUserId, target]) => {
+    const name = `${target.fname ?? ""} ${target.lname ?? ""}`.trim();
+    return {
+      peerUserId,
+      conversationId: target.conversationId,
+      fname: target.fname,
+      lname: target.lname,
+      name: name || peerUserId,
+    };
+  });
+}
+
+export async function shareHousingListing(
+  conversationId: string,
+  listingId: string,
+) {
+  if (!conversationId) {
+    throw new Error("Conversation required");
+  }
+  if (!listingId) {
+    throw new Error("Listing required");
+  }
+
+  await sendChatMessage(conversationId, `[[HOUSING:${listingId}]]`);
   return { ok: true as const };
 }

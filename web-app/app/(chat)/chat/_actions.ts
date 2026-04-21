@@ -162,6 +162,98 @@ export async function getConversations(userId: string) {
   return chatService.getConversations(userId);
 }
 
+export type DirectConversationTarget = {
+  conversationId: string;
+  fname: string | null;
+  lname: string | null;
+};
+
+export async function getDirectConversationTargets(): Promise<
+  Record<string, DirectConversationTarget>
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Pull the user's conversations from membership rows, then keep strict 1:1 threads.
+  const { data: selfMemberships, error: selfMembershipsError } = await supabase
+    .from("chat_conversation_members")
+    .select("conversation_id")
+    .eq("user_id", user.id);
+  if (selfMembershipsError) {
+    throw new Error(
+      `Failed to fetch user conversations: ${selfMembershipsError.message}`,
+    );
+  }
+
+  const conversationIds = [
+    ...new Set((selfMemberships ?? []).map((m) => m.conversation_id)),
+  ];
+  if (conversationIds.length === 0) return {};
+
+  const { data: allMemberships, error: allMembershipsError } = await supabase
+    .from("chat_conversation_members")
+    .select("conversation_id, user_id")
+    .in("conversation_id", conversationIds);
+  if (allMembershipsError) {
+    throw new Error(
+      `Failed to fetch conversation members: ${allMembershipsError.message}`,
+    );
+  }
+
+  const membersByConversation = new Map<string, string[]>();
+  for (const row of allMemberships ?? []) {
+    const current = membersByConversation.get(row.conversation_id) ?? [];
+    current.push(row.user_id);
+    membersByConversation.set(row.conversation_id, current);
+  }
+
+  const directPairs: { conversationId: string; peerUserId: string }[] = [];
+  for (const [conversationId, members] of membersByConversation.entries()) {
+    const uniqueMembers = [...new Set(members)];
+    if (uniqueMembers.length !== 2 || !uniqueMembers.includes(user.id)) continue;
+    const peerUserId = uniqueMembers.find((id) => id !== user.id);
+    if (!peerUserId) continue;
+    directPairs.push({ conversationId, peerUserId });
+  }
+
+  const peerIds = [...new Set(directPairs.map((p) => p.peerUserId))];
+  if (peerIds.length === 0) return {};
+
+  const { data: members, error: membersError } = await supabase
+    .from("user_profiles")
+    .select("user_id, fname, lname")
+    .in("user_id", peerIds);
+
+  if (membersError) {
+    throw new Error(`Failed to fetch peer names: ${membersError.message}`);
+  }
+
+  const memberById = new Map(
+    (members ?? []).map((member) => [member.user_id, member]),
+  );
+
+  const byPeer: Record<string, DirectConversationTarget> = {};
+  for (const pair of directPairs) {
+    const peerUserId = pair.peerUserId;
+    if (byPeer[peerUserId]) continue;
+    const member = memberById.get(peerUserId);
+    byPeer[peerUserId] = {
+      conversationId: pair.conversationId,
+      fname: member?.fname ?? null,
+      lname: member?.lname ?? null,
+    };
+  }
+
+  return byPeer;
+}
+
 function formatTimestamp(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
