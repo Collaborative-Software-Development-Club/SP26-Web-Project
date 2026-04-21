@@ -152,6 +152,7 @@ export function ProfileCard({
                 <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-4 pb-3 pt-8 bg-gradient-to-t from-black/30 to-transparent">
                   {PHOTOS.map((_, i) => (
                     <button
+                      title = "view photo"
                       key={i}
                       onClick={() => setPhotoIndex(i)}
                       className={`h-0.5 flex-1 rounded-full transition-colors duration-200 ${
