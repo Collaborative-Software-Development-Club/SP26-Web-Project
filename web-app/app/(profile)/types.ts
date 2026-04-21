@@ -35,5 +35,4 @@ export type UserProfile = {
     hobbies: Hobby[];
     preferences: Preference[];
     lifestyle_images: string[];
-    isAdmin?: boolean;
 }
