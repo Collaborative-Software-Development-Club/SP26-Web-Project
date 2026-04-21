@@ -13,19 +13,93 @@ import type { User } from "@supabase/supabase-js";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {motion} from "framer-motion";
 
+type NavLinkItem = { href: string; label: string };
 
-
-export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?: boolean;}) {
-  const isSignedIn = user !== null;
-  const pathname = usePathname();
+function NavbarMobileMenu({
+  pathname,
+  navLinks,
+  isSignedIn,
+}: {
+  pathname: string;
+  navLinks: NavLinkItem[];
+  isSignedIn: boolean;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  return (
+    <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="shrink-0 lg:hidden"
+          aria-label="Open menu"
+          aria-expanded={mobileOpen}
+        >
+          <Menu className="size-5" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        showCloseButton
+        className={cn(
+          "fixed top-0 right-0 left-auto h-full max-h-dvh w-full max-w-[280px] translate-x-0 translate-y-0 gap-0 rounded-none border-y-0 border-r-0 p-0 shadow-xl sm:max-w-[300px]",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-200",
+        )}
+      >
+        <DialogTitle className="sr-only">Main menu</DialogTitle>
+        <div className="flex h-full flex-col gap-4 p-6 pt-14">
+          <nav className="flex flex-col gap-1" aria-label="Main">
+            {navLinks.map((link) => {
+              const isActive = pathname.includes(link.href);
+              return (
+                <Button
+                  asChild
+                  key={link.href}
+                  variant={isActive ? "outline" : "ghost"}
+                  className="h-11 w-full justify-start"
+                >
+                  <Link href={link.href} onClick={() => setMobileOpen(false)}>
+                    {link.label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </nav>
+          <div className="mt-auto flex flex-col gap-2 border-t pt-10 pb-4">
+            {isSignedIn ? (
+              <form action={signOut} className="mt-auto">
+                <Button type="submit" className="w-full" variant="secondary">
+                  Sign Out
+                </Button>
+              </form>
+            ) : (
+              <>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    Login
+                  </Link>
+                </Button>
+                <Button asChild className="w-full ">
+                  <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                    Sign Up
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function Navbar({ user, isAdmin = false }: { user: User | null; isAdmin?: boolean }) {
+  const isSignedIn = user !== null;
+  const pathname = usePathname();
 
   const navLinks = isSignedIn
     ? [
@@ -51,7 +125,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
         </Link>
 
         <nav
-          className="hidden flex-wrap items-center gap-2 rounded-full lg:flex md:gap-4 bg-muted p-1 border border/50 shadow-sm"
+          className="hidden flex-wrap items-center gap-2 rounded-full border border/50 bg-muted p-1 shadow-sm lg:flex md:gap-4"
           aria-label="Main"
         >
           {navLinks.map((link) => {
@@ -64,7 +138,7 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                   "relative rounded-full px-5 py-2 text-sm font-medium transition-colors outline-none",
                   isActive
                     ? "text-foreground"
-                    : "text-foreground/70 hover:text-foreground"
+                    : "text-foreground/70 hover:text-foreground",
                 )}
               >
                 {isActive && (
@@ -78,17 +152,17 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
               </Link>
             );
           })}
-            
-          <div className="pl-2 border-l border-border/50 ml-1">
+
+          <div className="ml-1 border-l border-border/50 pl-2">
             {isSignedIn ? (
-                <form action={signOut}>
-                  <Button 
-                    type="submit" 
-                    className="rounded-full h-9 px-4 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:hover:bg-red-900/50"
-                  >
-                    Sign Out
-                  </Button>
-                </form>
+              <form action={signOut}>
+                <Button
+                  type="submit"
+                  className="rounded-full h-9 px-4 hover:bg-red-100 hover:text-red-700 dark:bg-red-950/30 dark:hover:bg-red-900/50"
+                >
+                  Sign Out
+                </Button>
+              </form>
             ) : (
               <>
                 <Button
@@ -106,77 +180,15 @@ export function Navbar({ user, isAdmin = false }: {user: User | null;  isAdmin?:
                 </Button>
               </>
             )}
-         </div>
+          </div>
         </nav>
 
-      
-      <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
-          <DialogTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="shrink-0 lg:hidden"
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-            >
-              <Menu className="size-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent
-            showCloseButton
-            className={cn(
-              "fixed top-0 right-0 left-auto h-full max-h-[100dvh] w-full max-w-sm translate-x-0 translate-y-0 gap-0 rounded-none border-y-0 border-r-0 p-0 shadow-xl",
-              "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-200",
-            )}
-          >
-            <DialogTitle className="sr-only">Main menu</DialogTitle>
-            <div className="flex h-full flex-col gap-4 p-6 pt-14">
-              <nav className="flex flex-col gap-1" aria-label="Main">
-                {navLinks.map((link) => {
-                  const isActive = pathname.includes(link.href);
-                  return (
-                    <Button
-                      asChild
-                      key={link.href}
-                      variant={isActive ? "outline" : "ghost"}
-                      className="h-11 w-full justify-start"
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {link.label}
-                      </Link>
-                    </Button>
-                  );
-                })}
-              </nav>
-              <div className="mt-auto flex flex-col gap-2 border-t pt-10 pb-4">
-                {isSignedIn ? (
-                <form action={signOut} className="mt-auto">
-                  <Button type="submit" className="w-full" variant="secondary">
-                    Sign Out
-                  </Button>
-                </form>
-                ) : (
-                  <>
-                    <Button asChild variant="outline" className="w-full">
-                      <Link href="/login" onClick={() => setMobileOpen(false)}>
-                        Login
-                      </Link>
-                    </Button>
-                    <Button asChild className="w-full ">
-                      <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                        Sign Up
-                      </Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <NavbarMobileMenu
+          key={pathname}
+          pathname={pathname}
+          navLinks={navLinks}
+          isSignedIn={isSignedIn}
+        />
       </div>
     </header>
   );
