@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -7,6 +8,29 @@ import { useChatRealtime } from "./realtime-provider";
 import { sendChatMessage } from "../_actions";
 import { ChatMessage } from "../../types";
 import type { SenderMetaEntry } from "../_sender-meta";
+
+const HOUSING_ESCAPE_PATTERN = /^\[\[HOUSING:([^\]]+)\]\]$/;
+
+function getHousingListingId(content: string): string | null {
+  const match = content.trim().match(HOUSING_ESCAPE_PATTERN);
+  return match?.[1] ?? null;
+}
+
+function renderMessageContent(ChatMessage: ChatMessage) {
+  const listingId = getHousingListingId(ChatMessage.content);
+  if (listingId) {
+    const address = ChatMessage.address ?? "[ERROR] housing listing not found";
+    if (address.startsWith("[ERROR]")) {
+      return address;
+    }
+    return (
+      <Link href={`/housing/${listingId}`} className="underline">
+        {address}
+      </Link>
+    );
+  }
+  return ChatMessage.content;
+}
 
 export function ChatClient({
   serverMessages,
@@ -61,6 +85,7 @@ export function ChatClient({
       <div className="flex-1 overflow-y-auto p-6">
         {sortedMessages.map((msg, i) => {
           const isSelf = msg.sender_id === userId;
+          const isHousingMessage = Boolean(getHousingListingId(msg.content));
           const isRunStart =
             i === 0 || sortedMessages[i - 1].sender_id !== msg.sender_id;
           const isRunEnd =
@@ -74,9 +99,9 @@ export function ChatClient({
                 className={`flex mb-3 ${isSelf ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`rounded-2xl px-4 py-2 max-w-md ${isSelf ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                  className={`rounded-2xl px-4 py-2 max-w-md ${isSelf ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"} ${isHousingMessage ? "transition-colors hover:bg-red-900/90" : ""}`}
                 >
-                  {msg.content}
+                  {renderMessageContent(msg)}
                 </div>
               </div>
             );
@@ -109,7 +134,11 @@ export function ChatClient({
                   ) : null}
                 </div>
                 <div className="rounded-2xl px-4 py-2 max-w-md bg-muted text-muted-foreground">
-                  {msg.content}
+                  <div
+                    className={`${isHousingMessage ? "transition-colors hover:bg-red-900/20 -mx-4 -my-2 px-4 py-2 rounded-2xl" : ""}`}
+                  >
+                  {renderMessageContent(msg)}
+                  </div>
                 </div>
               </div>
             </div>
