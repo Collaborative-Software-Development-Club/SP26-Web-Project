@@ -417,7 +417,7 @@ export async function deleteAccount(
   _prevState: { error: string | null },
   formData: FormData,
 ): Promise<{ error: string | null }> {
-  const password = (formData.get("password") as string)?.trim() ?? "";
+  const password = (formData.get("password") as string) ?? "";
   if (!password) {
     return { error: "Enter your password to confirm account deletion." };
   }
