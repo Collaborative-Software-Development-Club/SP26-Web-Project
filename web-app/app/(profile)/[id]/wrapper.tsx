@@ -1,8 +1,8 @@
 "use client";
 
 import { useUser } from "@/contexts/UserContext";
-import { ProfilePage } from "../_components/profile-page";
-import { UserProfile } from "../../types";
+import { ProfilePage } from "../profile/_components/profile-page";
+import { UserProfile } from "../types";
 import { redirect } from "next/navigation";
 
 /**
