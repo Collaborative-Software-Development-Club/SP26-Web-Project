@@ -358,9 +358,14 @@ export async function updatePassword(
   _prevState: { error: string | null; success: boolean },
   formData: FormData,
 ): Promise<{ error: string | null; success: boolean }> {
-  const currentPassword = (formData.get("currentPassword") as string)?.trim() ?? "";
-  const newPassword = (formData.get("newPassword") as string)?.trim() ?? "";
-  const confirmPassword = (formData.get("confirmPassword") as string)?.trim() ?? "";
+  const currentPasswordEntry = formData.get("currentPassword");
+  const newPasswordEntry = formData.get("newPassword");
+  const confirmPasswordEntry = formData.get("confirmPassword");
+  const currentPassword =
+    typeof currentPasswordEntry === "string" ? currentPasswordEntry : "";
+  const newPassword = typeof newPasswordEntry === "string" ? newPasswordEntry : "";
+  const confirmPassword =
+    typeof confirmPasswordEntry === "string" ? confirmPasswordEntry : "";
 
   if (!currentPassword || !newPassword || !confirmPassword) {
     return { error: "Please fill in all fields.", success: false };
