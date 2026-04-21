@@ -10,7 +10,7 @@ export default function DiscoveryLayout({
       <header className="shrink-0 bg-background/80 px-4 py-3 backdrop-blur-sm">
         <DiscoveryNavbar />
       </header>
-      <div className="flex flex-1 flex-col justify-center pb-50">
+      <div className="flex flex-1 flex-col justify-center pb-10 md:pb-50">
         {children}
       </div>
     </div>
