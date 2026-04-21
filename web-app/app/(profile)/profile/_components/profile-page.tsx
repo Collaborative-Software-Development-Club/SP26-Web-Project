@@ -12,7 +12,7 @@ import {
 const CARD_SHADOW =
   "shadow-[0_2px_4px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.3)]";
 
-export function ProfilePage({ profile }: { profile: UserProfile }) {
+export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfile, showEditFeatures: boolean }) {
   const user = profile;
   const photoImages = ["/demo/room1.png", "/demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
@@ -32,6 +32,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             >
               Public View
             </Badge>
+            { showEditFeatures ? (
             <Button
               asChild
               variant="outline"
@@ -40,6 +41,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             >
               <Link href="/profile/create-profile">Edit Profile</Link>
             </Button>
+            ) : (<></>)}
           </div>
 
           <div className="flex flex-row items-center gap-3 px-3 pt-1 sm:gap-4 sm:px-5 md:gap-6 md:px-6 lg:gap-8 xl:gap-10">
