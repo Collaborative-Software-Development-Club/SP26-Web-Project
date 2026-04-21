@@ -10,12 +10,13 @@ import { useState } from "react";
 export function ProfilePreferences({
   preferences,
   userPreferences,
+  maxPrefsToShow = 6,
 }: {
   preferences: Preference[];
   userPreferences: Preference[];
+  maxPrefsToShow?: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const INITIAL_VISIBLE_PREFS = 6;
 
   const getMatchDotClass = (prefName: string, profileValue: number): string => {
     const userPref = userPreferences.find(
@@ -30,9 +31,9 @@ export function ProfilePreferences({
 
   return (
     <div>
-      <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-2">
+      <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
         {preferences
-          .slice(0, isExpanded ? preferences.length : INITIAL_VISIBLE_PREFS)
+          .slice(0, isExpanded ? preferences.length : maxPrefsToShow)
           .map((pref) => (
             <div key={pref.name} className="flex items-center gap-3">
               <div className="shrink-0 text-muted-foreground">
@@ -44,13 +45,13 @@ export function ProfilePreferences({
               <span
                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${getMatchDotClass(pref.name, pref.value)}`}
               />
-              <span className="text-sm text-foreground capitalize">
+              <span className="text-xs text-foreground capitalize">
                 {getPreferenceDisplayLabel(pref)}
               </span>
             </div>
           ))}
       </div>
-      {preferences.length > INITIAL_VISIBLE_PREFS && (
+      {preferences.length > maxPrefsToShow && (
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -58,7 +59,7 @@ export function ProfilePreferences({
         >
           {isExpanded
             ? "Show Less"
-            : `+${preferences.length - INITIAL_VISIBLE_PREFS} More`}
+            : `+${preferences.length - maxPrefsToShow} More`}
         </button>
       )}
     </div>

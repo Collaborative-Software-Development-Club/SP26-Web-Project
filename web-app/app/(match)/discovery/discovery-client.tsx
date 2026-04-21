@@ -2,7 +2,7 @@
 
 import { ProfileCard } from "./_components/profile-card";
 import { Filter } from "./_components/filter";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { DiscoveryFilter, DiscoveryProfile } from "./types";
 import { UndoButton } from "./_components/undo-button";
 
@@ -17,10 +17,18 @@ export function DiscoveryClient({
     DiscoveryProfile | undefined
   >(initialProfiles[0]);
   const [history, setHistory] = useState<DiscoveryProfile[]>([]);
+  const historyRef = useRef(history);
+  useLayoutEffect(() => {
+    historyRef.current = history;
+  }, [history]);
   const [reachedEnd, setReachedEnd] = useState(false);
+  const [fromUndo, setFromUndo] = useState(false);
+  const [exitFromUndo, setExitFromUndo] = useState(false);
 
   const handleNext = () => {
     if (!selectedProfile) return;
+    setFromUndo(false);
+    setExitFromUndo(false);
     const currentIndex = initialProfiles.findIndex(
       (p) => p.user_id === selectedProfile.user_id,
     );
@@ -39,9 +47,16 @@ export function DiscoveryClient({
       return;
     }
     if (history.length === 0) return;
-    const prev = history[history.length - 1];
-    setSelectedProfile(prev);
-    setHistory((h) => h.slice(0, -1));
+    setExitFromUndo(true);
+    requestAnimationFrame(() => {
+      const h = historyRef.current;
+      if (h.length === 0) return;
+      const prev = h[h.length - 1];
+      setSelectedProfile(prev);
+      setHistory((prevH) => prevH.slice(0, -1));
+      setFromUndo(true);
+      setExitFromUndo(false);
+    });
   };
 
   return (
@@ -84,7 +99,9 @@ export function DiscoveryClient({
             profile={selectedProfile}
             isDiscovery={true}
             handleNext={handleNext}
-            handleBefore={handleBefore}
+            isFromUndo={fromUndo}
+            exitFromUndo={exitFromUndo}
+            onFromUndoConsumed={() => setFromUndo(false)}
           />
         ) : null}
         <div className="w-full max-w-4xl items-start grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 pt-4">
