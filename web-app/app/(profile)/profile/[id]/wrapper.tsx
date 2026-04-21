@@ -2,8 +2,8 @@
 
 import { useUser } from "@/contexts/UserContext";
 import { ProfilePage } from "../_components/profile-page";
-import { ProfileHeader } from "../_components/profile-header";
 import { UserProfile } from "../../types";
+import { redirect } from "next/navigation";
 
 /**
  * Client-side wrapper of the slugged profile page, so that we can check if the
@@ -11,13 +11,10 @@ import { UserProfile } from "../../types";
  * features and show the full profile.
  */
 export default function ProfilePageWrapper({ profileToDisplay }: { profileToDisplay: UserProfile } ) {
-    const { user, profile } = useUser();
-    
-    console.log("Signed in user: " + JSON.stringify(profile));
-    console.log("User to display: " + JSON.stringify(profileToDisplay));
+    const { profile } = useUser();
 
     if (profile && profile.user_id === profileToDisplay.user_id) {
-        return <ProfileHeader profile={profileToDisplay}/>
+        redirect("/profile");
     } else {
         return <ProfilePage profile={profileToDisplay} showEditFeatures={false} />
     }

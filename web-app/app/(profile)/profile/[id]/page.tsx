@@ -1,16 +1,14 @@
-"use server";
-
 import { getUserProfiles } from "@/lib/services/profile";
 import ProfilePageWrapper from "./wrapper";
 
-export default async function ProfilePageSlug({ params }: { params: { slug: string }}) {
-    let { slug } = await params;
+export default async function ProfilePageId({ params }: { params: Promise<{ id: string }>}) {
+    const { id } = await params;
     
-    if (slug === undefined) {
-        throw new Error("No slug provided idk");
+    if (id === undefined) {
+        throw new Error("No id provided");
     }
 
-    const profiles = await getUserProfiles([slug]);
+    const profiles = await getUserProfiles([id]);
     if (profiles.length === 0) {
         throw new Error("No user found");
     }
