@@ -133,7 +133,6 @@ export function LikedYouClient({
         <UndoButton
           handleBefore={handleUndo}
           targetUserId={history[history.length - 1]?.vibe.user_id}
-          isDiscovery={false}
           lastEntry={history[history.length - 1]?.vibe.fname}
         />
       )}

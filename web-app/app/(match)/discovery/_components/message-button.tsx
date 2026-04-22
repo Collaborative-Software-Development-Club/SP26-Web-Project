@@ -15,45 +15,37 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquareText } from "lucide-react";
 import { saveSwipe } from "../_actions";
-import { saveMatchSwipe } from "../_actions";
 
 export function MessageButton({
   handleNext,
   targetUserId,
-  isDiscovery, // true on Discovery page, false on Liked You page
-  onClick, // Optional callback for additional actions on click
+  isDiscovery,
+  onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
   isDiscovery: boolean;
-  onClick?: () => void;
+  onClick?: () => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleLikeAndSend = useCallback(() => {
+  const handleLikeAndSend = useCallback(async () => {
     if (message === "") {
       setError("You cannot send an empty message");
-    } else {
-      console.log(message);
-
-      if (onClick) {
-        onClick(); // Trigger animation first
-      } else {
-        handleNext(); // Fallback if no animation logic is passed
-      }
-
-      if (isDiscovery) {
-        //saveSwipe(targetUserId, "like", message);
-      } else {
-        //saveMatchSwipe(targetUserId, "like", message);
-      }
-      setMessage("");
-      setError("");
-      setOpen(false);
+      return;
     }
-  }, [message, handleNext, isDiscovery, targetUserId, onClick]);
+    if (onClick) {
+      await Promise.resolve(onClick());
+    } else {
+      handleNext();
+    }
+    await saveSwipe(targetUserId, "like", message);
+    setMessage("");
+    setError("");
+    setOpen(false);
+  }, [message, handleNext, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -65,7 +57,7 @@ export function MessageButton({
       }
       if (e.key === "Enter" && !e.shiftKey && open) {
         e.preventDefault();
-        handleLikeAndSend();
+        void handleLikeAndSend();
       }
     };
     window.addEventListener("keydown", handleKeyPress);

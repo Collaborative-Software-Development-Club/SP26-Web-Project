@@ -117,7 +117,6 @@ export function SettingsPage() {
   return (
     <div className="h-full w-full overflow-auto bg-zinc-50 p-8 dark:bg-black">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-
         {/* Page title */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -143,7 +142,7 @@ export function SettingsPage() {
                     Profile Visibility
                   </p>
                   <p className="text-sm text-gray-500">
-                    When off, you won&apos;t appear for other students to find. 
+                    When off, you won&apos;t appear for other students to find.
                   </p>
                 </div>
                 <Checkbox
@@ -168,7 +167,6 @@ export function SettingsPage() {
         {/* Password */}
         <Card className="border p-6 shadow-sm">
           <div className="space-y-6">
-
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Password
@@ -238,7 +236,6 @@ export function SettingsPage() {
                 </Button>
               </div>
             </form>
-
           </div>
         </Card>
 
@@ -255,16 +252,16 @@ export function SettingsPage() {
               </p>
             </div>
             <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => {
-                setDeleteFormKey((k) => k + 1);
-                setDeleteDialogOpen(true);
-              }}
-            >
-              Delete account
-            </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => {
+                  setDeleteFormKey((k) => k + 1);
+                  setDeleteDialogOpen(true);
+                }}
+              >
+                Delete account
+              </Button>
             </div>
           </div>
         </Card>
@@ -274,8 +271,8 @@ export function SettingsPage() {
             <DialogHeader>
               <DialogTitle>Delete your account?</DialogTitle>
               <DialogDescription>
-                Your profile, discovery visibility, chats, and saved housing will
-                be removed. You will need to sign up again to use the app.
+                Your profile, discovery visibility, chats, and saved housing
+                will be removed. You will need to sign up again to use the app.
               </DialogDescription>
             </DialogHeader>
             <DeleteAccountDialogForm key={deleteFormKey} />

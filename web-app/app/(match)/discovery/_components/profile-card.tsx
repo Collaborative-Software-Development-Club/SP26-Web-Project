@@ -98,7 +98,7 @@ export function ProfileCard({
     setSwipeDirection(dir);
     setTimeout(() => {
       if (isDiscovery) {
-          if (handleNext) handleNext();
+        if (handleNext) handleNext();
       } else {
         if (dir === 1) {
           if (onAccept) onAccept(profile.user_id);
@@ -128,8 +128,7 @@ export function ProfileCard({
     ...(profile?.lifestyle_images ?? []),
   ];
 
-  const nextPhoto = () =>
-    setPhotoIndex((i) => (i + 1) % userPhotos.length);
+  const nextPhoto = () => setPhotoIndex((i) => (i + 1) % userPhotos.length);
   const prevPhoto = () =>
     setPhotoIndex((i) => (i - 1 + userPhotos.length) % userPhotos.length);
 
@@ -155,7 +154,12 @@ export function ProfileCard({
             exitFromUndo
               ? { ...UNDO_EXIT }
               : {
-                  x: swipeDirection === 1 ? 1000 : swipeDirection === -1 ? -1000 : 0,
+                  x:
+                    swipeDirection === 1
+                      ? 1000
+                      : swipeDirection === -1
+                        ? -1000
+                        : 0,
                   opacity: 0,
                   rotate: swipeDirection * 20,
                   scale: 0.8,
@@ -194,13 +198,15 @@ export function ProfileCard({
                     onClick={prevPhoto}
                     aria-label="Previous photo"
                   >
-                    <span
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      style={{
-                        background:
-                          "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
-                      }}
-                    />
+                    {showPhotoDots && (
+                      <span
+                        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background:
+                            "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                        }}
+                      />
+                    )}
                   </button>
 
                   <button
@@ -217,13 +223,15 @@ export function ProfileCard({
                     onClick={nextPhoto}
                     aria-label="Next photo"
                   >
-                    <span
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      style={{
-                        background:
-                          "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
-                      }}
-                    />
+                    {showPhotoDots && (
+                      <span
+                        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background:
+                            "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                        }}
+                      />
+                    )}
                   </button>
                 </div>
 
@@ -316,20 +324,18 @@ export function ProfileCard({
                 <DislikeButton
                   onClick={() => onAction(-1)}
                   handleNext={() => onAction(-1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <LikeButton
                   onClick={() => onAction(1)}
                   handleNext={() => onAction(1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
                 />
                 <MessageButton
                   onClick={() => onAction(1)}
                   handleNext={() => onAction(1)}
-                  isDiscovery={isDiscovery}
                   targetUserId={profile.user_id}
+                  isDiscovery={isDiscovery}
                 />
               </div>
             </div>
