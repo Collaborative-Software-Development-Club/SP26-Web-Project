@@ -4,6 +4,40 @@ import { createClient } from "@/lib/supabase/server";
 import * as chatService from "@/lib/services/chat";
 import { ChatMessage, ConversationPreview } from "../types";
 
+const HOUSING_ESCAPE_PATTERN = /^\[\[HOUSING:[^\]]+\]\]$/;
+const HOUSING_ESCAPE_EXTRACT_PATTERN = /^\[\[HOUSING:([^\]]+)\]\]$/;
+
+function getHousingListingIdFromContent(content: string): string | null {
+  const match = content.trim().match(HOUSING_ESCAPE_EXTRACT_PATTERN);
+  return match?.[1] ?? null;
+}
+
+async function getHousingAddressMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  listingIds: string[],
+): Promise<{ byId: Map<string, string | null>; lookupError: string | null }> {
+  if (listingIds.length === 0) {
+    return { byId: new Map<string, string | null>(), lookupError: null };
+  }
+  //We need to pull from housing again because the address is not stored in the chat_messages table, and chat window is post client hydration, and not accesible currently.
+  const { data: housingRows, error: housingError } = await supabase
+    .from("housing_property_records")
+    .select("id, address")
+    .in("id", listingIds);
+
+  if (housingError) {
+    const lookupError = `Failed to fetch housing addresses: ${housingError.message}`;
+    console.error(`[chat] ${lookupError}`);
+    return { byId: new Map<string, string | null>(), lookupError };
+  }
+
+  const byId = new Map<string, string | null>();
+  for (const row of housingRows ?? []) {
+    byId.set(String(row.id), row.address ?? null);
+  }
+  return { byId, lookupError: null };
+}
+
 /* Example from match team
 // General feed swipe action
 export async function saveSwipe(
@@ -155,11 +189,152 @@ export async function getConversationMessages(
     throw new Error(`Failed to fetch messages: ${error.message}`);
   }
 
-  return data ?? [];
+  const listingIds = new Set<string>();
+  for (const message of data ?? []) {
+    if (HOUSING_ESCAPE_PATTERN.test(message.content ?? "")) {
+      const listingId = getHousingListingIdFromContent(message.content ?? "");
+      if (listingId) listingIds.add(listingId);
+    }
+  }
+
+  // Fetch housing addresses in advance server side so it is not needed later.
+  const { byId: addressByListingId, lookupError: housingLookupError } =
+    await getHousingAddressMap(supabase, [...listingIds]);
+
+  return (data ?? []).map((message) => {
+    const listingId = getHousingListingIdFromContent(message.content ?? "");
+    let address: string | null = null;
+    if (listingId) {
+      if (housingLookupError) {
+        address = `[ERROR] ${housingLookupError}`;
+      } else if (!addressByListingId.has(listingId)) {
+        address = `[ERROR] housing listing not found (${listingId})`;
+      } else {
+        address = addressByListingId.get(listingId) ?? `[ERROR] Address is null for listing ${listingId}`;
+      }
+    }
+    return { ...message, address };
+  });
+}
+
+export async function resolveHousingAddresses(
+  listingIds: string[],
+): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const uniqueIds = [...new Set(listingIds.filter(Boolean))];
+  const { byId: addressByListingId, lookupError: housingLookupError } =
+    await getHousingAddressMap(supabase, uniqueIds);
+
+  const result: Record<string, string> = {};
+  for (const listingId of uniqueIds) {
+    if (housingLookupError) {
+      result[listingId] = `[ERROR] ${housingLookupError}`;
+    } else if (!addressByListingId.has(listingId)) {
+      result[listingId] = `[ERROR] housing listing not found (${listingId})`;
+    } else {
+      result[listingId] =
+        addressByListingId.get(listingId) ??
+        `[ERROR] Address is null for listing ${listingId}`;
+    }
+  }
+
+  return result;
 }
 
 export async function getConversations(userId: string) {
   return chatService.getConversations(userId);
+}
+
+export type DirectConversationTarget = {
+  conversationId: string;
+  fname: string | null;
+  lname: string | null;
+};
+
+export async function getDirectConversationTargets(): Promise<
+  Record<string, DirectConversationTarget>
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Pull the user's conversations from membership rows, then keep strict 1:1 threads.
+  const { data: selfMemberships, error: selfMembershipsError } = await supabase
+    .from("chat_conversation_members")
+    .select("conversation_id")
+    .eq("user_id", user.id);
+  if (selfMembershipsError) {
+    throw new Error(
+      `Failed to fetch user conversations: ${selfMembershipsError.message}`,
+    );
+  }
+
+  const conversationIds = [
+    ...new Set((selfMemberships ?? []).map((m) => m.conversation_id)),
+  ];
+  if (conversationIds.length === 0) return {};
+
+  const { data: allMemberships, error: allMembershipsError } = await supabase
+    .from("chat_conversation_members")
+    .select("conversation_id, user_id")
+    .in("conversation_id", conversationIds);
+  if (allMembershipsError) {
+    throw new Error(
+      `Failed to fetch conversation members: ${allMembershipsError.message}`,
+    );
+  }
+
+  const membersByConversation = new Map<string, string[]>();
+  for (const row of allMemberships ?? []) {
+    const current = membersByConversation.get(row.conversation_id) ?? [];
+    current.push(row.user_id);
+    membersByConversation.set(row.conversation_id, current);
+  }
+
+  const directPairs: { conversationId: string; peerUserId: string }[] = [];
+  for (const [conversationId, members] of membersByConversation.entries()) {
+    const uniqueMembers = [...new Set(members)];
+    if (uniqueMembers.length !== 2 || !uniqueMembers.includes(user.id)) continue;
+    const peerUserId = uniqueMembers.find((id) => id !== user.id);
+    if (!peerUserId) continue;
+    directPairs.push({ conversationId, peerUserId });
+  }
+
+  const peerIds = [...new Set(directPairs.map((p) => p.peerUserId))];
+  if (peerIds.length === 0) return {};
+
+  const { data: members, error: membersError } = await supabase
+    .from("user_profiles")
+    .select("user_id, fname, lname")
+    .in("user_id", peerIds);
+
+  if (membersError) {
+    throw new Error(`Failed to fetch peer names: ${membersError.message}`);
+  }
+
+  const memberById = new Map(
+    (members ?? []).map((member) => [member.user_id, member]),
+  );
+
+  const byPeer: Record<string, DirectConversationTarget> = {};
+  for (const pair of directPairs) {
+    const peerUserId = pair.peerUserId;
+    if (byPeer[peerUserId]) continue;
+    const member = memberById.get(peerUserId);
+    byPeer[peerUserId] = {
+      conversationId: pair.conversationId,
+      fname: member?.fname ?? null,
+      lname: member?.lname ?? null,
+    };
+  }
+
+  return byPeer;
 }
 
 function formatTimestamp(iso: string): string {
@@ -180,6 +355,16 @@ export async function getConversationsForDisplay(
 ): Promise<ConversationPreview[]> {
   const supabase = await createClient();
   const conversations = await chatService.getConversations(userId);
+  const housingListingIds = [
+    ...new Set(
+      conversations
+        .map((conv) => getHousingListingIdFromContent(conv.last_message ?? ""))
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const { byId: addressByListingId, lookupError: housingLookupError } =
+    await getHousingAddressMap(supabase, housingListingIds);
+
   const previews: ConversationPreview[] = await Promise.all(
     conversations.map(async (conv) => {
       const isGroup = conv.other_member_ids.length > 1;
@@ -203,10 +388,24 @@ export async function getConversationsForDisplay(
           : isGroup
             ? "Group chat"
             : "Unknown user";
+      let lastMessage = conv.last_message ?? "No messages yet";
+      const listingId = getHousingListingIdFromContent(conv.last_message ?? "");
+      if (listingId) {
+        if (housingLookupError) {
+          lastMessage = `[ERROR] ${housingLookupError}`;
+        } else if (!addressByListingId.has(listingId)) {
+          lastMessage = `[ERROR] housing listing not found (${listingId})`;
+        } else {
+          lastMessage =
+            addressByListingId.get(listingId) ??
+            `[ERROR] Address is null for listing ${listingId}`;
+        }
+      }
+
       return {
         id: conv.id,
         name,
-        lastMessage: conv.last_message ?? "No messages yet",
+        lastMessage,
         timestamp: conv.last_message_at
           ? formatTimestamp(conv.last_message_at)
           : "",
@@ -399,11 +598,17 @@ export async function getMatchedUserIds(): Promise<
 
   const result: { user_id: string; display_name?: string }[] = [];
   for (const uid of matchedIds) {
-    const { data: profile } = await supabase
-      .from("profiles")
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
       .select("fname, lname")
       .eq("user_id", uid)
       .single();
+
+    if (profileError) {
+      throw new Error(
+        `Failed to fetch matched user profile (${uid}) from user_profiles: ${profileError.message}`,
+      );
+    }
 
     const displayName =
       profile && (profile.fname || profile.lname)
