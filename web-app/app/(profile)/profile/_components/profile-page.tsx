@@ -14,7 +14,9 @@ const CARD_SHADOW =
 
 export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfile, showEditFeatures: boolean }) {
   const user = profile;
-  const photoImages = ["/demo/room1.png", "/demo/room2.png"];
+  const lifestyleImages = user.lifestyle_images && user.lifestyle_images.length > 0
+    ? user.lifestyle_images
+    : ["/demo/room1.png", "/demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
 
   const cardSurface =
@@ -138,7 +140,7 @@ export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfil
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-                {photoImages.map((image, index) => (
+                {lifestyleImages.map((image, index) => (
                   <div
                     key={`${image}-${index}`}
                     className="relative aspect-square overflow-hidden rounded-2xl border border-border"
