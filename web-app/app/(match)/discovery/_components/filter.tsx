@@ -22,6 +22,8 @@ import { DiscoveryFilter, ProfileFilter, YesNoPreferences } from "../types";
 import type { Hobby } from "@/app/(profile)/types";
 import { HobbiesFilter } from "./hobbies-filter";
 import { useUser } from "@/contexts/UserContext";
+import { getPreferenceDisplayLabel } from "@/app/(profile)/profile/_components/preference-display";
+import type { Preference } from "@/app/(profile)/types";
 
 export function Filter({
   discoveryFilter,
@@ -39,6 +41,20 @@ export function Filter({
 
   const { profile } = useUser();
   const router = useRouter();
+
+  const profilePreferenceForFilter = (pref: {
+    preference_id: string;
+    name: string;
+  }): Preference | null => {
+    if (!profile?.preferences?.length) return null;
+    return (
+      profile.preferences.find((p) => p.preference_id === pref.preference_id) ??
+      profile.preferences.find(
+        (p) => p.name.toLowerCase() === pref.name.toLowerCase(),
+      ) ??
+      null
+    );
+  };
 
   const handlePreferenceUpdate = (id: string, val: number) => {
     setTempDiscoveryFilter((prev) => ({
@@ -155,20 +171,32 @@ export function Filter({
             {tempDiscoveryFilter?.roommate_preferences.map((pref) => {
               const isActive = pref.importance > 0;
               const isYesNo = YesNoPreferences.includes(pref.name);
+              const mine = profilePreferenceForFilter(pref);
+              const yours = mine
+                ? getPreferenceDisplayLabel(mine)
+                : "—";
 
               return (
                 <div
                   key={pref.preference_id}
-                  className="flex flex-col gap-1 py-1 px-2 rounded-md"
+                  className="flex flex-col gap-1 rounded-md px-2 py-1"
                 >
-                  <Label
-                    className={cn(
-                      "text-sm cursor-default capitalize",
-                      !isActive && "text-muted-foreground",
-                    )}
-                  >
-                    {pref.name}
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label
+                      className={cn(
+                        "flex-1 cursor-default text-sm capitalize",
+                        !isActive && "text-muted-foreground",
+                      )}
+                    >
+                      {pref.name}
+                    </Label>
+                    <span
+                      className="shrink-0 max-w-[55%] text-right text-xs text-muted-foreground"
+                      title={yours}
+                    >
+                      {yours}
+                    </span>
+                  </div>
                   <ImportanceControl
                     value={pref.importance}
                     isYesNo={isYesNo}

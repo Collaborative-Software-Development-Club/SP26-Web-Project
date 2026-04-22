@@ -16,11 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Star } from "lucide-react";
 import { House, HouseCard } from "./house-card";
+import { DeletedListingCard, type DeletedListing } from "./deleted-listing-card";
 import {
   assertCanFavoriteHousing,
   getHousingListings,
   getSavedHousing,
   saveHousingListing,
+  type SavedHousingRow,
+  unsaveDeletedHousingListing,
   unsaveHousingListing,
 } from "../_actions";
 import {
@@ -48,6 +51,7 @@ export function HousingList({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
+  const [savedRows, setSavedRows] = useState<SavedHousingRow[]>([]);
   const [filters, setFilters] = useState<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
   const appliedFiltersRef = useRef<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
   const [savedOnly, setSavedOnly] = useState(false);
@@ -59,6 +63,18 @@ export function HousingList({
   const favoriteIdsRef = useRef(favoriteIds);
   allListingsRef.current = allListings;
   favoriteIdsRef.current = favoriteIds;
+
+  const deletedSavedListings = useMemo<DeletedListing[]>(
+    () =>
+      savedRows
+        .filter((row) => row.housing_id == null && !!row.address)
+        .map((row, index) => ({
+          id: `deleted-${index}-${row.address ?? "unknown"}`,
+          address: row.address ?? "Unknown address",
+          listing_url: row.listing_url ?? null,
+        })),
+    [savedRows],
+  );
 
   function computeFiltered(
     rows: House[],
@@ -91,13 +107,23 @@ export function HousingList({
 
   const displayedListings = useMemo(() => {
     const start = (page - 1) * pageSize;
+    if (savedOnly) {
+      const combinedSaved = [...filteredListings, ...deletedSavedListings];
+      return combinedSaved.slice(start, start + pageSize);
+    }
     return filteredListings.slice(start, start + pageSize);
-  }, [filteredListings, page, pageSize]);
+  }, [deletedSavedListings, filteredListings, page, pageSize, savedOnly]);
 
   /** Total rows in the database (Supabase exact count). */
   const totalRecordCount = totalCount;
 
-  const pagesFromLoadedFiltered = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+  const savedOnlyTotalCount = savedOnly
+    ? filteredListings.length + deletedSavedListings.length
+    : filteredListings.length;
+  const pagesFromLoadedFiltered = Math.max(
+    1,
+    Math.ceil(savedOnlyTotalCount / pageSize),
+  );
   const showingFullDataset =
     !savedOnly && housingFiltersAreEmpty(appliedFiltersRef.current);
   const pagesFromTotalRecords = Math.max(1, Math.ceil(totalRecordCount / pageSize));
@@ -105,15 +131,32 @@ export function HousingList({
     ? Math.max(pagesFromLoadedFiltered, pagesFromTotalRecords)
     : pagesFromLoadedFiltered;
 
-  const hasMoreRaw = allListings.length < totalCount;
+  const hasMoreRaw = !savedOnly && allListings.length < totalCount;
 
   const listingRangeLabel = useMemo(() => {
-    const total = filteredListings.length;
-    if (total === 0) return "Showing 0 of 0 listings";
+    if (savedOnly) {
+      const total = filteredListings.length + deletedSavedListings.length;
+      if (total === 0) return "Showing 0 of 0 saved listings";
+      const start = (page - 1) * pageSize + 1;
+      const end = Math.min(page * pageSize, total);
+      return `Showing ${start}–${end} of ${total} saved listings`;
+    }
+    const totalForLabel = showingFullDataset ? totalRecordCount : filteredListings.length;
+    if (filteredListings.length === 0) {
+      return totalForLabel === 0 ? "Showing 0 of 0 listings" : `Showing 0 of ${totalForLabel} listings`;
+    }
     const start = (page - 1) * pageSize + 1;
-    const end = Math.min(page * pageSize, total);
-    return `Showing ${start}–${end} of ${total} listings`;
-  }, [filteredListings.length, page, pageSize]);
+    const end = Math.min(page * pageSize, filteredListings.length);
+    return `Showing ${start}–${end} of ${totalForLabel} listings`;
+  }, [
+    deletedSavedListings.length,
+    filteredListings.length,
+    page,
+    pageSize,
+    savedOnly,
+    showingFullDataset,
+    totalRecordCount,
+  ]);
 
   function applyFilters() {
     startTransition(() => {
@@ -141,6 +184,7 @@ export function HousingList({
       try {
         const saved = await getSavedHousing(userId);
         if (cancelled) return;
+        setSavedRows(saved ?? []);
         setFavoriteIds(
           new Set(
             (saved ?? [])
@@ -150,7 +194,10 @@ export function HousingList({
         );
       } catch {
         // If the RPC fails (e.g., not deployed yet), we just render as "not saved".
-        if (!cancelled) setFavoriteIds(new Set());
+        if (!cancelled) {
+          setSavedRows([]);
+          setFavoriteIds(new Set());
+        }
       }
     });
 
@@ -163,10 +210,17 @@ export function HousingList({
   useEffect(() => {
     if (!savedOnly) return;
     startTransition(() => {
-      setFilteredListings(computeFiltered(allListings, favoriteIds));
+      let next = filterHouses(allListings, filters);
+      next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
+      setFilteredListings(next);
       setPage(1);
     });
   }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
+
+  useEffect(() => {
+    if (!savedOnly) return;
+    console.log("[housing] get_saved_housing rows:", JSON.stringify(savedRows, null, 2));
+  }, [savedOnly, savedRows]);
 
   async function toggleFavorite(id: string) {
     if (!userId) {
@@ -196,6 +250,29 @@ export function HousingList({
       });
       console.error(
         "Failed to persist housing favorite toggle",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+
+  async function unsaveDeletedFavorite(address: string) {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    await assertCanFavoriteHousing();
+
+    const previous = savedRows;
+    setSavedRows((prev) =>
+      prev.filter((row) => !(row.housing_id == null && row.address === address)),
+    );
+
+    try {
+      await unsaveDeletedHousingListing(address);
+    } catch (e) {
+      setSavedRows(previous);
+      console.error(
+        "Failed to unsave deleted housing listing",
         e instanceof Error ? e.message : e,
       );
     }
@@ -360,14 +437,25 @@ export function HousingList({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedListings.map((h) => (
-          <HouseCard
-            key={h.id}
-            house={h}
-            isFavorite={userId ? favoriteIds.has(h.id) : false}
-            onToggleFavorite={toggleFavorite}
-          />
-        ))}
+        {(displayedListings as Array<House | DeletedListing>).map((listing) => {
+          if ("monthly_rent" in listing) {
+            return (
+              <HouseCard
+                key={listing.id}
+                house={listing}
+                isFavorite={userId ? favoriteIds.has(listing.id) : false}
+                onToggleFavorite={toggleFavorite}
+              />
+            );
+          }
+          return (
+            <DeletedListingCard
+              key={listing.id}
+              listing={listing}
+              onToggleFavorite={unsaveDeletedFavorite}
+            />
+          );
+        })}
       </div>
 
       {(navTotalPages > 1 || hasMoreRaw) && (

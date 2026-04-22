@@ -1,7 +1,6 @@
 import argparse
 import json
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -29,63 +28,6 @@ DEFAULT_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-OSU_FIELD_ORDER = [
-    "Address",
-    "Detail_URL",
-    "ID",
-    "Monthly Rent",
-    "Move In Date",
-    "Move Out Date",
-    "Lease Term",
-    "Short Lease Term",
-    "Sublease Permitted",
-    "Security Deposit",
-    "Property Owner",
-    "Property Type",
-    "Location\r\n                                            Sector",
-    "Level",
-    "City",
-    "Bedrooms",
-    "Bathrooms",
-    "Max Occupancy",
-    "Wheel Chair Access",
-    "Basement",
-    "Laundry",
-    "Parking",
-    "Number of Parking Spaces",
-    "Off-street Parking",
-    "Off-street Monthly",
-    "Off-street Yearly",
-    "On-street Parking",
-    "On-street Permit Required",
-    "Garage Parking",
-    "Garage Monthly",
-    "Garage Yearly",
-    "Furnished",
-    "Fireplace",
-    "Air Conditioning",
-    "Dishwasher",
-    "Stove",
-    "Refrigerator",
-    "Security System",
-    "Backyard",
-    "Deck Or Porch",
-    "Other Amenities",
-    "Pet Deposit",
-    "Additional Pet Rent",
-    "Additional Dog Rent",
-    "Additional Cat Rent",
-    "Pets Allowed",
-    "Dogs Allowed",
-    "Cats Allowed",
-    "Pet Deposit Refundable",
-    "Water Included",
-    "Electric Included",
-    "Gas Included",
-    "Name",
-    "Phone",
-]
-
 
 def clean_text(value: str | None) -> str:
     """Collapse whitespace so scraped text is easier to store and compare."""
@@ -106,57 +48,6 @@ def parse_money(value: str | None) -> str:
         return ""
     match = re.search(r"(\d+(?:\.\d+)?)", value.replace(",", ""))
     return match.group(1) if match else ""
-
-
-def format_currency(value: Any) -> str:
-    text = clean_text(str(value) if value is not None else "")
-    if not text:
-        return ""
-    if text.startswith("$"):
-        return text
-    cleaned = text.replace(",", "")
-    try:
-        amount = float(cleaned)
-    except ValueError:
-        return text
-    return f"${amount:,.2f}"
-
-
-def format_date(value: Any) -> str:
-    text = clean_text(str(value) if value is not None else "")
-    if not text:
-        return ""
-    for pattern in ("%Y-%m-%d", "%m-%d-%Y", "%m/%d/%Y", "%m/%d/%y"):
-        try:
-            parsed = datetime.strptime(text, pattern)
-            return f"{parsed.month}/{parsed.day}/{parsed.year}"
-        except ValueError:
-            continue
-    return text.replace("-", "/")
-
-
-def format_bathrooms(value: Any) -> str:
-    text = clean_text(str(value) if value is not None else "")
-    if not text:
-        return ""
-    if "full" in text or "half" in text:
-        return text
-    try:
-        amount = float(text)
-    except ValueError:
-        return text
-    full_baths = int(amount)
-    half_baths = 1 if round(amount - full_baths, 2) >= 0.5 else 0
-    return f"{full_baths} full, {half_baths} half"
-
-
-def includes_term(text: str, *terms: str) -> bool:
-    lowered = text.lower()
-    return any(term.lower() in lowered for term in terms)
-
-
-def normalize_osu_schema(mapped_fields: dict[str, str]) -> dict[str, str]:
-    return {field: mapped_fields.get(field, "") for field in OSU_FIELD_ORDER}
 
 
 def parse_ld_json(soup: BeautifulSoup) -> dict[str, Any]:
@@ -243,17 +134,17 @@ def parse_listing_cards(session: requests.Session) -> list[dict[str, str]]:
                     else None
                 ),
                 "Detail_URL": detail_url,
-                "Monthly Rent": format_currency(parse_money(
+                "Monthly Rent": parse_money(
                     item.select_one(".fs_rent-fall").get_text(" ", strip=True)
                     if item.select_one(".fs_rent-fall")
                     else None
-                )),
+                ),
                 "Bedrooms": clean_text(
                     item.select_one(".bedroom-count").get_text(" ", strip=True)
                     if item.select_one(".bedroom-count")
                     else None
                 ),
-                "Bathrooms": format_bathrooms(
+                "Bathrooms": clean_text(
                     item.select_one(".bathroom-count").get_text(" ", strip=True)
                     if item.select_one(".bathroom-count")
                     else None
@@ -263,11 +154,11 @@ def parse_listing_cards(session: requests.Session) -> list[dict[str, str]]:
                     if item.select_one(".type-title")
                     else None
                 ),
-                "Fall Rate Per Bed": format_currency(parse_money(
+                "Fall Rate Per Bed": parse_money(
                     item.select_one(".fs_rent-fall-btb").get_text(" ", strip=True)
                     if item.select_one(".fs_rent-fall-btb")
                     else None
-                )),
+                ),
             }
         )
 
@@ -298,7 +189,7 @@ def enrich_listing(session: requests.Session, listing: dict[str, str]) -> dict[s
     # split them into clearer fields before mapping them into the output record.
     for spec in price_specs:
         name = clean_text(spec.get("name"))
-        value = format_currency(parse_money(spec.get("price")))
+        value = parse_money(spec.get("price"))
         if name == "Fall 2026 Rate":
             fall_rate = value
         elif name == "Immediate Move-in Rate":
@@ -306,75 +197,29 @@ def enrich_listing(session: requests.Session, listing: dict[str, str]) -> dict[s
 
     meta_desc = soup.find("meta", attrs={"name": "description"})
 
-    amenities_text = ", ".join(feature_blocks)
-    description = clean_text(meta_desc.get("content") if meta_desc else None)
-    all_text = f"{amenities_text} {description}".lower()
+    enriched = dict(listing)
+    enriched.update(
+        {
+            "Address": additional.get("Address") or listing.get("Address", ""),
+            "Property Owner": "Hometeam Properties",
+            "Property Type": additional.get("Building Type") or listing.get("Property Type", ""),
+            "Square Feet": additional.get("Square Feet", ""),
+            "City": "Columbus, OH" if additional.get("Address") else "",
+            "Move In Date": "Immediate" if immediate_rate else "",
+            "Other Amenities": ", ".join(feature_blocks),
+            "Description": clean_text(meta_desc.get("content") if meta_desc else None),
+            "Latitude": additional.get("Latitude", ""),
+            "Longitude": additional.get("Longitude", ""),
+            "Immediate Rate": immediate_rate,
+        }
+    )
 
-    monthly_rent = fall_rate or listing.get("Monthly Rent", "")
-    move_in_date = ""
-    if immediate_rate:
-        move_in_date = "Immediate"
-    elif offers.get("availabilityStarts"):
-        move_in_date = format_date(offers.get("availabilityStarts"))
+    # If the card-level rate was blank but the detail page had a better value,
+    # prefer the detail page value.
+    if fall_rate:
+        enriched["Monthly Rent"] = fall_rate
 
-    mapped_fields = {
-        "Address": additional.get("Address") or listing.get("Address", ""),
-        "Detail_URL": listing.get("Detail_URL", ""),
-        "ID": clean_text(ld_data.get("sku")),
-        "Monthly Rent": monthly_rent,
-        "Move In Date": move_in_date,
-        "Move Out Date": "",
-        "Lease Term": clean_text(offers.get("eligibleDuration")),
-        "Short Lease Term": "",
-        "Sublease Permitted": "",
-        "Security Deposit": "",
-        "Property Owner": "Hometeam Properties",
-        "Property Type": additional.get("Building Type") or listing.get("Property Type", ""),
-        "Location\r\n                                            Sector": "",
-        "Level": "",
-        "City": "Columbus, OH" if additional.get("Address") or listing.get("Address") else "",
-        "Bedrooms": listing.get("Bedrooms", ""),
-        "Bathrooms": format_bathrooms(listing.get("Bathrooms", "")),
-        "Max Occupancy": clean_text(additional.get("Max Occupancy")),
-        "Wheel Chair Access": "",
-        "Basement": "",
-        "Laundry": "Laundry facilities in the unit" if includes_term(all_text, "laundry") else "",
-        "Parking": "Yes" if includes_term(all_text, "parking") else "",
-        "Number of Parking Spaces": "",
-        "Off-street Parking": "Yes" if includes_term(all_text, "free parking", "parking available") else "",
-        "Off-street Monthly": "",
-        "Off-street Yearly": "",
-        "On-street Parking": "",
-        "On-street Permit Required": "",
-        "Garage Parking": "",
-        "Garage Monthly": "",
-        "Garage Yearly": "",
-        "Furnished": "Yes" if includes_term(all_text, "furniture included", "furnished") else "",
-        "Fireplace": "",
-        "Air Conditioning": "Central A/C" if includes_term(all_text, "air conditioning", "central air") else "",
-        "Dishwasher": "Yes" if includes_term(all_text, "dishwasher") else "",
-        "Stove": "Yes" if includes_term(all_text, "stove", "oven", "range") else "",
-        "Refrigerator": "Yes" if includes_term(all_text, "refrigerator", "fridge") else "",
-        "Security System": "",
-        "Backyard": "",
-        "Deck Or Porch": "Yes" if includes_term(all_text, "deck", "porch", "balcony") else "",
-        "Other Amenities": amenities_text,
-        "Pet Deposit": "",
-        "Additional Pet Rent": "",
-        "Additional Dog Rent": "",
-        "Additional Cat Rent": "",
-        "Pets Allowed": "",
-        "Dogs Allowed": "",
-        "Cats Allowed": "",
-        "Pet Deposit Refundable": "",
-        "Water Included": "Yes" if includes_term(all_text, "utilities included", "utility fee is included", "water included") else "",
-        "Electric Included": "Yes" if includes_term(all_text, "utilities included", "utility fee is included", "electric included") else "",
-        "Gas Included": "Yes" if includes_term(all_text, "gas service", "utilities included", "utility fee is included", "gas included") else "",
-        "Name": "",
-        "Phone": "",
-    }
-
-    return normalize_osu_schema(mapped_fields)
+    return {key: value for key, value in enriched.items() if value != ""}
 
 
 def parse_args() -> argparse.Namespace:

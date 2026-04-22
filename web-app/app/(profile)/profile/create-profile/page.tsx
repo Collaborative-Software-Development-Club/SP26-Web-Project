@@ -37,6 +37,7 @@ function normalizeProfileForForm(
       ...hobby,
       hobby_id: String(hobby.hobby_id),
     })),
+    lifestyle_images: (profile.lifestyle_images ?? []),
     preferences,
   };
 }
