@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -81,6 +82,22 @@ def parse_additional_properties(ld_data: dict[str, Any]) -> dict[str, str]:
         if name:
             result[name] = value
     return result
+
+
+def extract_main_image_url(ld_data: dict[str, Any]) -> str:
+    """Extract a representative image URL from JSON-LD image data."""
+    image_data = ld_data.get("image")
+    if isinstance(image_data, str):
+        return clean_text(image_data)
+    if isinstance(image_data, list) and image_data:
+        first_image = image_data[0]
+        if isinstance(first_image, str):
+            return clean_text(first_image)
+        if isinstance(first_image, dict):
+            return clean_text(first_image.get("url") or first_image.get("@id"))
+    if isinstance(image_data, dict):
+        return clean_text(image_data.get("url") or image_data.get("@id"))
+    return ""
 
 
 def extract_feature_blocks(soup: BeautifulSoup) -> list[str]:
@@ -177,6 +194,7 @@ def enrich_listing(session: requests.Session, listing: dict[str, str]) -> dict[s
 
     ld_data = parse_ld_json(soup)
     additional = parse_additional_properties(ld_data)
+    main_image_url = extract_main_image_url(ld_data)
     feature_blocks = extract_feature_blocks(soup)
 
     offers = ld_data.get("offers", {}) or {}
@@ -211,6 +229,7 @@ def enrich_listing(session: requests.Session, listing: dict[str, str]) -> dict[s
             "Latitude": additional.get("Latitude", ""),
             "Longitude": additional.get("Longitude", ""),
             "Immediate Rate": immediate_rate,
+            "Main Image URL": main_image_url,
         }
     )
 
@@ -238,7 +257,17 @@ def parse_args() -> argparse.Namespace:
         default=str(TEST_DOCS_DIR / "hometeam_osu_format.json"),
         help="Output JSON file path. Defaults to test-docs/hometeam_osu_format.json.",
     )
-    return parser.parse_args()
+
+    # Support shorthand invocation like: `python script.py -50`
+    # by normalizing it into the standard `--limit 50` form.
+    normalized_argv = []
+    for arg in sys.argv[1:]:
+        if re.fullmatch(r"-\d+", arg):
+            normalized_argv.extend(["--limit", arg[1:]])
+        else:
+            normalized_argv.append(arg)
+
+    return parser.parse_args(normalized_argv)
 
 
 def main() -> None:

@@ -1,5 +1,7 @@
 import argparse
 import json
+import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -121,6 +123,13 @@ def convert_to_osu_record(data: dict[str, Any]) -> dict[str, str]:
     amenities = stringify(data.get("amenities"))
     utilities = stringify(data.get("utilities"))
 
+    photos = data.get("photos") or []
+    first_photo_url = ""
+    if isinstance(photos, list) and photos:
+        first = photos[0]
+        if isinstance(first, dict):
+            first_photo_url = stringify(first.get("url"))
+
     record = {
         "Address": stringify(
             data.get("full_address") or data.get("address_address1") or "Unknown Address"
@@ -158,6 +167,7 @@ def convert_to_osu_record(data: dict[str, Any]) -> dict[str, str]:
         "Water Included": "Yes" if "water" in utilities.lower() else "",
         "Electric Included": "Yes" if "electric" in utilities.lower() else "",
         "Gas Included": "Yes" if "gas" in utilities.lower() else "",
+        "Main Image URL": first_photo_url or stringify(data.get("default_photo_thumbnail_url")),
     }
 
     # Preserve a few source-specific details using the same human-readable field style.
@@ -194,7 +204,17 @@ def parse_args() -> argparse.Namespace:
         default=str(TEST_DOCS_DIR / "buckeye_osu_format.json"),
         help="Output JSON file path. Defaults to test-docs/buckeye_osu_format.json.",
     )
-    return parser.parse_args()
+
+    # Support shorthand invocation like: `python script.py -50`
+    # by normalizing it into the standard `--limit 50` form.
+    normalized_argv = []
+    for arg in sys.argv[1:]:
+        if re.fullmatch(r"-\d+", arg):
+            normalized_argv.extend(["--limit", arg[1:]])
+        else:
+            normalized_argv.append(arg)
+
+    return parser.parse_args(normalized_argv)
 
 
 def main() -> None:
