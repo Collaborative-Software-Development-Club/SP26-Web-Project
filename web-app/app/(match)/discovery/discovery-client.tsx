@@ -74,7 +74,7 @@ export function DiscoveryClient({
     });
   };
 
-  const canLoadMore = initialProfiles.length === 1 && reachedEnd;
+  const canLoadMore = initialProfiles.length === 30 && reachedEnd;
 
   return (
     <div className="flex flex-col items-center w-full px-4">
@@ -129,7 +129,6 @@ export function DiscoveryClient({
               <UndoButton
                 handleBefore={handleBefore}
                 targetUserId={history[history.length - 1].user_id}
-                isDiscovery={true}
                 lastEntry={history[history.length - 1].fname}
               />
             )}
@@ -145,8 +144,8 @@ const NoResultsReturned = () => {
   return (
     <div className="w-full flex flex-col items-center">
       <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[560px] flex flex-col center-items text-center">
-        <span className="text-5xl">✦</span>
-        <h2 className="px-16 pt-16 text-xl font-semibold text-foreground">
+        <span className="text-5xl p-10">✦</span>
+        <h2 className="px-16 text-xl font-semibold text-foreground">
           Oops! We couldn&apos;t find any matches...
         </h2>
         <p className="px-12 pt-8 text-muted-foreground">
@@ -205,8 +204,8 @@ function NoMoreResults({
       ) : (
         <div className="w-full dark:bg-black p-4 md:p-8 font-sans flex flex-col items-center">
           <div className="w-3/4 max-w-4xl  overflow-hidden relative md:h-[400px] flex flex-col center-items text-center">
-            <span className="text-5xl">✦</span>
-            <h2 className="px-16 pt-16 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+            <span className="text-5xl p-10">✦</span>
+            <h2 className="px-16 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
               You&apos;re all caught up!
             </h2>
             <p className="px-12 pt-8 text-zinc-400 dark:text-zinc-100">

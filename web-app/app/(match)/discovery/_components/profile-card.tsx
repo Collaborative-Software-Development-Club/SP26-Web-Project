@@ -98,7 +98,7 @@ export function ProfileCard({
     setSwipeDirection(dir);
     setTimeout(() => {
       if (isDiscovery) {
-          if (handleNext) handleNext();
+        if (handleNext) handleNext();
       } else {
         if (dir === 1) {
           if (onAccept) onAccept(profile.user_id);
@@ -128,8 +128,7 @@ export function ProfileCard({
     ...(profile?.lifestyle_images ?? []),
   ];
 
-  const nextPhoto = () =>
-    setPhotoIndex((i) => (i + 1) % userPhotos.length);
+  const nextPhoto = () => setPhotoIndex((i) => (i + 1) % userPhotos.length);
   const prevPhoto = () =>
     setPhotoIndex((i) => (i - 1 + userPhotos.length) % userPhotos.length);
 
@@ -155,7 +154,12 @@ export function ProfileCard({
             exitFromUndo
               ? { ...UNDO_EXIT }
               : {
-                  x: swipeDirection === 1 ? 1000 : swipeDirection === -1 ? -1000 : 0,
+                  x:
+                    swipeDirection === 1
+                      ? 1000
+                      : swipeDirection === -1
+                        ? -1000
+                        : 0,
                   opacity: 0,
                   rotate: swipeDirection * 20,
                   scale: 0.8,
