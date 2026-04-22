@@ -62,9 +62,14 @@ def main():
     global url, page_num, all_properties
     args = parse_args()
 
+    print(f"Starting OSU scrape with limit={args.limit}", flush=True)
     while url is not None and len(all_properties) < args.limit:
 
-        response = requests.get(url)
+        try:
+            response = requests.get(url, timeout=30)
+        except requests.RequestException as error:
+            print(f"Request failed for listing page {url}: {error}")
+            break
 
         if response.status_code == 200:
 
@@ -88,7 +93,18 @@ def main():
 
                 # ----------------- Getting Detail Information ------------------- #
 
-                detail_response = requests.get(full_address_link)
+                try:
+                    detail_response = requests.get(full_address_link, timeout=30)
+                except requests.RequestException:
+                    property_data["Details_Error"] = "Unable to retrieve property details"
+                    all_properties.append(property_data)
+                    if len(all_properties) % 25 == 0:
+                        print(
+                            f"Progress: {len(all_properties)}/{args.limit} listings scraped "
+                            f"(latest detail request failed).",
+                            flush=True,
+                        )
+                    continue
 
                 if detail_response.status_code == 200:
 
@@ -114,12 +130,21 @@ def main():
 
                 # Add this property to master list
                 all_properties.append(property_data)
+                if len(all_properties) % 25 == 0:
+                    print(
+                        f"Progress: {len(all_properties)}/{args.limit} listings scraped.",
+                        flush=True,
+                    )
 
             # Handle Pagination
             next_button = soup.find("a", title="Go to Next Page")
 
             if next_button is not None and len(all_properties) < args.limit:
-                print(f"Page {page_num} scraped successfully.")
+                print(
+                    f"Page {page_num} scraped successfully. "
+                    f"Current total: {len(all_properties)} listings.",
+                    flush=True,
+                )
                 page_num += 1
                 url = base_url + next_button["href"]
             else:

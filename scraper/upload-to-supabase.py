@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from postgrest.exceptions import APIError
 import math
 import os
 import re
@@ -187,6 +188,28 @@ def find_existing_record_id(supabase_client, record):
     return None
 
 
+def find_existing_by_main_image_url(supabase_client, record):
+    """Find row id by JSONB main image URL when unique conflicts occur."""
+    main_image = record.get("main_image_url")
+    if not isinstance(main_image, dict):
+        return None
+
+    url = main_image.get("url")
+    if not url:
+        return None
+
+    response = (
+        supabase_client.table(TABLE_NAME)
+        .select("id")
+        .contains("main_image_url", {"url": url})
+        .limit(1)
+        .execute()
+    )
+    if response.data:
+        return response.data[0]["id"]
+    return None
+
+
 def insert_or_replace_record(supabase_client, record):
     """Replace existing row content when found, otherwise insert a new row."""
     existing_id = find_existing_record_id(supabase_client, record)
@@ -199,8 +222,23 @@ def insert_or_replace_record(supabase_client, record):
         )
         return "updated"
 
-    supabase_client.table(TABLE_NAME).insert(record).execute()
-    return "inserted"
+    try:
+        supabase_client.table(TABLE_NAME).insert(record).execute()
+        return "inserted"
+    except APIError as error:
+        # Handle unique collisions on JSONB image URLs by updating that row instead.
+        details = getattr(error, "details", "") or str(error)
+        if "main_image_url_key" in details or "main_image_url_key" in str(error):
+            existing_id = find_existing_by_main_image_url(supabase_client, record)
+            if existing_id:
+                (
+                    supabase_client.table(TABLE_NAME)
+                    .update(record)
+                    .eq("id", existing_id)
+                    .execute()
+                )
+                return "updated"
+        raise
 
 
 def main():
@@ -219,16 +257,23 @@ def main():
     print(f"Loaded {len(df)} properties from {selected_file}")
 
     records = [clean_row(row) for _, row in df.iterrows()]
+    print(f"Prepared {len(records)} cleaned records for upsert.", flush=True)
 
     inserted_count = 0
     updated_count = 0
 
-    for record in records:
+    for index, record in enumerate(records, start=1):
         action = insert_or_replace_record(supabase_client, record)
         if action == "updated":
             updated_count += 1
         else:
             inserted_count += 1
+        if index % 25 == 0 or index == len(records):
+            print(
+                f"Upload progress: {index}/{len(records)} "
+                f"(inserted={inserted_count}, updated={updated_count})",
+                flush=True,
+            )
 
     print(
         f"\nDone! Processed {len(records)} properties to '{TABLE_NAME}'. "
