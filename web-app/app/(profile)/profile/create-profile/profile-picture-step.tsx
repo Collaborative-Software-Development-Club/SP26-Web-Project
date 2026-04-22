@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type MouseEvent } from "react";
 
 const PFP_BUCKET = "pfp";
+const LIFESTYLE_BUCKET = "lifestyle_pic";
 const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_LIFESTYLE_PHOTOS = 2;
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -42,6 +44,10 @@ function pfpPathFromPublicUrl(publicUrl: string, bucket: string): string | null 
   }
 }
 
+function lifestylePathFromPublicUrl(publicUrl: string): string | null {
+  return pfpPathFromPublicUrl(publicUrl, LIFESTYLE_BUCKET);
+}
+
 export function ProfilePictureStep({
   profile,
   isEditMode,
@@ -60,9 +66,12 @@ export function ProfilePictureStep({
 }) {
   const router = useRouter();
   const inputId = useId();
+  const lifestyleInputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lifestyleFileInputRef = useRef<HTMLInputElement>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingLifestyle, setIsUploadingLifestyle] = useState(false);
 
   const setUploading = (v: boolean) => {
     setIsUploading(v);
@@ -204,9 +213,118 @@ export function ProfilePictureStep({
     if (!isSubmitting && !isUploading) fileInputRef.current?.click();
   };
 
+  const openLifestyleFilePicker = () => {
+    if (!isSubmitting && !isUploadingLifestyle && canUploadLifestyle) {
+      lifestyleFileInputRef.current?.click();
+    }
+  };
+
+  const handleLifestyleFile = async (file: File | undefined, index: number) => {
+    setLocalError(null);
+
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.has(file.type)) {
+      setLocalError("Please choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    if (file.size > MAX_BYTES) {
+      setLocalError("Image must be 20 MB or smaller.");
+      return;
+    }
+
+    setIsUploadingLifestyle(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setIsUploadingLifestyle(false);
+      setLocalError("You must be signed in to upload a photo.");
+      return;
+    }
+
+    const ext = extensionForPfpMime(file.type);
+    const path = `${user.id}/lifestyle${index + 1}.${ext}`;
+
+    const currentPhotos = profile.lifestyle_images ?? [];
+    const existingUrl = currentPhotos[index];
+    if (existingUrl) {
+      const existingPath = lifestylePathFromPublicUrl(existingUrl);
+      if (existingPath && existingPath.startsWith(`${user.id}/`)) {
+        await supabase.storage.from(LIFESTYLE_BUCKET).remove([existingPath]);
+      }
+    }
+
+    const { error: uploadError } = await supabase.storage
+      .from(LIFESTYLE_BUCKET)
+      .upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: "3600",
+      });
+
+    if (uploadError) {
+      setIsUploadingLifestyle(false);
+      setLocalError("Failed to upload lifestyle photo: " + uploadError.message);
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(LIFESTYLE_BUCKET).getPublicUrl(path);
+
+    const newPhotoUrl = `${publicUrl}?t=${Date.now()}`;
+
+    const newPhotos = [...(profile.lifestyle_images ?? [])];
+    newPhotos[index] = newPhotoUrl;
+    update("lifestyle_images", newPhotos);
+    setIsUploadingLifestyle(false);
+    router.refresh();
+  };
+
+  const handleRemoveLifestyle = async (e: MouseEvent, index: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setLocalError(null);
+
+    const currentPhotos = profile.lifestyle_images ?? [];
+    const urlToRemove = currentPhotos[index];
+    if (!urlToRemove) return;
+
+    setIsUploadingLifestyle(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setIsUploadingLifestyle(false);
+      setLocalError("You must be signed in.");
+      return;
+    }
+
+    const path = lifestylePathFromPublicUrl(urlToRemove);
+    if (path && path.startsWith(`${user.id}/`)) {
+      await supabase.storage.from(LIFESTYLE_BUCKET).remove([path]);
+    }
+
+    const newPhotos = currentPhotos.filter((_, i) => i !== index);
+    update("lifestyle_images", newPhotos);
+    setIsUploadingLifestyle(false);
+    router.refresh();
+  };
+
   const savedUrl = profile.avatar_url?.trim() ?? "";
   const hasPhoto = Boolean(savedUrl);
   const busy = isSubmitting || isUploading;
+  const lifestylePhotos = profile.lifestyle_images ?? [];
+  const canUploadLifestyle = lifestylePhotos.length < MAX_LIFESTYLE_PHOTOS;
+  const busyLifestyle = isSubmitting || isUploadingLifestyle;
 
   return (
     <div className="space-y-4">
@@ -323,6 +441,100 @@ export function ProfilePictureStep({
             </button>
           </div>
         )}
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <p className="text-sm text-muted-foreground">
+          {isEditMode ? (
+            <>Add lifestyle photos to show your living style.</>
+          ) : (
+            <>
+              Optionally add up to {MAX_LIFESTYLE_PHOTOS} lifestyle photos.
+              These help others get a sense of your living space.
+            </>
+          )}
+        </p>
+
+        <input
+          id={lifestyleInputId}
+          ref={lifestyleFileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="sr-only"
+          disabled={busyLifestyle}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            const currentCount = lifestylePhotos.length;
+            void handleLifestyleFile(file, currentCount);
+            e.target.value = "";
+          }}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          {lifestylePhotos.map((url, index) => (
+            <div
+              key={`lifestyle-${index}`}
+              className={cn(
+                "group relative aspect-square",
+                busyLifestyle && "pointer-events-none opacity-50",
+              )}
+            >
+              <div className="relative size-full overflow-hidden rounded-xl border border-muted-foreground/20 bg-muted/30">
+                <Image
+                  src={url}
+                  alt={`Lifestyle photo ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+
+                {isUploadingLifestyle && (
+                  <div className="absolute inset-0 z-[5] flex items-center justify-center bg-background/70 text-sm font-medium">
+                    Uploading…
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  disabled={busyLifestyle}
+                  onClick={(e) => void handleRemoveLifestyle(e, index)}
+                  className={cn(
+                    "absolute -right-1 -top-1 z-10 flex size-7 items-center justify-center rounded-full border border-border bg-background shadow-md transition-opacity",
+                    "opacity-100 md:opacity-0 md:group-hover:opacity-100",
+                    "hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  )}
+                  aria-label="Remove lifestyle photo"
+                >
+                  <X className="size-4 text-muted-foreground" strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {canUploadLifestyle && (
+            <button
+              type="button"
+              disabled={busyLifestyle}
+              onClick={openLifestyleFilePicker}
+              className={cn(
+                "group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/40 transition-colors",
+                "hover:border-muted-foreground/50 hover:bg-muted/55",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                busyLifestyle && "pointer-events-none opacity-50",
+              )}
+              aria-label="Upload lifestyle photo"
+            >
+              <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-xs font-medium leading-tight text-muted-foreground transition-opacity group-hover:opacity-0">
+                Add Photo
+              </span>
+              <Plus
+                className="relative z-10 size-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                strokeWidth={1.75}
+                aria-hidden
+              />
+            </button>
+          )}
+        </div>
       </div>
 
       {localError && (

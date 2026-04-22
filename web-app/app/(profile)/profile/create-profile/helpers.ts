@@ -29,6 +29,7 @@ export function emptyProfile(): UserProfile {
     last_edited_at: "",
     hobbies: [],
     preferences: [],
+    lifestyle_images: [],
   };
 }
 
