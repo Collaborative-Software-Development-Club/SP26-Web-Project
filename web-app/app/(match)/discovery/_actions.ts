@@ -1,44 +1,27 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { LikedYouProfile, DiscoveryProfile, DiscoveryFilter } from "./types";
-import type { UserProfile } from "@/app/(profile)/types";
-import { getUserProfiles } from "@/lib/services/profile";
+import type {
+  LikedYouProfile,
+  DiscoveryProfile,
+  DiscoveryFilter,
+} from "./types";
 import { revalidatePath } from "next/cache";
 
 export async function getLikedYouProfiles(): Promise<LikedYouProfile[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
   const { data: likedSwipes, error: likedSwipesError } = await supabase
-    .from("discovery_swipes")
-    .select("user_id, created_at, message")
-    .eq("target_user_id", user.id)
-    .eq("action", "like")
-    .order("created_at", { ascending: false });
+    .rpc("get_liked_you_profiles", {})
+    .select("*");
 
-  // Create a custom error page (error.tsx) under /match if this fails
   if (likedSwipesError) {
     throw new Error(
-      `Failed to fetch liked profiles: ${likedSwipesError.message}`,
+      `Error fetching liked you profiles: ${likedSwipesError.message}`,
     );
   }
 
-  const userIdToMessageMap: Map<string, string> = new Map(
-    likedSwipes.map((swipe) => [swipe.user_id, swipe.message]),
-  );
-
-  const likedProfiles = await getUserProfiles(likedSwipes.map((swipe) => swipe.user_id));
-
-  return likedProfiles.map((profile: UserProfile) => ({
-    ...profile,
-    message: userIdToMessageMap.get(profile.user_id) ?? "",
-  }));
+  return likedSwipes;
 }
 
 // General feed swipe action
@@ -133,14 +116,18 @@ export async function undoMatchSwipe(targetUserId: string) {
 // Gets user's profile filters, roommate preferences, and hobby filters aggregated to one json object
 export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
   const supabase = await createClient();
-  const {data: {user}} = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error("Unauthorized");
   }
-  const { data, error } = await supabase.rpc("get_discovery_filter", {
-    p_user_id: user.id,
-  }).select("*");
+  const { data, error } = await supabase
+    .rpc("get_discovery_filter", {
+      p_user_id: user.id,
+    })
+    .select("*");
 
   if (error) {
     throw new Error(`Error fetching discovery filter: ${error.message}`);
@@ -148,9 +135,7 @@ export async function getDiscoveryFilter(): Promise<DiscoveryFilter> {
   return data;
 }
 
-export async function saveDiscoveryFilter(
-  filters: DiscoveryFilter,
-) {
+export async function saveDiscoveryFilter(filters: DiscoveryFilter) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -194,15 +179,19 @@ export async function getDiscoveryProfiles(): Promise<DiscoveryProfile[]> {
     throw new Error(`Error fetching current user: ${userError?.message}`);
   }
 
-    const { data, error } = await supabase.rpc("get_ranked_matches", {
+  const { data, error } = await supabase
+    .rpc("get_ranked_matches", {
       current_user_id: user.id,
-    }).select("*");
+    })
+    .select("*");
 
-    if (error) {
-      throw new Error(`Error fetching discovery profiles: ${error.message}`);
-    }
-
-    return data;
+  if (error) {
+    throw new Error(`Error fetching discovery profiles: ${error.message}`);
   }
-  
-  
+
+  return data;
+}
+
+export async function revalidateDiscoveryPath() {
+  revalidatePath("/discovery");
+}
