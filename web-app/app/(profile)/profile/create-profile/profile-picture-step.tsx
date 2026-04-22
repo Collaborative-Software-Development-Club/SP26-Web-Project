@@ -3,7 +3,7 @@
 import type { UserProfile } from "@/app/(profile)/types";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { Pencil, Plus, X } from "lucide-react";
+import { Loader2, Pencil, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type MouseEvent } from "react";
@@ -13,11 +13,7 @@ const LIFESTYLE_BUCKET = "lifestyle_pic";
 const MAX_BYTES = 20 * 1024 * 1024;
 const MAX_LIFESTYLE_PHOTOS = 2;
 
-const ALLOWED_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function extensionForPfpMime(mime: string): string {
   switch (mime) {
@@ -32,7 +28,10 @@ function extensionForPfpMime(mime: string): string {
   }
 }
 
-function pfpPathFromPublicUrl(publicUrl: string, bucket: string): string | null {
+function pfpPathFromPublicUrl(
+  publicUrl: string,
+  bucket: string,
+): string | null {
   const base = publicUrl.trim().split("?")[0];
   const marker = `/object/public/${bucket}/`;
   const i = base.indexOf(marker);
@@ -48,6 +47,36 @@ function lifestylePathFromPublicUrl(publicUrl: string): string | null {
   return pfpPathFromPublicUrl(publicUrl, LIFESTYLE_BUCKET);
 }
 
+function isLifestyle2StorageUrl(publicUrl: string): boolean {
+  const path = lifestylePathFromPublicUrl(publicUrl) ?? publicUrl;
+  return /lifestyle2\./.test(path);
+}
+
+function getLifestyleSlots(
+  photos: string[] | undefined,
+): [string | null, string | null] {
+  const p = photos ?? [];
+  if (p.length >= 2) {
+    return [p[0] || null, p[1] || null];
+  }
+  if (p.length === 1) {
+    const u = p[0];
+    if (u && isLifestyle2StorageUrl(u)) {
+      return [null, u];
+    }
+    return [u, null];
+  }
+  return [null, null];
+}
+
+function storedArrayFromLifestyleSlots(
+  slots: [string | null, string | null],
+): string[] {
+  return [slots[0], slots[1]].filter((u): u is string => Boolean(u));
+}
+
+const LIFESTYLE_SLOT_LABELS = ["Lifestyle 1", "Lifestyle 2"] as const;
+
 export function ProfilePictureStep({
   profile,
   isEditMode,
@@ -58,20 +87,21 @@ export function ProfilePictureStep({
   profile: UserProfile;
   isEditMode: boolean;
   isSubmitting: boolean;
-  update: <K extends keyof UserProfile>(
-    key: K,
-    value: UserProfile[K],
-  ) => void;
+  update: <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => void;
   onUploadingChange?: (uploading: boolean) => void;
 }) {
   const router = useRouter();
   const inputId = useId();
-  const lifestyleInputId = useId();
+  const lifestyle0InputId = useId();
+  const lifestyle1InputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const lifestyleFileInputRef = useRef<HTMLInputElement>(null);
+  const lifestyle0FileInputRef = useRef<HTMLInputElement>(null);
+  const lifestyle1FileInputRef = useRef<HTMLInputElement>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isUploadingLifestyle, setIsUploadingLifestyle] = useState(false);
+  const [lifestyleSlotBusy, setLifestyleSlotBusy] = useState<0 | 1 | null>(
+    null,
+  );
 
   const setUploading = (v: boolean) => {
     setIsUploading(v);
@@ -213,13 +243,15 @@ export function ProfilePictureStep({
     if (!isSubmitting && !isUploading) fileInputRef.current?.click();
   };
 
-  const openLifestyleFilePicker = () => {
-    if (!isSubmitting && !isUploadingLifestyle && canUploadLifestyle) {
-      lifestyleFileInputRef.current?.click();
-    }
+  const openLifestyleFilePicker = (index: 0 | 1) => {
+    if (isSubmitting || lifestyleSlotBusy !== null) return;
+    (index === 0
+      ? lifestyle0FileInputRef
+      : lifestyle1FileInputRef
+    ).current?.click();
   };
 
-  const handleLifestyleFile = async (file: File | undefined, index: number) => {
+  const handleLifestyleFile = async (file: File | undefined, index: 0 | 1) => {
     setLocalError(null);
 
     if (!file) return;
@@ -234,7 +266,7 @@ export function ProfilePictureStep({
       return;
     }
 
-    setIsUploadingLifestyle(true);
+    setLifestyleSlotBusy(index);
     const supabase = createClient();
     const {
       data: { user },
@@ -242,7 +274,7 @@ export function ProfilePictureStep({
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      setIsUploadingLifestyle(false);
+      setLifestyleSlotBusy(null);
       setLocalError("You must be signed in to upload a photo.");
       return;
     }
@@ -250,8 +282,8 @@ export function ProfilePictureStep({
     const ext = extensionForPfpMime(file.type);
     const path = `${user.id}/lifestyle${index + 1}.${ext}`;
 
-    const currentPhotos = profile.lifestyle_images ?? [];
-    const existingUrl = currentPhotos[index];
+    const slots = getLifestyleSlots(profile.lifestyle_images);
+    const existingUrl = slots[index];
     if (existingUrl) {
       const existingPath = lifestylePathFromPublicUrl(existingUrl);
       if (existingPath && existingPath.startsWith(`${user.id}/`)) {
@@ -268,7 +300,7 @@ export function ProfilePictureStep({
       });
 
     if (uploadError) {
-      setIsUploadingLifestyle(false);
+      setLifestyleSlotBusy(null);
       setLocalError("Failed to upload lifestyle photo: " + uploadError.message);
       return;
     }
@@ -279,23 +311,25 @@ export function ProfilePictureStep({
 
     const newPhotoUrl = `${publicUrl}?t=${Date.now()}`;
 
-    const newPhotos = [...(profile.lifestyle_images ?? [])];
-    newPhotos[index] = newPhotoUrl;
-    update("lifestyle_images", newPhotos);
-    setIsUploadingLifestyle(false);
+    const next: [string | null, string | null] = [
+      index === 0 ? newPhotoUrl : slots[0],
+      index === 1 ? newPhotoUrl : slots[1],
+    ];
+    update("lifestyle_images", storedArrayFromLifestyleSlots(next));
+    setLifestyleSlotBusy(null);
     router.refresh();
   };
 
-  const handleRemoveLifestyle = async (e: MouseEvent, index: number) => {
+  const handleRemoveLifestyle = async (e: MouseEvent, index: 0 | 1) => {
     e.stopPropagation();
     e.preventDefault();
     setLocalError(null);
 
-    const currentPhotos = profile.lifestyle_images ?? [];
-    const urlToRemove = currentPhotos[index];
+    const slots = getLifestyleSlots(profile.lifestyle_images);
+    const urlToRemove = slots[index];
     if (!urlToRemove) return;
 
-    setIsUploadingLifestyle(true);
+    setLifestyleSlotBusy(index);
     const supabase = createClient();
     const {
       data: { user },
@@ -303,7 +337,7 @@ export function ProfilePictureStep({
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      setIsUploadingLifestyle(false);
+      setLifestyleSlotBusy(null);
       setLocalError("You must be signed in.");
       return;
     }
@@ -313,18 +347,20 @@ export function ProfilePictureStep({
       await supabase.storage.from(LIFESTYLE_BUCKET).remove([path]);
     }
 
-    const newPhotos = currentPhotos.filter((_, i) => i !== index);
-    update("lifestyle_images", newPhotos);
-    setIsUploadingLifestyle(false);
+    const next: [string | null, string | null] = [
+      index === 0 ? null : slots[0],
+      index === 1 ? null : slots[1],
+    ];
+    update("lifestyle_images", storedArrayFromLifestyleSlots(next));
+    setLifestyleSlotBusy(null);
     router.refresh();
   };
 
   const savedUrl = profile.avatar_url?.trim() ?? "";
   const hasPhoto = Boolean(savedUrl);
   const busy = isSubmitting || isUploading;
-  const lifestylePhotos = profile.lifestyle_images ?? [];
-  const canUploadLifestyle = lifestylePhotos.length < MAX_LIFESTYLE_PHOTOS;
-  const busyLifestyle = isSubmitting || isUploadingLifestyle;
+  const lifestyleSlots = getLifestyleSlots(profile.lifestyle_images);
+  const busyLifestyle = isSubmitting || lifestyleSlotBusy !== null;
 
   return (
     <div className="space-y-4">
@@ -367,9 +403,7 @@ export function ProfilePictureStep({
             )}
             aria-label="Upload profile photo"
           >
-            <span
-              className="absolute inset-0 flex items-center justify-center px-2 text-center text-[0.65rem] font-medium leading-tight text-muted-foreground transition-opacity group-hover:opacity-0 sm:text-xs"
-            >
+            <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[0.65rem] font-medium leading-tight text-muted-foreground transition-opacity group-hover:opacity-0 sm:text-xs">
               No Profile Picture
             </span>
             <Plus
@@ -379,7 +413,7 @@ export function ProfilePictureStep({
             />
             {isUploading && (
               <div className="absolute inset-0 z-[5] flex items-center justify-center rounded-full bg-background/70 text-sm font-medium">
-                Uploading…
+                Working…
               </div>
             )}
           </button>
@@ -401,7 +435,7 @@ export function ProfilePictureStep({
 
               {isUploading && (
                 <div className="absolute inset-0 z-[5] flex items-center justify-center bg-background/70 text-sm font-medium">
-                  Uploading…
+                  <Loader2 className="size-4 animate-spin" />
                 </div>
               )}
 
@@ -415,7 +449,9 @@ export function ProfilePictureStep({
                   "focus-visible:bg-foreground/45 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 )}
                 aria-label={
-                  isEditMode && savedUrl ? "Replace profile photo" : "Change profile photo"
+                  isEditMode && savedUrl
+                    ? "Replace profile photo"
+                    : "Change profile photo"
                 }
               >
                 <Pencil
@@ -445,95 +481,131 @@ export function ProfilePictureStep({
 
       <div className="mt-6 space-y-3">
         <p className="text-sm text-muted-foreground">
-          {isEditMode ? (
-            <>Add lifestyle photos to show your living style.</>
-          ) : (
-            <>
-              Optionally add up to {MAX_LIFESTYLE_PHOTOS} lifestyle photos.
-              These help others get a sense of your living space.
-            </>
-          )}
+          Optionally add up to {MAX_LIFESTYLE_PHOTOS} lifestyle photos to show
+          your living style.
         </p>
 
         <input
-          id={lifestyleInputId}
-          ref={lifestyleFileInputRef}
+          id={lifestyle0InputId}
+          ref={lifestyle0FileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/gif,image/webp"
           className="sr-only"
           disabled={busyLifestyle}
           onChange={(e) => {
             const file = e.target.files?.[0];
-            const currentCount = lifestylePhotos.length;
-            void handleLifestyleFile(file, currentCount);
+            void handleLifestyleFile(file, 0);
+            e.target.value = "";
+          }}
+        />
+        <input
+          id={lifestyle1InputId}
+          ref={lifestyle1FileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="sr-only"
+          disabled={busyLifestyle}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            void handleLifestyleFile(file, 1);
             e.target.value = "";
           }}
         />
 
         <div className="grid grid-cols-2 gap-3">
-          {lifestylePhotos.map((url, index) => (
-            <div
-              key={`lifestyle-${index}`}
-              className={cn(
-                "group relative aspect-square",
-                busyLifestyle && "pointer-events-none opacity-50",
-              )}
-            >
-              <div className="relative size-full overflow-hidden rounded-xl border border-muted-foreground/20 bg-muted/30">
-                <Image
-                  src={url}
-                  alt={`Lifestyle photo ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-
-                {isUploadingLifestyle && (
-                  <div className="absolute inset-0 z-[5] flex items-center justify-center bg-background/70 text-sm font-medium">
-                    Uploading…
-                  </div>
+          {LIFESTYLE_SLOT_LABELS.map((label, index) => {
+            const slot = index as 0 | 1;
+            const url = lifestyleSlots[slot];
+            const thisSlotBusy = lifestyleSlotBusy === slot;
+            return (
+              <div
+                key={label}
+                className={cn(
+                  "group relative aspect-square",
+                  busyLifestyle && "pointer-events-none opacity-50",
                 )}
+              >
+                {url ? (
+                  <div className="relative size-full overflow-hidden rounded-xl border border-muted-foreground/20 bg-muted/30">
+                    <Image
+                      src={url}
+                      alt={label}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
 
-                <button
-                  type="button"
-                  disabled={busyLifestyle}
-                  onClick={(e) => void handleRemoveLifestyle(e, index)}
-                  className={cn(
-                    "absolute -right-1 -top-1 z-10 flex size-7 items-center justify-center rounded-full border border-border bg-background shadow-md transition-opacity",
-                    "opacity-100 md:opacity-0 md:group-hover:opacity-100",
-                    "hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  )}
-                  aria-label="Remove lifestyle photo"
-                >
-                  <X className="size-4 text-muted-foreground" strokeWidth={2} />
-                </button>
+                    <button
+                      type="button"
+                      disabled={busyLifestyle}
+                      onClick={() => openLifestyleFilePicker(slot)}
+                      className={cn(
+                        "absolute inset-0 z-[1] flex items-center justify-center rounded-xl transition-colors",
+                        "bg-foreground/0 opacity-0 md:group-hover:bg-foreground/45 md:group-hover:opacity-100",
+                        "focus-visible:bg-foreground/45 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                      )}
+                      aria-label={`Replace ${label} photo`}
+                    >
+                      <Pencil
+                        className="size-8 text-background drop-shadow-sm"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    </button>
+
+                    {thisSlotBusy && (
+                      <div className="absolute inset-0 z-[5] flex items-center justify-center bg-background">
+                        <Loader2 className="size-10 animate-spin" />
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={busyLifestyle}
+                      onClick={(e) => void handleRemoveLifestyle(e, slot)}
+                      className={cn(
+                        "absolute -right-1 -top-1 z-10 flex size-7 items-center justify-center rounded-full border border-border bg-background shadow-md transition-opacity",
+                        "opacity-100 md:opacity-0 md:group-hover:opacity-100",
+                        "hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      )}
+                      aria-label={`Remove ${label} photo`}
+                    >
+                      <X
+                        className="size-4 text-muted-foreground"
+                        strokeWidth={2}
+                      />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={busyLifestyle}
+                    onClick={() => openLifestyleFilePicker(slot)}
+                    className={cn(
+                      "group relative flex size-full flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/40 p-2 transition-colors",
+                      "hover:border-muted-foreground/50 hover:bg-muted/80",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    )}
+                    aria-label={`Upload ${label} photo (${slot === 0 ? "lifestyle1" : "lifestyle2"})`}
+                  >
+                    <span className="text-center text-xs font-medium text-muted-foreground">
+                      {label}
+                    </span>
+                    {thisSlotBusy && (
+                      <div className="absolute inset-0 z-[5] flex items-center justify-center bg-background">
+                        <Loader2 className="size-10 animate-spin" />
+                      </div>
+                    )}
+                    <Plus
+                      className="size-7 text-muted-foreground opacity-80 group-hover:opacity-100"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
-
-          {canUploadLifestyle && (
-            <button
-              type="button"
-              disabled={busyLifestyle}
-              onClick={openLifestyleFilePicker}
-              className={cn(
-                "group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/40 transition-colors",
-                "hover:border-muted-foreground/50 hover:bg-muted/55",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                busyLifestyle && "pointer-events-none opacity-50",
-              )}
-              aria-label="Upload lifestyle photo"
-            >
-              <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-xs font-medium leading-tight text-muted-foreground transition-opacity group-hover:opacity-0">
-                Add Photo
-              </span>
-              <Plus
-                className="relative z-10 size-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                strokeWidth={1.75}
-                aria-hidden
-              />
-            </button>
-          )}
+            );
+          })}
         </div>
       </div>
 
