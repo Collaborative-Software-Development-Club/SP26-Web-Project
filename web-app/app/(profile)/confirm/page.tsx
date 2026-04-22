@@ -17,7 +17,7 @@ export default async function ConfirmPage({ searchParams }: PageProps) {
   const { error, message, email } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex h-full items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Confirm your email</CardTitle>

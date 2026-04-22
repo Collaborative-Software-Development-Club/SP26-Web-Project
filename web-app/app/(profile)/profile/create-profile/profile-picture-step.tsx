@@ -316,12 +316,17 @@ export function ProfilePictureStep({
       index === 1 ? newPhotoUrl : slots[1],
     ];
 
+    // DB `index`: 0 = first lifestyle image, 1 = second (matches storage lifestyle1 / lifestyle2)
     const { error: dbError } = await supabase
       .from("user_profile_living_images")
-      .upsert({
-        user_id: user.id,
-        image_url: newPhotoUrl,
-      });
+      .upsert(
+        {
+          user_id: user.id,
+          index,
+          image_url: newPhotoUrl,
+        },
+        { onConflict: "user_id,index" },
+      );
 
     if (dbError) {
       setLifestyleSlotBusy(null);
@@ -370,8 +375,7 @@ export function ProfilePictureStep({
       .from("user_profile_living_images")
       .delete()
       .eq("user_id", user.id)
-      .eq("image_url", urlToRemove)
-      .maybeSingle();
+      .eq("index", index);
 
     if (dbError) {
       setLifestyleSlotBusy(null);

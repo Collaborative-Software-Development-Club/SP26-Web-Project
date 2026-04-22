@@ -19,7 +19,7 @@ type PageProps = {
 export default async function LoginPage({ searchParams }: PageProps) {
   const { error, deleted } = await searchParams;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex h-full  items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Log in</CardTitle>

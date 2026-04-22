@@ -87,14 +87,14 @@ export async function signupAction(formData: FormData) {
   if (data.session) {
     redirect("/profile");
   }
-  
+
   console.log("signup user id:", data.user?.id);
   console.log("signup session exists:", !!data.session);
   console.log("email confirmed at:", data.user?.email_confirmed_at);
 
   redirect(
     `/confirm?message=${encodeURIComponent(
-      "Check your email and click the confirmation link to finish signing up.",
+      "Check your email for a verification code to finish signing up.",
     )}&email=${encodeURIComponent(email)}`,
   );
 }
@@ -107,10 +107,13 @@ export async function verifyAction(token: string, email: string) {
     token: token,
     type: "signup",
   });
-  if(error) {
+  if (error) {
     await supabase.auth.signOut();
-    redirect(`/confirm?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);
+    redirect(
+      `/confirm?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`,
+    );
   }
+  redirect("/profile");
 }
 /**
  * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
@@ -220,7 +223,10 @@ export async function saveProfileAction(profile: UserProfile) {
 
   const { error: filterError } = await supabase
     .from("discovery_profile_filters")
-    .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+    .upsert(
+      { user_id: user.id },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
 
   if (filterError) {
     return { error: "Failed to save filters: " + filterError.message };
@@ -228,20 +234,20 @@ export async function saveProfileAction(profile: UserProfile) {
 
   const { error: preferenceFilterError } =
     profile.preferences.length > 0
-      ? await supabase
-          .from("discovery_roommate_preferences")
-          .upsert(
-            profile.preferences.map((p) => ({
-              user_id: user.id,
-              preference_id: p.preference_id,
-              importance: 3,
-            })),
-            { onConflict: "user_id,preference_id", ignoreDuplicates: true },
-          )
+      ? await supabase.from("discovery_roommate_preferences").upsert(
+          profile.preferences.map((p) => ({
+            user_id: user.id,
+            preference_id: p.preference_id,
+            importance: 3,
+          })),
+          { onConflict: "user_id,preference_id", ignoreDuplicates: true },
+        )
       : { error: null };
-      
-  if (preferenceFilterError) {  
-    return { error: "Failed to save preferences: " + preferenceFilterError.message };
+
+  if (preferenceFilterError) {
+    return {
+      error: "Failed to save preferences: " + preferenceFilterError.message,
+    };
   }
 
   revalidatePath("/profile");
@@ -357,9 +363,12 @@ export async function updateActiveStatus(
     return { error: "You must be signed in to update active status." };
   }
 
-  const { error } = await supabase.from("user_profiles").update({
-    is_active: isActive,
-  }).eq("user_id", user.id);
+  const { error } = await supabase
+    .from("user_profiles")
+    .update({
+      is_active: isActive,
+    })
+    .eq("user_id", user.id);
   if (error) {
     return { error: "Failed to update active status: " + error.message };
   }
@@ -377,7 +386,8 @@ export async function updatePassword(
   const confirmPasswordEntry = formData.get("confirmPassword");
   const currentPassword =
     typeof currentPasswordEntry === "string" ? currentPasswordEntry : "";
-  const newPassword = typeof newPasswordEntry === "string" ? newPasswordEntry : "";
+  const newPassword =
+    typeof newPasswordEntry === "string" ? newPasswordEntry : "";
   const confirmPassword =
     typeof confirmPasswordEntry === "string" ? confirmPasswordEntry : "";
 
@@ -385,10 +395,16 @@ export async function updatePassword(
     return { error: "Please fill in all fields.", success: false };
   }
   if (newPassword.length < 6) {
-    return { error: "New password must be at least 6 characters.", success: false };
+    return {
+      error: "New password must be at least 6 characters.",
+      success: false,
+    };
   }
   if (newPassword !== confirmPassword) {
-    return { error: "New password and confirmation do not match.", success: false };
+    return {
+      error: "New password and confirmation do not match.",
+      success: false,
+    };
   }
   if (currentPassword === newPassword) {
     return {
@@ -402,7 +418,10 @@ export async function updatePassword(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user?.email) {
-    return { error: "You must be signed in to change your password.", success: false };
+    return {
+      error: "You must be signed in to change your password.",
+      success: false,
+    };
   }
 
   const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -455,8 +474,7 @@ export async function deleteAccount(
   const admin = createServiceRoleClient();
   if (!admin) {
     return {
-      error:
-        "Account deletion is not configured.",
+      error: "Account deletion is not configured.",
     };
   }
 

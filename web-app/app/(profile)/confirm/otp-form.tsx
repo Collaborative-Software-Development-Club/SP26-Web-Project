@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 
 export const OtpForm = ({ error, message, email }: { error?: string, message?: string, email: string }) => {
-  const length = 8;
+  const length = 6;
   const [values, setValues] = useState<string[]>(Array(length).fill(""));
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
