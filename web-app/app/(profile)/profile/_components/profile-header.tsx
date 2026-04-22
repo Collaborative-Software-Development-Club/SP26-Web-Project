@@ -140,8 +140,8 @@ export function ProfileHeader({ profile }: ProfilePageProps) {
       </Card>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        {page === "profile" && <ProfilePage profile={profile} />}
-        {page === "settings" && <SettingsPage profile={profile} />}
+        {page === "profile" && <ProfilePage profile={profile} showEditFeatures={true} />}
+        {page === "settings" && <SettingsPage />}
       </div>
     </div>
   );

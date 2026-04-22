@@ -1,4 +1,5 @@
-# Supabase + env (requests pinned below with scraper stack)
+#Supabase Dependencies
+requests
 supabase
 python-dotenv
 

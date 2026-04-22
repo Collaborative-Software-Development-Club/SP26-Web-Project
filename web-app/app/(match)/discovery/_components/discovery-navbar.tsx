@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 export function DiscoveryNavbar() {
   const pathname = usePathname();
@@ -10,35 +11,47 @@ export function DiscoveryNavbar() {
 
   return (
     <nav
-      className="mx-auto flex flex-col items-center justify-center w-full max-w-4xl flex-col gap-2 mt-6"
+      className="mx-auto flex flex-col items-center justify-center w-full max-w-4xl gap-4 mt-6"
       aria-label="Discovery sections"
     >
-      <div className="flex flex-row items-center justify-center gap-3 lg:font-medium sm:font-sm lg:text-md sm:text-sm">
+      <div className="relative flex w-64 lg:w-72 rounded-full bg-muted p-1 text-sm font-medium lg:text-base">
         <Link
           href="/discovery"
-          className={
+          className={`relative z-10 flex flex-1 items-center justify-center rounded-full py-1.5 transition-colors ${
             isDiscovery
-              ? "text-foreground underline decoration-primary underline-offset-4"
+              ? "text-foreground"
               : "text-muted-foreground hover:text-foreground"
-          }
+          }`}
         >
-          Discovery
+          {isDiscovery && (
+            <motion.div
+              layoutId="active-pill"
+              className="absolute inset-0 rounded-full bg-background shadow-sm"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+          <span className="relative z-10">Discovery</span>
         </Link>
-        <span className="text-muted-foreground" aria-hidden>
-          |
-        </span>
+        
         <Link
           href="/discovery/liked-you"
-          className={
+          className={`relative z-10 flex flex-1 items-center justify-center rounded-full py-1.5 transition-colors ${
             isLikedYou
-              ? "text-foreground underline decoration-primary underline-offset-4"
+              ? "text-foreground"
               : "text-muted-foreground hover:text-foreground"
-          }
+          }`}
         >
-          Liked You
+          {isLikedYou && (
+            <motion.div
+              layoutId="active-pill"
+              className="absolute inset-0 rounded-full bg-background shadow-sm"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+          <span className="relative z-10">Liked You</span>
         </Link>
       </div>
-      <hr className="max-w-md w-full" />
+      <hr className="w-full max-w-md" />
     </nav>
   );
 }

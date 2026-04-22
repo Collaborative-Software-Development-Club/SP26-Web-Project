@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,69 +16,160 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Star } from "lucide-react";
 import { House, HouseCard } from "./house-card";
+import { DeletedListingCard, type DeletedListing } from "./deleted-listing-card";
 import {
   assertCanFavoriteHousing,
+  getHousingListings,
   getSavedHousing,
   saveHousingListing,
+  type SavedHousingRow,
+  unsaveDeletedHousingListing,
   unsaveHousingListing,
 } from "../_actions";
-import { filterHouses, type HousingFilters } from "../housing-utils";
+import {
+  EMPTY_HOUSING_FILTERS,
+  filterHouses,
+  housingFiltersAreEmpty,
+  type HousingFilters,
+} from "../housing-utils";
+import { HOUSING_LISTINGS_BATCH_SIZE } from "../housing-list-batch";
 
 export function HousingList({
   initialListings,
+  initialTotal,
   pageSize = 9,
   userId,
 }: {
   initialListings: House[];
+  initialTotal: number;
   pageSize?: number;
   userId: string | null;
 }) {
-  const [allListings] = useState<House[]>(initialListings);
+  const [allListings, setAllListings] = useState<House[]>(initialListings);
   const [filteredListings, setFilteredListings] = useState<House[]>(initialListings);
+  const [totalCount, setTotalCount] = useState(initialTotal);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
-  const [filters, setFilters] = useState<HousingFilters>({
-    minRent: "",
-    maxRent: "",
-    startDate: "",
-    semester: "Any",
-    location: "",
-    distance: "",
-  });
+  const [savedRows, setSavedRows] = useState<SavedHousingRow[]>([]);
+  const [filters, setFilters] = useState<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
+  const appliedFiltersRef = useRef<HousingFilters>({ ...EMPTY_HOUSING_FILTERS });
   const [savedOnly, setSavedOnly] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
+  const allListingsRef = useRef(allListings);
+  const favoriteIdsRef = useRef(favoriteIds);
+  allListingsRef.current = allListings;
+  favoriteIdsRef.current = favoriteIds;
+
+  const deletedSavedListings = useMemo<DeletedListing[]>(
+    () =>
+      savedRows
+        .filter((row) => row.housing_id == null && !!row.address)
+        .map((row, index) => ({
+          id: `deleted-${index}-${row.address ?? "unknown"}`,
+          address: row.address ?? "Unknown address",
+          listing_url: row.listing_url ?? null,
+        })),
+    [savedRows],
+  );
+
+  function computeFiltered(
+    rows: House[],
+    favs: Set<string>,
+    housingFilters: HousingFilters = filters,
+  ) {
+    let next = filterHouses(rows, housingFilters);
+    if (savedOnly) {
+      next = userId ? next.filter((h) => favs.has(String(h.id))) : [];
+    }
+    return next;
+  }
+
+  // Keep client state aligned with the server RSC payload (e.g. after router.refresh()).
+  useEffect(() => {
+    setAllListings(initialListings);
+    setTotalCount(initialTotal);
+    const nextFiltered = computeFiltered(
+      initialListings,
+      favoriteIds,
+      appliedFiltersRef.current,
+    );
+    setFilteredListings(nextFiltered);
+    setPage((p) => {
+      const maxPage = Math.max(1, Math.ceil(nextFiltered.length / pageSize));
+      return Math.min(p, maxPage);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when server props change, not draft dialog edits
+  }, [initialListings, initialTotal, pageSize]);
+
   const displayedListings = useMemo(() => {
     const start = (page - 1) * pageSize;
+    if (savedOnly) {
+      const combinedSaved = [...filteredListings, ...deletedSavedListings];
+      return combinedSaved.slice(start, start + pageSize);
+    }
     return filteredListings.slice(start, start + pageSize);
-  }, [filteredListings, page, pageSize]);
+  }, [deletedSavedListings, filteredListings, page, pageSize, savedOnly]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
+  /** Total rows in the database (Supabase exact count). */
+  const totalRecordCount = totalCount;
+
+  const savedOnlyTotalCount = savedOnly
+    ? filteredListings.length + deletedSavedListings.length
+    : filteredListings.length;
+  const pagesFromLoadedFiltered = Math.max(
+    1,
+    Math.ceil(savedOnlyTotalCount / pageSize),
+  );
+  const showingFullDataset =
+    !savedOnly && housingFiltersAreEmpty(appliedFiltersRef.current);
+  const pagesFromTotalRecords = Math.max(1, Math.ceil(totalRecordCount / pageSize));
+  const navTotalPages = showingFullDataset
+    ? Math.max(pagesFromLoadedFiltered, pagesFromTotalRecords)
+    : pagesFromLoadedFiltered;
+
+  const hasMoreRaw = !savedOnly && allListings.length < totalCount;
 
   const listingRangeLabel = useMemo(() => {
-    const total = filteredListings.length;
-    if (total === 0) return "Showing 0 of 0 listings";
+    if (savedOnly) {
+      const total = filteredListings.length + deletedSavedListings.length;
+      if (total === 0) return "Showing 0 of 0 saved listings";
+      const start = (page - 1) * pageSize + 1;
+      const end = Math.min(page * pageSize, total);
+      return `Showing ${start}–${end} of ${total} saved listings`;
+    }
+    const totalForLabel = showingFullDataset ? totalRecordCount : filteredListings.length;
+    if (filteredListings.length === 0) {
+      return totalForLabel === 0 ? "Showing 0 of 0 listings" : `Showing 0 of ${totalForLabel} listings`;
+    }
     const start = (page - 1) * pageSize + 1;
-    const end = Math.min(page * pageSize, total);
-    return `Showing ${start}–${end} of ${total} listings`;
-  }, [filteredListings.length, page, pageSize]);
+    const end = Math.min(page * pageSize, filteredListings.length);
+    return `Showing ${start}–${end} of ${totalForLabel} listings`;
+  }, [
+    deletedSavedListings.length,
+    filteredListings.length,
+    page,
+    pageSize,
+    savedOnly,
+    showingFullDataset,
+    totalRecordCount,
+  ]);
 
   function applyFilters() {
     startTransition(() => {
-      let next = filterHouses(allListings, filters);
-      if (savedOnly) {
-        next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
-      }
-      setFilteredListings(next);
+      appliedFiltersRef.current = { ...filters };
+      setFilteredListings(computeFiltered(allListings, favoriteIds));
       setPage(1);
       setIsDialogOpen(false);
     });
   }
 
   function clearFilters() {
-    setFilters({ minRent: "", maxRent: "", startDate: "", semester: "Any", location: "", distance: "" });
+    appliedFiltersRef.current = { ...EMPTY_HOUSING_FILTERS };
+    setFilters({ ...EMPTY_HOUSING_FILTERS });
     setSavedOnly(false);
     setFilteredListings(allListings);
     setPage(1);
@@ -93,6 +184,7 @@ export function HousingList({
       try {
         const saved = await getSavedHousing(userId);
         if (cancelled) return;
+        setSavedRows(saved ?? []);
         setFavoriteIds(
           new Set(
             (saved ?? [])
@@ -102,7 +194,10 @@ export function HousingList({
         );
       } catch {
         // If the RPC fails (e.g., not deployed yet), we just render as "not saved".
-        if (!cancelled) setFavoriteIds(new Set());
+        if (!cancelled) {
+          setSavedRows([]);
+          setFavoriteIds(new Set());
+        }
       }
     });
 
@@ -121,6 +216,11 @@ export function HousingList({
       setPage(1);
     });
   }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
+
+  useEffect(() => {
+    if (!savedOnly) return;
+    console.log("[housing] get_saved_housing rows:", JSON.stringify(savedRows, null, 2));
+  }, [savedOnly, savedRows]);
 
   async function toggleFavorite(id: string) {
     if (!userId) {
@@ -155,10 +255,78 @@ export function HousingList({
     }
   }
 
-  function go(n: number) {
-    const target = Math.min(Math.max(1, n), totalPages);
+  async function unsaveDeletedFavorite(address: string) {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    await assertCanFavoriteHousing();
+
+    const previous = savedRows;
+    setSavedRows((prev) =>
+      prev.filter((row) => !(row.housing_id == null && row.address === address)),
+    );
+
+    try {
+      await unsaveDeletedHousingListing(address);
+    } catch (e) {
+      setSavedRows(previous);
+      console.error(
+        "Failed to unsave deleted housing listing",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+
+  const busy = isPending || isLoadingMore;
+
+  async function goToPage(n: number) {
+    const target = Math.max(1, n);
+    if (busy) return;
     if (target === page) return;
-    setPage(target);
+
+    setIsLoadingMore(true);
+    try {
+      let rows = [...allListingsRef.current];
+      const favs = favoriteIdsRef.current;
+
+      while (true) {
+        const filtered = computeFiltered(rows, favs, appliedFiltersRef.current);
+        const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+        const neededEnd = target * pageSize;
+
+        if (neededEnd <= filtered.length) {
+          setAllListings(rows);
+          setFilteredListings(filtered);
+          setPage(Math.min(target, maxPage));
+          break;
+        }
+
+        if (rows.length >= totalCount) {
+          setAllListings(rows);
+          setFilteredListings(filtered);
+          setPage(Math.min(target, maxPage));
+          break;
+        }
+
+        const apiPage = Math.floor(rows.length / HOUSING_LISTINGS_BATCH_SIZE) + 1;
+        const { listings: batch } = await getHousingListings(
+          apiPage,
+          HOUSING_LISTINGS_BATCH_SIZE,
+        );
+        if (!batch?.length) {
+          const f = computeFiltered(rows, favs, appliedFiltersRef.current);
+          setAllListings(rows);
+          setFilteredListings(f);
+          setPage(Math.min(target, Math.max(1, Math.ceil(f.length / pageSize))));
+          break;
+        }
+        rows = [...rows, ...(batch as House[])];
+        allListingsRef.current = rows;
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
   }
 
   return (
@@ -269,39 +437,55 @@ export function HousingList({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedListings.map((h) => (
-          <HouseCard
-            key={h.id}
-            house={h}
-            isFavorite={userId ? favoriteIds.has(h.id) : false}
-            onToggleFavorite={toggleFavorite}
-          />
-        ))}
+        {(displayedListings as Array<House | DeletedListing>).map((listing) => {
+          if ("monthly_rent" in listing) {
+            return (
+              <HouseCard
+                key={listing.id}
+                house={listing}
+                isFavorite={userId ? favoriteIds.has(listing.id) : false}
+                onToggleFavorite={toggleFavorite}
+              />
+            );
+          }
+          return (
+            <DeletedListingCard
+              key={listing.id}
+              listing={listing}
+              onToggleFavorite={unsaveDeletedFavorite}
+            />
+          );
+        })}
       </div>
 
-      {totalPages > 1 && (
+      {(navTotalPages > 1 || hasMoreRaw) && (
         <div className="mt-6 flex items-center justify-center gap-3">
-          <Button onClick={() => go(page - 1)} disabled={page === 1 || isPending} variant="outline" size="sm">
+          <Button
+            onClick={() => void goToPage(page - 1)}
+            disabled={page === 1 || busy}
+            variant="outline"
+            size="sm"
+          >
             Prev
           </Button>
           <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
+            {Array.from({ length: navTotalPages }, (_, i) => i + 1)
               .filter((n) => n >= page - 3 && n <= page + 3)
               .map((n) => (
                 <Button
                   key={n}
-                  onClick={() => go(n)}
+                  onClick={() => void goToPage(n)}
                   variant={n === page ? "default" : "outline"}
                   size="sm"
-                  disabled={isPending}
+                  disabled={busy}
                 >
                   {n}
                 </Button>
               ))}
           </div>
           <Button
-            onClick={() => go(page + 1)}
-            disabled={page === totalPages || isPending}
+            onClick={() => void goToPage(page + 1)}
+            disabled={busy || (page >= navTotalPages && !hasMoreRaw)}
             variant="outline"
             size="sm"
           >

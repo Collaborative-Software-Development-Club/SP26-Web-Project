@@ -9,6 +9,27 @@ export interface HousingFilters {
   distance: string;
 }
 
+/** Default filter state = no narrowing (matches `filterHouses` behavior). */
+export const EMPTY_HOUSING_FILTERS: HousingFilters = {
+  minRent: "",
+  maxRent: "",
+  startDate: "",
+  semester: "Any",
+  location: "",
+  distance: "",
+};
+
+export function housingFiltersAreEmpty(f: HousingFilters): boolean {
+  return (
+    f.minRent === "" &&
+    f.maxRent === "" &&
+    f.startDate === "" &&
+    f.semester === "Any" &&
+    f.location === "" &&
+    f.distance === ""
+  );
+}
+
 function parsePriceNumber(rent?: string): number | null {
   if (!rent) return null;
   const numStr = rent.replace(/[^0-9.]/g, "");

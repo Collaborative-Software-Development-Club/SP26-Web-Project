@@ -12,9 +12,11 @@ import {
 const CARD_SHADOW =
   "shadow-[0_2px_4px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.3)]";
 
-export function ProfilePage({ profile }: { profile: UserProfile }) {
+export function ProfilePage({ profile, showEditFeatures }: { profile: UserProfile, showEditFeatures: boolean }) {
   const user = profile;
-  const photoImages = ["/demo/room1.png", "/demo/room2.png"];
+  const lifestyleImages = user.lifestyle_images && user.lifestyle_images.length > 0
+    ? user.lifestyle_images
+    : ["/demo/room1.png", "/demo/room2.png"];
   const year = ["1st", "2nd", "3rd", "4th", "5th"];
 
   const cardSurface =
@@ -32,6 +34,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             >
               Public View
             </Badge>
+            { showEditFeatures ? (
             <Button
               asChild
               variant="outline"
@@ -40,6 +43,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             >
               <Link href="/profile/create-profile">Edit Profile</Link>
             </Button>
+            ) : (<></>)}
           </div>
 
           <div className="flex flex-row items-center gap-3 px-3 pt-1 sm:gap-4 sm:px-5 md:gap-6 md:px-6 lg:gap-8 xl:gap-10">
@@ -136,7 +140,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-                {photoImages.map((image, index) => (
+                {lifestyleImages.map((image, index) => (
                   <div
                     key={`${image}-${index}`}
                     className="relative aspect-square overflow-hidden rounded-2xl border border-border"
@@ -165,7 +169,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
             </CardHeader>
             <CardContent className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6">
               {user.preferences?.length ? (
-                <div className="grid grid-cols-1 gap-2 sm:gap-3 lg:grid-cols-2 lg:gap-4">
+                <div className="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2 md:gap-4">
                   {user.preferences.map((pref) => (
                     <div
                       key={pref.preference_id}
@@ -174,7 +178,7 @@ export function ProfilePage({ profile }: { profile: UserProfile }) {
                       <div className="mt-0.5 shrink-0 text-muted-foreground sm:mt-0">
                         {getPreferenceIcon(pref.name)}
                       </div>
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="flex min-w-0 flex-1 flex-row gap-0.5 items-center justify-between sm:gap-4">
                         <span className="text-xs font-medium capitalize text-foreground sm:text-sm">
                           {pref.name}
                         </span>
