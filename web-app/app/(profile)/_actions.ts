@@ -79,6 +79,7 @@ export async function signupAction(formData: FormData) {
   });
 
   if (error) {
+    await supabase.auth.signOut();
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
@@ -93,10 +94,23 @@ export async function signupAction(formData: FormData) {
   redirect(
     `/confirm?message=${encodeURIComponent(
       "Check your email and click the confirmation link to finish signing up.",
-    )}`,
+    )}&email=${encodeURIComponent(email)}`,
   );
 }
 
+export async function verifyAction(token: string, email: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.verifyOtp({
+    email: email,
+    token: token,
+    type: "signup",
+  });
+  if(error) {
+    await supabase.auth.signOut();
+    redirect(`/confirm?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);
+  }
+}
 /**
  * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
  */

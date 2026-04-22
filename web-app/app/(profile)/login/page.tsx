@@ -17,6 +17,7 @@ type PageProps = {
 };
 
 export default async function LoginPage({ searchParams }: PageProps) {
+  console.log("login page");
   const { error } = await searchParams;
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
