@@ -315,6 +315,20 @@ export function ProfilePictureStep({
       index === 0 ? newPhotoUrl : slots[0],
       index === 1 ? newPhotoUrl : slots[1],
     ];
+
+    const { error: dbError } = await supabase
+      .from("user_profile_living_images")
+      .upsert({
+        user_id: user.id,
+        image_url: newPhotoUrl,
+      });
+
+    if (dbError) {
+      setLifestyleSlotBusy(null);
+      setLocalError("Failed to save lifestyle photo to database");
+      return;
+    }
+
     update("lifestyle_images", storedArrayFromLifestyleSlots(next));
     setLifestyleSlotBusy(null);
     router.refresh();
@@ -351,6 +365,20 @@ export function ProfilePictureStep({
       index === 0 ? null : slots[0],
       index === 1 ? null : slots[1],
     ];
+
+    const { error: dbError } = await supabase
+      .from("user_profile_living_images")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("image_url", urlToRemove)
+      .maybeSingle();
+
+    if (dbError) {
+      setLifestyleSlotBusy(null);
+      setLocalError("Failed to remove lifestyle photo from database");
+      return;
+    }
+
     update("lifestyle_images", storedArrayFromLifestyleSlots(next));
     setLifestyleSlotBusy(null);
     router.refresh();
