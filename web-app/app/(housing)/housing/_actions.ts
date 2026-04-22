@@ -1,6 +1,10 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
+import {
+  getDirectConversationTargets,
+  sendChatMessage,
+} from "@/app/(chat)/chat/_actions";
 
 function housingQueryErrorMessage(error: { message: string }, context: string) {
   const raw = error.message ?? "";
@@ -46,9 +50,14 @@ export async function assertCanFavoriteHousing() {
   return { userId: user.id };
 }
 
+export async function assertCanShareHousing() {
+  const user = await requireAuth();
+  return { userId: user.id };
+}
+
 export type SavedHousingRow = {
   housing_id: string | null;
-  address: string;
+  address: string | null;
   listing_url: string | null;
 };
 
@@ -138,5 +147,74 @@ export async function unsaveHousingListing(housingId: string) {
       ),
     );
   }
+  return { ok: true as const };
+}
+
+export async function unsaveDeletedHousingListing(address: string) {
+  if (!address) {
+    throw new Error("Address required");
+  }
+
+  const supabase = await createClient();
+  const user = await requireAuth();
+
+  const { error } = await supabase
+    .from("user_saves_housing")
+    .delete()
+    .eq("user_id", user.id)
+    .is("housing_id", null)
+    .eq("address", address);
+
+  if (error) {
+    throw new Error(
+      JSON.stringify(
+        {
+          message: error.message,
+          code: (error as { code?: string }).code,
+          details: (error as { details?: string }).details,
+          hint: (error as { hint?: string }).hint,
+        },
+        null,
+        2,
+      ),
+    );
+  }
+  return { ok: true as const };
+}
+
+export type HousingShareTarget = {
+  peerUserId: string;
+  conversationId: string;
+  fname: string | null;
+  lname: string | null;
+  name: string;
+};
+
+export async function getHousingShareTargets(): Promise<HousingShareTarget[]> {
+  const byUserId = await getDirectConversationTargets();
+  return Object.entries(byUserId).map(([peerUserId, target]) => {
+    const name = `${target.fname ?? ""} ${target.lname ?? ""}`.trim();
+    return {
+      peerUserId,
+      conversationId: target.conversationId,
+      fname: target.fname,
+      lname: target.lname,
+      name: name || peerUserId,
+    };
+  });
+}
+
+export async function shareHousingListing(
+  conversationId: string,
+  listingId: string,
+) {
+  if (!conversationId) {
+    throw new Error("Conversation required");
+  }
+  if (!listingId) {
+    throw new Error("Listing required");
+  }
+
+  await sendChatMessage(conversationId, `[[HOUSING:${listingId}]]`);
   return { ok: true as const };
 }

@@ -5,6 +5,7 @@
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { parseMainImageUrls } from "../main-image-urls";
+import { ShareListingDropdown } from "./share-listing-dropdown";
 
 export interface House {
   id: string;
@@ -95,6 +96,7 @@ export function HouseCard({
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">
+            <ShareListingDropdown listingId={house.id} />
             <Button asChild variant="default" size="sm">
               <a href={`/housing/${house.id}`}>View</a>
             </Button>

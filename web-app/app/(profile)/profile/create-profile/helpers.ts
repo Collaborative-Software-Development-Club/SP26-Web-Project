@@ -21,7 +21,7 @@ export function emptyProfile(): UserProfile {
     fname: "",
     lname: "",
     gender: "",
-    avatar_url: "",
+    avatar_url: null,
     bio: "",
     majors: [],
     year: 0,
@@ -29,6 +29,7 @@ export function emptyProfile(): UserProfile {
     last_edited_at: "",
     hobbies: [],
     preferences: [],
+    lifestyle_images: [],
   };
 }
 

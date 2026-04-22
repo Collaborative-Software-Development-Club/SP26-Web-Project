@@ -1,0 +1,1001 @@
+[
+  {
+    "table_name": "chat_conversation_members",
+    "columns": [
+      {
+        "column": "user_chat_hidden",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "role",
+        "type": "text",
+        "nullable": "YES",
+        "default": "'member'::text"
+      },
+      {
+        "column": "conversation_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "joined_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      }
+    ]
+  },
+  {
+    "table_name": "chat_conversations",
+    "columns": [
+      {
+        "column": "title",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "conversation_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "uuid_generate_v4()"
+      },
+      {
+        "column": "is_group",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": "false"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "last_message_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "admin_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "chat_messages",
+    "columns": [
+      {
+        "column": "content",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "sender_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "conversation_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "message_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "uuid_generate_v4()"
+      }
+    ]
+  },
+  {
+    "table_name": "discovery_hobby_filter",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "hobby_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "discovery_matches",
+    "columns": [
+      {
+        "column": "user2_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "match_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "gen_random_uuid()"
+      },
+      {
+        "column": "user1_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "discovery_profile_filters",
+    "columns": [
+      {
+        "column": "use_gender",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": "true"
+      },
+      {
+        "column": "use_year",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": "true"
+      },
+      {
+        "column": "use_major",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": "true"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "discovery_roommate_preferences",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "importance",
+        "type": "integer",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "preference_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "discovery_swipes",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "message",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "target_user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "action",
+        "type": "USER-DEFINED",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "housing_admin",
+    "columns": [
+      {
+        "column": "isAdmin",
+        "type": "boolean",
+        "nullable": "NO",
+        "default": "false"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "housing_property_records",
+    "columns": [
+      {
+        "column": "modified_date",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "stove",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "refrigerator",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "security_system",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "backyard",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "deck_or_porch",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "pets_allowed",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "dogs_allowed",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "cats_allowed",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "pet_deposit_refundable",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "water_included",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "electric_included",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "gas_included",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "dishwasher",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "main_image_url",
+        "type": "jsonb",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "gen_random_uuid()"
+      },
+      {
+        "column": "short_lease_term",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "sublease_permitted",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "bedrooms",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "full_bathrooms",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "half_bathrooms",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "max_occupancy",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "wheelchair_access",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "basement",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "parking",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "num_parking_spaces",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "offstreet_parking",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "onstreet_parking",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "garage_parking",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "furnished",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "fireplace",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "address",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "listing_url",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "osu_id",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "monthly_rent",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "move_in_date",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "move_out_date",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "lease_term",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "security_deposit",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "property_owner",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "property_type",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "sector",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "level",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "city",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "laundry",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "offstreet_monthly",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "offstreet_yearly",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "onstreet_permit_required",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "garage_monthly",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "garage_yearly",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "air_conditioning",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "other_amenities",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "pet_deposit",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "additional_pet_rent",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "additional_dog_rent",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "additional_cat_rent",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_hobbies",
+    "columns": [
+      {
+        "column": "name",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "hobby_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "uuid_generate_v4()"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "category_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_hobby_categories",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      },
+      {
+        "column": "category_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "gen_random_uuid()"
+      },
+      {
+        "column": "name",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_majors",
+    "columns": [
+      {
+        "column": "name",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "major_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "gen_random_uuid()"
+      }
+    ]
+  },
+  {
+    "table_name": "user_preferences",
+    "columns": [
+      {
+        "column": "name",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "preference_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "uuid_generate_v4()"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      }
+    ]
+  },
+  {
+    "table_name": "user_profile_aggregated_view",
+    "columns": [
+      {
+        "column": "lname",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "gender",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "avatar_url",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "bio",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "hobbies",
+        "type": "jsonb",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "preferences",
+        "type": "jsonb",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "majors",
+        "type": "jsonb",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "last_edited_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "year",
+        "type": "integer",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "is_active",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "lifestyle_images",
+        "type": "ARRAY",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "fname",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_profile_hobbies",
+    "columns": [
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "hobby_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_profile_living_images",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "image_url",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_profile_majors",
+    "columns": [
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      },
+      {
+        "column": "major_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": "auth.uid()"
+      }
+    ]
+  },
+  {
+    "table_name": "user_profile_preferences",
+    "columns": [
+      {
+        "column": "value",
+        "type": "smallint",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "preference_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      }
+    ]
+  },
+  {
+    "table_name": "user_profiles",
+    "columns": [
+      {
+        "column": "is_active",
+        "type": "boolean",
+        "nullable": "YES",
+        "default": "true"
+      },
+      {
+        "column": "bio",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "lname",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "year",
+        "type": "integer",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "avatar_url",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "fname",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "last_edited_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "YES",
+        "default": "now()"
+      },
+      {
+        "column": "gender",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "NO",
+        "default": null
+      }
+    ]
+  },
+  {
+    "table_name": "user_saves_housing",
+    "columns": [
+      {
+        "column": "housing_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "user_id",
+        "type": "uuid",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "id",
+        "type": "bigint",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "address",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "column": "listing_url",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      }
+    ]
+  }
+]

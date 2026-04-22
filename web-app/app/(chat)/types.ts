@@ -4,6 +4,8 @@ export type ChatMessage = {
   sender_id: string;
   content: string;
   created_at: string;
+  //If message is a housing link, add an address so address lookup is not required later.
+  address: string | null;
 };
 
 export interface Conversation {

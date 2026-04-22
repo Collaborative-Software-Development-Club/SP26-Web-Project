@@ -4,35 +4,24 @@ import { ThumbsDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { saveSwipe } from "../_actions";
-import { saveMatchSwipe } from "../_actions";
 
 export function DislikeButton({
   handleNext,
   targetUserId,
-  isDiscovery, // true on Discovery page, false on Liked You page
   onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
-  isDiscovery: boolean;
-  onClick?: () => void; // Optional callback for additional actions on click
+  onClick?: () => void | Promise<void>;
 }) {
-  const handleDislike = useCallback(() => {
-    console.log("Dislike");
-
+  const handleDislike = useCallback(async () => {
     if (onClick) {
-      onClick(); // Trigger animation first
+      await Promise.resolve(onClick());
     } else {
-      handleNext(); // Fallback if no animation logic is passed
+      handleNext();
     }
-
-    //Commented out to prevent dislike actions until its ready
-    if (isDiscovery) {
-      //saveSwipe(targetUserId, "dislike", null);
-    } else {
-      //saveMatchSwipe(targetUserId, "dislike", null);
-    }
-  }, [handleNext, isDiscovery, targetUserId, onClick]);
+    await saveSwipe(targetUserId, "dislike", null);
+  }, [handleNext, targetUserId, onClick]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -44,7 +33,7 @@ export function DislikeButton({
       )
         return;
       e.preventDefault();
-      handleDislike();
+      void handleDislike();
     };
 
     window.addEventListener("keydown", handleKeyPress);

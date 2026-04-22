@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type {
   Hobby,
@@ -79,24 +80,41 @@ export async function signupAction(formData: FormData) {
   });
 
   if (error) {
+    await supabase.auth.signOut();
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
   if (data.session) {
     redirect("/profile");
   }
-  
+
   console.log("signup user id:", data.user?.id);
   console.log("signup session exists:", !!data.session);
   console.log("email confirmed at:", data.user?.email_confirmed_at);
 
   redirect(
     `/confirm?message=${encodeURIComponent(
-      "Check your email and click the confirmation link to finish signing up.",
-    )}`,
+      "Check your email for a verification code to finish signing up.",
+    )}&email=${encodeURIComponent(email)}`,
   );
 }
 
+export async function verifyAction(token: string, email: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.verifyOtp({
+    email: email,
+    token: token,
+    type: "signup",
+  });
+  if (error) {
+    await supabase.auth.signOut();
+    redirect(
+      `/confirm?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`,
+    );
+  }
+  redirect("/profile");
+}
 /**
  * Saves a profile for the signed-in user. `avatar_url` should match storage if the user set a photo from the client.
  */
@@ -205,7 +223,10 @@ export async function saveProfileAction(profile: UserProfile) {
 
   const { error: filterError } = await supabase
     .from("discovery_profile_filters")
-    .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+    .upsert(
+      { user_id: user.id },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
 
   if (filterError) {
     return { error: "Failed to save filters: " + filterError.message };
@@ -213,20 +234,20 @@ export async function saveProfileAction(profile: UserProfile) {
 
   const { error: preferenceFilterError } =
     profile.preferences.length > 0
-      ? await supabase
-          .from("discovery_roommate_preferences")
-          .upsert(
-            profile.preferences.map((p) => ({
-              user_id: user.id,
-              preference_id: p.preference_id,
-              importance: 3,
-            })),
-            { onConflict: "user_id,preference_id", ignoreDuplicates: true },
-          )
+      ? await supabase.from("discovery_roommate_preferences").upsert(
+          profile.preferences.map((p) => ({
+            user_id: user.id,
+            preference_id: p.preference_id,
+            importance: 3,
+          })),
+          { onConflict: "user_id,preference_id", ignoreDuplicates: true },
+        )
       : { error: null };
-      
-  if (preferenceFilterError) {  
-    return { error: "Failed to save preferences: " + preferenceFilterError.message };
+
+  if (preferenceFilterError) {
+    return {
+      error: "Failed to save preferences: " + preferenceFilterError.message,
+    };
   }
 
   revalidatePath("/profile");
@@ -329,4 +350,198 @@ export async function updateProfile(profile: UserProfile) {
   if (result.error) {
     throw new Error(result.error);
   }
+}
+
+export async function updateActiveStatus(
+  isActive: boolean,
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "You must be signed in to update active status." };
+  }
+
+  const { error } = await supabase
+    .from("user_profiles")
+    .update({
+      is_active: isActive,
+    })
+    .eq("user_id", user.id);
+  if (error) {
+    return { error: "Failed to update active status: " + error.message };
+  }
+  revalidatePath("/profile");
+  revalidatePath("/", "layout");
+  return { error: null };
+}
+
+export async function updatePassword(
+  _prevState: { error: string | null; success: boolean },
+  formData: FormData,
+): Promise<{ error: string | null; success: boolean }> {
+  const currentPasswordEntry = formData.get("currentPassword");
+  const newPasswordEntry = formData.get("newPassword");
+  const confirmPasswordEntry = formData.get("confirmPassword");
+  const currentPassword =
+    typeof currentPasswordEntry === "string" ? currentPasswordEntry : "";
+  const newPassword =
+    typeof newPasswordEntry === "string" ? newPasswordEntry : "";
+  const confirmPassword =
+    typeof confirmPasswordEntry === "string" ? confirmPasswordEntry : "";
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: "Please fill in all fields.", success: false };
+  }
+  if (newPassword.length < 6) {
+    return {
+      error: "New password must be at least 6 characters.",
+      success: false,
+    };
+  }
+  if (newPassword !== confirmPassword) {
+    return {
+      error: "New password and confirmation do not match.",
+      success: false,
+    };
+  }
+  if (currentPassword === newPassword) {
+    return {
+      error: "New password must be different from your current password.",
+      success: false,
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return {
+      error: "You must be signed in to change your password.",
+      success: false,
+    };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (signInError) {
+    return { error: "Current password is incorrect.", success: false };
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  if (updateError) {
+    return {
+      error: updateError.message || "Failed to update password.",
+      success: false,
+    };
+  }
+
+  revalidatePath("/profile");
+  return { error: null, success: true };
+}
+
+const DELETE_ACCOUNT_PFP_BUCKET = "pfp";
+const DELETE_ACCOUNT_LIFESTYLE_BUCKET = "lifestyle_pic";
+
+/** Best-effort removal of all objects under the user’s folder in profile/lifestyle buckets. */
+async function removeUserStorageForDeletion(
+  admin: ReturnType<typeof createServiceRoleClient>,
+  userId: string,
+): Promise<void> {
+  const clearBucketFolder = async (bucket: string) => {
+    const pageSize = 100;
+    let offset = 0;
+    for (;;) {
+      const { data: files, error: listError } = await admin.storage
+        .from(bucket)
+        .list(userId, { limit: pageSize, offset });
+
+      if (listError) {
+        console.error(
+          `[deleteAccount] list ${bucket}/${userId}:`,
+          listError.message,
+        );
+        return;
+      }
+      if (!files?.length) {
+        break;
+      }
+
+      const paths = files.map((f) => `${userId}/${f.name}`);
+      if (paths.length > 0) {
+        const { error: removeError } = await admin.storage
+          .from(bucket)
+          .remove(paths);
+        if (removeError) {
+          console.error(
+            `[deleteAccount] remove ${bucket}:`,
+            removeError.message,
+          );
+        }
+      }
+
+      if (files.length < pageSize) {
+        break;
+      }
+      offset += pageSize;
+    }
+  };
+
+  await clearBucketFolder(DELETE_ACCOUNT_PFP_BUCKET);
+  await clearBucketFolder(DELETE_ACCOUNT_LIFESTYLE_BUCKET);
+}
+
+export async function deleteAccount(
+  _prevState: { error: string | null },
+  formData: FormData,
+): Promise<{ error: string | null }> {
+  const password = (formData.get("password") as string) ?? "";
+  if (!password) {
+    return { error: "Enter your password to confirm account deletion." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return { error: "You must be signed in." };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password,
+  });
+  if (signInError) {
+    return { error: "Password is incorrect." };
+  }
+
+  let admin: ReturnType<typeof createServiceRoleClient>;
+  try {
+    admin = createServiceRoleClient();
+  } catch {
+    return {
+      error: "Account deletion is not configured. Missing server credentials.",
+    };
+  }
+
+  await removeUserStorageForDeletion(admin, user.id);
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (deleteError) {
+    return {
+      error:
+        deleteError.message ||
+        "Failed to delete account. Try again or contact support.",
+    };
+  }
+
+  await supabase.auth.signOut();
+  redirect("/signup?deleted=1");
 }

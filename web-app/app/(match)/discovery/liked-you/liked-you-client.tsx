@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ProfileCard } from "../_components/profile-card";
 import { UndoButton } from "../_components/undo-button";
 import { LikedYouProfile } from "../types"; // adjust path as needed
@@ -24,6 +24,12 @@ export function LikedYouClient({
 
   // Action history – lets us undo the last decision
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const historyRef = useRef(history);
+  useLayoutEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+  const [fromUndo, setFromUndo] = useState(false);
+  const [exitFromUndo, setExitFromUndo] = useState(false);
 
   // Buckets for resolved vibes
   const [accepted, setAccepted] = useState<LikedYouProfile[]>([]);
@@ -37,6 +43,8 @@ export function LikedYouClient({
 
   const handleAccept = async (userId: string) => {
     if (isLoading || !current) return;
+    setFromUndo(false);
+    setExitFromUndo(false);
     setIsLoading(true);
 
     // TODO: replace with your real API call, e.g.:
@@ -51,6 +59,8 @@ export function LikedYouClient({
 
   const handlePass = async (userId: string) => {
     if (isLoading || !current) return;
+    setFromUndo(false);
+    setExitFromUndo(false);
     setIsLoading(true);
 
     // TODO: replace with your real API call, e.g.:
@@ -66,24 +76,30 @@ export function LikedYouClient({
   const handleUndo = () => {
     if (history.length === 0) return;
 
-    const lastEntry = history[history.length - 1];
+    setExitFromUndo(true);
+    requestAnimationFrame(() => {
+      const lastEntry = historyRef.current[historyRef.current.length - 1];
+      if (!lastEntry) return;
 
-    // Remove from whichever bucket it landed in
-    if (lastEntry.action === "accepted") {
-      setAccepted((a) => a.filter((v) => v.user_id !== lastEntry.vibe.user_id));
-    } else {
-      setPassed((p) => p.filter((v) => v.user_id !== lastEntry.vibe.user_id));
-    }
+      if (lastEntry.action === "accepted") {
+        setAccepted((a) =>
+          a.filter((v) => v.user_id !== lastEntry.vibe.user_id),
+        );
+      } else {
+        setPassed((p) => p.filter((v) => v.user_id !== lastEntry.vibe.user_id));
+      }
 
-    // Push it back to the front of the queue
-    setQueue((q) => [lastEntry.vibe, ...q]);
-    setHistory((h) => h.slice(0, -1));
+      setQueue((q) => [lastEntry.vibe, ...q]);
+      setHistory((h) => h.slice(0, -1));
+      setFromUndo(true);
+      setExitFromUndo(false);
+    });
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col items-center w-full px-4">
+    <div className="flex flex-col items-center w-full px-4 gap-2">
       {/* Header */}
       <div className="hidden md:block w-full max-w-4xl mb-4 text-center space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-foreground xl:text-3xl md:text-2xl">
@@ -103,6 +119,9 @@ export function LikedYouClient({
             isDiscovery={false}
             onAccept={handleAccept}
             onPass={handlePass}
+            isFromUndo={fromUndo}
+            exitFromUndo={exitFromUndo}
+            onFromUndoConsumed={() => setFromUndo(false)}
           />
         </div>
       ) : (
@@ -114,7 +133,6 @@ export function LikedYouClient({
         <UndoButton
           handleBefore={handleUndo}
           targetUserId={history[history.length - 1]?.vibe.user_id}
-          isDiscovery={false}
           lastEntry={history[history.length - 1]?.vibe.fname}
         />
       )}

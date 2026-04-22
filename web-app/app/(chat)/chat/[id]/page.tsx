@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ChatClient } from "../_components/chat-client";
+import { getConversationMessages } from "../_actions";
 import { ChatMessage } from "../../types";
 import { buildSenderMetaFromProfiles, type SenderMetaEntry } from "../_sender-meta";
 
@@ -18,13 +19,7 @@ export default async function ConversationPage({
   let isGroupConversation: boolean;
   let senderMeta: Record<string, SenderMetaEntry>;
 
-  const result = await supabase
-    .from("chat_messages")
-    .select("*")
-    .eq("conversation_id", id)
-    .order("created_at", { ascending: true });
-
-  messages = (result.data as ChatMessage[]) ?? [];
+  messages = (await getConversationMessages(id)) as ChatMessage[];
 
   const { data: allMemberRows } = await supabase
     .from("chat_conversation_members")
