@@ -230,31 +230,6 @@ export async function saveProfileAction(profile: UserProfile) {
     return { error: "Failed to save preferences: " + preferenceFilterError.message };
   }
 
-  const { error: clearLivingImagesError } = await supabase
-    .from("user_profile_living_images")
-    .delete()
-    .eq("user_id", user.id);
-
-  if (clearLivingImagesError) {
-    return { error: "Failed to clear lifestyle images: " + clearLivingImagesError.message };
-  }
-
-  const photoUrls = profile.lifestyle_images ?? [];
-  if (photoUrls.length > 0) {
-    const { error: livingImagesError } = await supabase
-      .from("user_profile_living_images")
-      .insert(
-        photoUrls.map((url) => ({
-          user_id: user.id,
-          image_url: url,
-        })),
-      );
-
-    if (livingImagesError) {
-      return { error: "Failed to save lifestyle images: " + livingImagesError.message };
-    }
-  }
-
   revalidatePath("/profile");
   revalidatePath("/profile/create-profile");
 

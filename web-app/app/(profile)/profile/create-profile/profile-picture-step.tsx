@@ -440,8 +440,8 @@ export function ProfilePictureStep({
               aria-hidden
             />
             {isUploading && (
-              <div className="absolute inset-0 z-[5] flex items-center justify-center rounded-full bg-background/70 text-sm font-medium">
-                Working…
+              <div className="absolute inset-0 z-[5] flex items-center justify-center rounded-full bg-background">
+                <Loader2 className="size-10 animate-spin" />
               </div>
             )}
           </button>
