@@ -85,15 +85,17 @@ export function ShareListingDropdown({ listingId }: { listingId: string }) {
           ) : (
             <div className="flex flex-col gap-1">
               {targets.map((target) => (
-                <button
+                <Button
                   key={target.conversationId}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   disabled={isPending}
                   onClick={() => onShare(target)}
-                  className="rounded-md px-2 py-2 text-left text-sm transition hover:bg-muted disabled:opacity-60"
+                  className="w-full justify-start text-left"
                 >
                   {formatName(target.name)}
-                </button>
+                </Button>
               ))}
             </div>
           )}

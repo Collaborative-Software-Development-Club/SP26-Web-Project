@@ -223,6 +223,30 @@ export async function getConversationMessages(
   });
 }
 
+export async function resolveHousingAddresses(
+  listingIds: string[],
+): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const uniqueIds = [...new Set(listingIds.filter(Boolean))];
+  const { byId: addressByListingId, lookupError: housingLookupError } =
+    await getHousingAddressMap(supabase, uniqueIds);
+
+  const result: Record<string, string> = {};
+  for (const listingId of uniqueIds) {
+    if (housingLookupError) {
+      result[listingId] = `[ERROR] ${housingLookupError}`;
+    } else if (!addressByListingId.has(listingId)) {
+      result[listingId] = `[ERROR] housing listing not found (${listingId})`;
+    } else {
+      result[listingId] =
+        addressByListingId.get(listingId) ??
+        `[ERROR] Address is null for listing ${listingId}`;
+    }
+  }
+
+  return result;
+}
+
 export async function getConversations(userId: string) {
   return chatService.getConversations(userId);
 }

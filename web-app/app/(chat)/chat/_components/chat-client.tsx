@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useChatRealtime } from "./realtime-provider";
-import { sendChatMessage } from "../_actions";
+import { resolveHousingAddresses, sendChatMessage } from "../_actions";
 import { ChatMessage } from "../../types";
 import type { SenderMetaEntry } from "../_sender-meta";
 
@@ -50,6 +50,12 @@ export function ChatClient({
   const [inputValue, setInputValue] = useState("");
   const { realtimeMessages } = useChatRealtime();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [resolvedAddressByListingId, setResolvedAddressByListingId] = useState<
+    Record<string, string>
+  >({});
+  const [requestedListingIds, setRequestedListingIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const serverIds = new Set(serverMessages.map((m) => m.message_id));
   const liveMessages = realtimeMessages.filter(
@@ -64,6 +70,45 @@ export function ChatClient({
       return a.message_id.localeCompare(b.message_id);
     });
   }, [serverMessages, liveMessages]);
+
+  useEffect(() => {
+    const unresolvedListingIds = [
+      ...new Set(
+        sortedMessages
+          .map((msg) => {
+            const listingId = getHousingListingId(msg.content);
+            if (!listingId) return null;
+            if (msg.address) return null;
+            if (resolvedAddressByListingId[listingId]) return null;
+            if (requestedListingIds.has(listingId)) return null;
+            return listingId;
+          })
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    if (unresolvedListingIds.length === 0) return;
+    setRequestedListingIds(
+      (prev) => new Set([...prev, ...unresolvedListingIds]),
+    );
+    resolveHousingAddresses(unresolvedListingIds)
+      .then((resolved) =>
+        setResolvedAddressByListingId((prev) => ({ ...prev, ...resolved })),
+      )
+      .catch((e) => console.error("Failed to resolve housing addresses", e));
+  }, [sortedMessages, resolvedAddressByListingId, requestedListingIds]);
+
+  const renderedMessages = useMemo(
+    () =>
+      sortedMessages.map((msg) => {
+        const listingId = getHousingListingId(msg.content);
+        if (!listingId || msg.address) return msg;
+        const resolvedAddress = resolvedAddressByListingId[listingId];
+        if (!resolvedAddress) return msg;
+        return { ...msg, address: resolvedAddress };
+      }),
+    [sortedMessages, resolvedAddressByListingId],
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,14 +128,14 @@ export function ChatClient({
         <h1 className="text-lg font-semibold">{conversationTitle}</h1>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {sortedMessages.map((msg, i) => {
+        {renderedMessages.map((msg, i) => {
           const isSelf = msg.sender_id === userId;
           const isHousingMessage = Boolean(getHousingListingId(msg.content));
           const isRunStart =
-            i === 0 || sortedMessages[i - 1].sender_id !== msg.sender_id;
+            i === 0 || renderedMessages[i - 1].sender_id !== msg.sender_id;
           const isRunEnd =
-            i === sortedMessages.length - 1 ||
-            sortedMessages[i + 1].sender_id !== msg.sender_id;
+            i === renderedMessages.length - 1 ||
+            renderedMessages[i + 1].sender_id !== msg.sender_id;
 
           if (!isGroupConversation || isSelf) {
             return (
