@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +18,8 @@ import {
 
 export function ShareListingDropdown({
   listingId,
-  userId,
 }: {
   listingId: string;
-  userId: string | null;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -39,26 +37,25 @@ export function ShareListingDropdown({
     return longest;
   }, [targets]);
 
-  useEffect(() => {
-    if (!open) return;
+  async function loadTargets() {
     setIsLoading(true);
     setError("");
-    getHousingShareTargets()
-      .then((result) => {
-        for (const user of result) {
-          if (!(user.fname ?? "").trim() && !(user.lname ?? "").trim()) {
-            console.warn(
-              `[housing] unable to find name for uuid ${user.peerUserId} in user_profiles`,
-            );
-          }
+    try {
+      const result = await getHousingShareTargets();
+      for (const user of result) {
+        if (!(user.fname ?? "").trim() && !(user.lname ?? "").trim()) {
+          console.warn(
+            `[housing] unable to find name for uuid ${user.peerUserId} in user_profiles`,
+          );
         }
-        setTargets(result);
-      })
-      .catch((e) =>
-        setError(e instanceof Error ? e.message : "Failed to load conversations"),
-      )
-      .finally(() => setIsLoading(false));
-  }, [open]);
+      }
+      setTargets(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load conversations");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   function onShare(target: HousingShareTarget) {
     startTransition(async () => {
@@ -79,6 +76,7 @@ export function ShareListingDropdown({
     startTransition(async () => {
       try {
         await assertCanShareHousing();
+        await loadTargets();
         setOpen(true);
       } catch {
         router.push("/login");

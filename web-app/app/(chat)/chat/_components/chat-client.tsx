@@ -52,9 +52,7 @@ export function ChatClient({
   const [resolvedAddressByListingId, setResolvedAddressByListingId] = useState<
     Record<string, string>
   >({});
-  const [requestedListingIds, setRequestedListingIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const requestedListingIdsRef = useRef<Set<string>>(new Set());
 
   const serverIds = new Set(serverMessages.map((m) => m.message_id));
   const liveMessages = realtimeMessages.filter(
@@ -79,7 +77,7 @@ export function ChatClient({
             if (!listingId) return null;
             if (msg.address) return null;
             if (resolvedAddressByListingId[listingId]) return null;
-            if (requestedListingIds.has(listingId)) return null;
+            if (requestedListingIdsRef.current.has(listingId)) return null;
             return listingId;
           })
           .filter((id): id is string => Boolean(id)),
@@ -87,24 +85,20 @@ export function ChatClient({
     ];
 
     if (unresolvedListingIds.length === 0) return;
-    setRequestedListingIds(
-      (prev) => new Set([...prev, ...unresolvedListingIds]),
-    );
+    for (const listingId of unresolvedListingIds) {
+      requestedListingIdsRef.current.add(listingId);
+    }
     resolveHousingAddresses(unresolvedListingIds)
       .then((resolved) =>
         setResolvedAddressByListingId((prev) => ({ ...prev, ...resolved })),
       )
       .catch((e) => {
         console.error("Failed to resolve housing addresses", e);
-        setRequestedListingIds((prev) => {
-          const next = new Set(prev);
-          for (const listingId of unresolvedListingIds) {
-            next.delete(listingId);
-          }
-          return next;
-        });
+        for (const listingId of unresolvedListingIds) {
+          requestedListingIdsRef.current.delete(listingId);
+        }
       });
-  }, [sortedMessages, resolvedAddressByListingId, requestedListingIds]);
+  }, [sortedMessages, resolvedAddressByListingId]);
 
   const renderedMessages = useMemo(
     () =>

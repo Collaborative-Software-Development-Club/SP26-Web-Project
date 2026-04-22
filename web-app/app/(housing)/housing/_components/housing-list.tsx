@@ -117,7 +117,6 @@ export function HousingList({
   /** Total rows in the database (Supabase exact count). */
   const totalRecordCount = totalCount;
 
-  const showDeletedSavedFallback = savedOnly && deletedSavedListings.length > 0;
   const savedOnlyTotalCount = savedOnly
     ? filteredListings.length + deletedSavedListings.length
     : filteredListings.length;
@@ -211,7 +210,9 @@ export function HousingList({
   useEffect(() => {
     if (!savedOnly) return;
     startTransition(() => {
-      setFilteredListings(computeFiltered(allListings, favoriteIds));
+      let next = filterHouses(allListings, filters);
+      next = userId ? next.filter((h) => favoriteIds.has(String(h.id))) : [];
+      setFilteredListings(next);
       setPage(1);
     });
   }, [savedOnly, favoriteIds, allListings, filters, userId, startTransition]);
@@ -442,7 +443,6 @@ export function HousingList({
               <HouseCard
                 key={listing.id}
                 house={listing}
-                userId={userId}
                 isFavorite={userId ? favoriteIds.has(listing.id) : false}
                 onToggleFavorite={toggleFavorite}
               />

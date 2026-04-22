@@ -35,12 +35,10 @@ function formatCurrency(n: number): string {
 
 export function HouseCard({
   house,
-  userId,
   isFavorite = false,
   onToggleFavorite,
 }: {
   house: House;
-  userId: string | null;
   isFavorite?: boolean;
   onToggleFavorite?: (id: House["id"]) => void;
 }) {
@@ -98,7 +96,7 @@ export function HouseCard({
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">
-            <ShareListingDropdown listingId={house.id} userId={userId} />
+            <ShareListingDropdown listingId={house.id} />
             <Button asChild variant="default" size="sm">
               <a href={`/housing/${house.id}`}>View</a>
             </Button>
