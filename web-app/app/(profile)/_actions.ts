@@ -446,6 +446,57 @@ export async function updatePassword(
   return { error: null, success: true };
 }
 
+const DELETE_ACCOUNT_PFP_BUCKET = "pfp";
+const DELETE_ACCOUNT_LIFESTYLE_BUCKET = "lifestyle_pic";
+
+/** Best-effort removal of all objects under the user’s folder in profile/lifestyle buckets. */
+async function removeUserStorageForDeletion(
+  admin: ReturnType<typeof createServiceRoleClient>,
+  userId: string,
+): Promise<void> {
+  const clearBucketFolder = async (bucket: string) => {
+    const pageSize = 100;
+    let offset = 0;
+    for (;;) {
+      const { data: files, error: listError } = await admin.storage
+        .from(bucket)
+        .list(userId, { limit: pageSize, offset });
+
+      if (listError) {
+        console.error(
+          `[deleteAccount] list ${bucket}/${userId}:`,
+          listError.message,
+        );
+        return;
+      }
+      if (!files?.length) {
+        break;
+      }
+
+      const paths = files.map((f) => `${userId}/${f.name}`);
+      if (paths.length > 0) {
+        const { error: removeError } = await admin.storage
+          .from(bucket)
+          .remove(paths);
+        if (removeError) {
+          console.error(
+            `[deleteAccount] remove ${bucket}:`,
+            removeError.message,
+          );
+        }
+      }
+
+      if (files.length < pageSize) {
+        break;
+      }
+      offset += pageSize;
+    }
+  };
+
+  await clearBucketFolder(DELETE_ACCOUNT_PFP_BUCKET);
+  await clearBucketFolder(DELETE_ACCOUNT_LIFESTYLE_BUCKET);
+}
+
 export async function deleteAccount(
   _prevState: { error: string | null },
   formData: FormData,
@@ -471,12 +522,16 @@ export async function deleteAccount(
     return { error: "Password is incorrect." };
   }
 
-  const admin = createServiceRoleClient();
-  if (!admin) {
+  let admin: ReturnType<typeof createServiceRoleClient>;
+  try {
+    admin = createServiceRoleClient();
+  } catch {
     return {
-      error: "Account deletion is not configured.",
+      error: "Account deletion is not configured. Missing server credentials.",
     };
   }
+
+  await removeUserStorageForDeletion(admin, user.id);
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
@@ -488,5 +543,5 @@ export async function deleteAccount(
   }
 
   await supabase.auth.signOut();
-  redirect("/login?deleted=1");
+  redirect("/signup?deleted=1");
 }
