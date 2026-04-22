@@ -34,6 +34,5 @@ export type UserProfile = {
     last_edited_at: string;
     hobbies: Hobby[];
     preferences: Preference[];
-    lifestyle_images?: string[];
-    isAdmin?: boolean;
+    lifestyle_images: string[];
 }

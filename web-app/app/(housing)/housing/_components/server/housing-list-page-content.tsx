@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getHousingListings } from "../../_actions";
+import { HOUSING_LISTINGS_BATCH_SIZE } from "../../housing-list-batch";
 import type { House } from "../house-card";
 import { HousingList } from "../housing-list";
 
@@ -7,11 +8,13 @@ const PAGE_SIZE = 9;
 
 export async function HousingListPageContent() {
   let listings: House[] = [];
+  let totalCount = 0;
   let loadError: string | null = null;
 
   try {
-    const result = await getHousingListings(1, PAGE_SIZE);
+    const result = await getHousingListings(1, HOUSING_LISTINGS_BATCH_SIZE);
     listings = (result.listings as House[]) ?? [];
+    totalCount = result.total;
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Failed to load listings.";
   }
@@ -41,6 +44,7 @@ export async function HousingListPageContent() {
         ) : (
           <HousingList
             initialListings={listings}
+            initialTotal={totalCount}
             pageSize={PAGE_SIZE}
             userId={userId}
           />

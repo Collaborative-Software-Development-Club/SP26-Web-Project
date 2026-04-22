@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type {
   Hobby,
@@ -85,6 +86,10 @@ export async function signupAction(formData: FormData) {
   if (data.session) {
     redirect("/profile");
   }
+  
+  console.log("signup user id:", data.user?.id);
+  console.log("signup session exists:", !!data.session);
+  console.log("email confirmed at:", data.user?.email_confirmed_at);
 
   redirect(
     `/confirm?message=${encodeURIComponent(
@@ -350,4 +355,131 @@ export async function updateProfile(profile: UserProfile) {
   if (result.error) {
     throw new Error(result.error);
   }
+}
+
+export async function updateActiveStatus(
+  isActive: boolean,
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "You must be signed in to update active status." };
+  }
+
+  const { error } = await supabase.from("user_profiles").update({
+    is_active: isActive,
+  }).eq("user_id", user.id);
+  if (error) {
+    return { error: "Failed to update active status: " + error.message };
+  }
+  revalidatePath("/profile");
+  revalidatePath("/", "layout");
+  return { error: null };
+}
+
+export async function updatePassword(
+  _prevState: { error: string | null; success: boolean },
+  formData: FormData,
+): Promise<{ error: string | null; success: boolean }> {
+  const currentPasswordEntry = formData.get("currentPassword");
+  const newPasswordEntry = formData.get("newPassword");
+  const confirmPasswordEntry = formData.get("confirmPassword");
+  const currentPassword =
+    typeof currentPasswordEntry === "string" ? currentPasswordEntry : "";
+  const newPassword = typeof newPasswordEntry === "string" ? newPasswordEntry : "";
+  const confirmPassword =
+    typeof confirmPasswordEntry === "string" ? confirmPasswordEntry : "";
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: "Please fill in all fields.", success: false };
+  }
+  if (newPassword.length < 6) {
+    return { error: "New password must be at least 6 characters.", success: false };
+  }
+  if (newPassword !== confirmPassword) {
+    return { error: "New password and confirmation do not match.", success: false };
+  }
+  if (currentPassword === newPassword) {
+    return {
+      error: "New password must be different from your current password.",
+      success: false,
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return { error: "You must be signed in to change your password.", success: false };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (signInError) {
+    return { error: "Current password is incorrect.", success: false };
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  if (updateError) {
+    return {
+      error: updateError.message || "Failed to update password.",
+      success: false,
+    };
+  }
+
+  revalidatePath("/profile");
+  return { error: null, success: true };
+}
+
+export async function deleteAccount(
+  _prevState: { error: string | null },
+  formData: FormData,
+): Promise<{ error: string | null }> {
+  const password = (formData.get("password") as string) ?? "";
+  if (!password) {
+    return { error: "Enter your password to confirm account deletion." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return { error: "You must be signed in." };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password,
+  });
+  if (signInError) {
+    return { error: "Password is incorrect." };
+  }
+
+  const admin = createServiceRoleClient();
+  if (!admin) {
+    return {
+      error:
+        "Account deletion is not configured.",
+    };
+  }
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (deleteError) {
+    return {
+      error:
+        deleteError.message ||
+        "Failed to delete account. Try again or contact support.",
+    };
+  }
+
+  await supabase.auth.signOut();
+  redirect("/login?deleted=1");
 }
