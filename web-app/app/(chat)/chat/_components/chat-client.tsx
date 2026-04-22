@@ -16,10 +16,9 @@ function getHousingListingId(content: string): string | null {
   return match?.[1] ?? null;
 }
 
-function renderMessageContent(ChatMessage: ChatMessage) {
-  const listingId = getHousingListingId(ChatMessage.content);
+function renderMessageContent(message: ChatMessage, listingId: string | null) {
   if (listingId) {
-    const address = ChatMessage.address ?? "[ERROR] housing listing not found";
+    const address = message.address ?? "[ERROR] housing listing not found";
     if (address.startsWith("[ERROR]")) {
       return address;
     }
@@ -29,7 +28,7 @@ function renderMessageContent(ChatMessage: ChatMessage) {
       </Link>
     );
   }
-  return ChatMessage.content;
+  return message.content;
 }
 
 export function ChatClient({
@@ -95,7 +94,16 @@ export function ChatClient({
       .then((resolved) =>
         setResolvedAddressByListingId((prev) => ({ ...prev, ...resolved })),
       )
-      .catch((e) => console.error("Failed to resolve housing addresses", e));
+      .catch((e) => {
+        console.error("Failed to resolve housing addresses", e);
+        setRequestedListingIds((prev) => {
+          const next = new Set(prev);
+          for (const listingId of unresolvedListingIds) {
+            next.delete(listingId);
+          }
+          return next;
+        });
+      });
   }, [sortedMessages, resolvedAddressByListingId, requestedListingIds]);
 
   const renderedMessages = useMemo(
@@ -112,7 +120,7 @@ export function ChatClient({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [sortedMessages]);
+  }, [renderedMessages]);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -130,7 +138,8 @@ export function ChatClient({
       <div className="flex-1 overflow-y-auto p-6">
         {renderedMessages.map((msg, i) => {
           const isSelf = msg.sender_id === userId;
-          const isHousingMessage = Boolean(getHousingListingId(msg.content));
+          const listingId = getHousingListingId(msg.content);
+          const isHousingMessage = Boolean(listingId);
           const isRunStart =
             i === 0 || renderedMessages[i - 1].sender_id !== msg.sender_id;
           const isRunEnd =
@@ -146,7 +155,7 @@ export function ChatClient({
                 <div
                   className={`rounded-2xl px-4 py-2 max-w-md ${isSelf ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"} ${isHousingMessage ? "transition-colors hover:bg-red-900/90" : ""}`}
                 >
-                  {renderMessageContent(msg)}
+                  {renderMessageContent(msg, listingId)}
                 </div>
               </div>
             );
@@ -182,7 +191,7 @@ export function ChatClient({
                   <div
                     className={`${isHousingMessage ? "transition-colors hover:bg-red-900/20 -mx-4 -my-2 px-4 py-2 rounded-2xl" : ""}`}
                   >
-                  {renderMessageContent(msg)}
+                  {renderMessageContent(msg, listingId)}
                   </div>
                 </div>
               </div>

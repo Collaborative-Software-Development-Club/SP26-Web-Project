@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,12 +10,20 @@ import {
 } from "@/components/ui/popover";
 import { Share2 } from "lucide-react";
 import {
+  assertCanShareHousing,
   getHousingShareTargets,
   shareHousingListing,
   type HousingShareTarget,
 } from "../_actions";
 
-export function ShareListingDropdown({ listingId }: { listingId: string }) {
+export function ShareListingDropdown({
+  listingId,
+  userId,
+}: {
+  listingId: string;
+  userId: string | null;
+}) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [targets, setTargets] = useState<HousingShareTarget[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,8 +71,23 @@ export function ShareListingDropdown({ listingId }: { listingId: string }) {
     });
   }
 
+  function onOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setOpen(false);
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await assertCanShareHousing();
+        setOpen(true);
+      } catch {
+        router.push("/login");
+      }
+    });
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" aria-label="Share listing">
           <Share2 className="h-4 w-4" />

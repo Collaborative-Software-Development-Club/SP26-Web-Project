@@ -50,9 +50,14 @@ export async function assertCanFavoriteHousing() {
   return { userId: user.id };
 }
 
+export async function assertCanShareHousing() {
+  const user = await requireAuth();
+  return { userId: user.id };
+}
+
 export type SavedHousingRow = {
   housing_id: string | null;
-  address: string;
+  address: string | null;
   listing_url: string | null;
 };
 
@@ -127,6 +132,38 @@ export async function unsaveHousingListing(housingId: string) {
     .delete()
     .eq("user_id", user.id)
     .eq("housing_id", housingId);
+
+  if (error) {
+    throw new Error(
+      JSON.stringify(
+        {
+          message: error.message,
+          code: (error as { code?: string }).code,
+          details: (error as { details?: string }).details,
+          hint: (error as { hint?: string }).hint,
+        },
+        null,
+        2,
+      ),
+    );
+  }
+  return { ok: true as const };
+}
+
+export async function unsaveDeletedHousingListing(address: string) {
+  if (!address) {
+    throw new Error("Address required");
+  }
+
+  const supabase = await createClient();
+  const user = await requireAuth();
+
+  const { error } = await supabase
+    .from("user_saves_housing")
+    .delete()
+    .eq("user_id", user.id)
+    .is("housing_id", null)
+    .eq("address", address);
 
   if (error) {
     throw new Error(

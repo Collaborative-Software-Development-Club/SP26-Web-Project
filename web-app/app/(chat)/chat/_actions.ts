@@ -147,9 +147,6 @@ export async function sendChatMessage(conversationId: string, message: string) {
   if (!trimmed) {
     throw new Error("Message cannot be empty");
   }
-  if (HOUSING_ESCAPE_PATTERN.test(trimmed)) {
-    console.log(`[chat] housing escape message sent: ${trimmed}`);
-  }
 
   const supabase = await createClient();
   const {
@@ -195,9 +192,6 @@ export async function getConversationMessages(
   const listingIds = new Set<string>();
   for (const message of data ?? []) {
     if (HOUSING_ESCAPE_PATTERN.test(message.content ?? "")) {
-      console.log(
-        `[chat] housing escape message found in conversation ${conversationId}: ${message.content}`,
-      );
       const listingId = getHousingListingIdFromContent(message.content ?? "");
       if (listingId) listingIds.add(listingId);
     }
