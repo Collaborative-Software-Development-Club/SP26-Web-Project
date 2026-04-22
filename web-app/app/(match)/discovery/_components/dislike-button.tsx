@@ -12,16 +12,15 @@ export function DislikeButton({
 }: {
   handleNext: () => void;
   targetUserId: string;
-  onClick?: () => void; // Optional callback for additional actions on click
+  onClick?: () => void | Promise<void>;
 }) {
-  const handleDislike = useCallback(() => {
+  const handleDislike = useCallback(async () => {
     if (onClick) {
-      onClick(); // Trigger animation first
+      await Promise.resolve(onClick());
     } else {
-      handleNext(); // Fallback if no animation logic is passed
+      handleNext();
     }
-
-    saveSwipe(targetUserId, "dislike", null);
+    await saveSwipe(targetUserId, "dislike", null);
   }, [handleNext, targetUserId, onClick]);
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export function DislikeButton({
       )
         return;
       e.preventDefault();
-      handleDislike();
+      void handleDislike();
     };
 
     window.addEventListener("keydown", handleKeyPress);

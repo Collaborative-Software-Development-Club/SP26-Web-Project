@@ -20,34 +20,31 @@ export function MessageButton({
   handleNext,
   targetUserId,
   isDiscovery,
-  onClick, // Optional callback for additional actions on click
+  onClick,
 }: {
   handleNext: () => void;
   targetUserId: string;
   isDiscovery: boolean;
-  onClick?: () => void;
+  onClick?: () => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleLikeAndSend = useCallback(() => {
+  const handleLikeAndSend = useCallback(async () => {
     if (message === "") {
       setError("You cannot send an empty message");
-    } else {
-      console.log(message);
-
-      if (onClick) {
-        onClick(); // Trigger animation first
-      } else {
-        handleNext(); // Fallback if no animation logic is passed
-      }
-
-      saveSwipe(targetUserId, "like", message);
-      setMessage("");
-      setError("");
-      setOpen(false);
+      return;
     }
+    if (onClick) {
+      await Promise.resolve(onClick());
+    } else {
+      handleNext();
+    }
+    await saveSwipe(targetUserId, "like", message);
+    setMessage("");
+    setError("");
+    setOpen(false);
   }, [message, handleNext, targetUserId, onClick]);
 
   useEffect(() => {
@@ -60,7 +57,7 @@ export function MessageButton({
       }
       if (e.key === "Enter" && !e.shiftKey && open) {
         e.preventDefault();
-        handleLikeAndSend();
+        void handleLikeAndSend();
       }
     };
     window.addEventListener("keydown", handleKeyPress);

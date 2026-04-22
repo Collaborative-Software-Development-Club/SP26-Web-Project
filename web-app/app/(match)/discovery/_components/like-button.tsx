@@ -12,15 +12,15 @@ export function LikeButton({
 }: {
   handleNext: () => void;
   targetUserId: string;
-  onClick?: () => void; // Optional callback for additional actions on click
+  onClick?: () => void | Promise<void>;
 }) {
-  const handleLike = useCallback(() => {
+  const handleLike = useCallback(async () => {
     if (onClick) {
-      onClick(); // Trigger animation first
+      await Promise.resolve(onClick());
     } else {
-      handleNext(); // Fallback if no animation logic is passed
+      handleNext();
     }
-    saveSwipe(targetUserId, "like", null);
+    await saveSwipe(targetUserId, "like", null);
   }, [handleNext, targetUserId, onClick]);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function LikeButton({
       )
         return;
       e.preventDefault();
-      handleLike();
+      void handleLike();
     };
 
     window.addEventListener("keydown", handleKeyPress);

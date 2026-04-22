@@ -1,6 +1,5 @@
 "use client";
 
-import { Undo2 } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { undoSwipe } from "../_actions";
 
@@ -13,15 +12,15 @@ export function UndoButton({
   handleBefore: () => void;
   targetUserId: string;
   lastEntry?: string;
-  onClick?: () => void; // Optional callback for additional actions on click
+  onClick?: () => void | Promise<void>;
 }) {
-  const handleUndo = useCallback(() => {
+  const handleUndo = useCallback(async () => {
     if (onClick) {
-      onClick();
+      await Promise.resolve(onClick());
     } else {
       handleBefore();
     }
-    undoSwipe(targetUserId);
+    await undoSwipe(targetUserId);
   }, [handleBefore, targetUserId, onClick]);
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export function UndoButton({
       )
         return;
       e.preventDefault();
-      handleUndo();
+      void handleUndo();
     };
 
     window.addEventListener("keydown", handleKeyPress);
