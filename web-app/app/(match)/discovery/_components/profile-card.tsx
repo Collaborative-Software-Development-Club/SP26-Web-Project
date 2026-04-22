@@ -232,6 +232,7 @@ export function ProfileCard({
                   <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-4 pb-3 pt-8 bg-gradient-to-t from-black/30 to-transparent">
                     {userPhotos.map((_, i) => (
                       <button
+                        title={`Photo ${i + 1}`}
                         key={i}
                         type="button"
                         onClick={() => setPhotoIndex(i)}
