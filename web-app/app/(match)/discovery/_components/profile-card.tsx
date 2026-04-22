@@ -198,13 +198,15 @@ export function ProfileCard({
                     onClick={prevPhoto}
                     aria-label="Previous photo"
                   >
-                    <span
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      style={{
-                        background:
-                          "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
-                      }}
-                    />
+                    {showPhotoDots && (
+                      <span
+                        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background:
+                            "radial-gradient(60% 100% at 0% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                        }}
+                      />
+                    )}
                   </button>
 
                   <button
@@ -221,13 +223,15 @@ export function ProfileCard({
                     onClick={nextPhoto}
                     aria-label="Next photo"
                   >
-                    <span
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      style={{
-                        background:
-                          "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
-                      }}
-                    />
+                    {showPhotoDots && (
+                      <span
+                        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background:
+                            "radial-gradient(60% 100% at 100% 50%, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%)",
+                        }}
+                      />
+                    )}
                   </button>
                 </div>
 
